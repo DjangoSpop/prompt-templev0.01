@@ -1,0 +1,94 @@
+/* PromptCraft Chat Styles */
+.chat-dashboard {
+  display: flex;
+  flex-direction: column;
+}
+
+.messages-container {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.messages-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.messages-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.messages-container::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 3px;
+}
+
+.message {
+  animation: message-slide-in 0.3s ease-out;
+}
+
+.message.user {
+  border-bottom-right-radius: 4px;
+}
+
+.message.assistant {
+  border-bottom-left-radius: 4px;
+}
+
+.message.system {
+  font-style: italic;
+}
+
+.typing-indicator {
+  padding: 12px 16px;
+}
+
+.template-opportunity-toast {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.template-opportunity-toast > div:last-child {
+  display: flex;
+  gap: 8px;
+}
+
+@keyframes message-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes typing-dot {
+  0%, 60%, 100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Template Library Styles */
+.templates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.template-card {
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 16px;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.template-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}

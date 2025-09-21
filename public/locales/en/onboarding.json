@@ -1,0 +1,57 @@
+{
+  "welcome": {
+    "title": "Welcome to Prompt Temple",
+    "subtitle": "Your AI Prompt Engineering Sanctuary",
+    "description": "Get started with professional prompt engineering tools and templates",
+    "getStarted": "Get Started"
+  },
+  "steps": {
+    "library": {
+      "title": "Template Library",
+      "description": "Browse and use professional prompt templates"
+    },
+    "optimizer": {
+      "title": "Prompt Optimizer",
+      "description": "Enhance your prompts with AI-powered suggestions"
+    },
+    "analytics": {
+      "title": "Analytics",
+      "description": "Track and improve your prompt performance"
+    },
+    "collaboration": {
+      "title": "Collaboration",
+      "description": "Share and collaborate on templates with your team"
+    }
+  },
+  "tour": {
+    "next": "Next",
+    "back": "Back",
+    "skip": "Skip Tour",
+    "finish": "Finish",
+    "steps": {
+      "navbar": "Navigate your workspace",
+      "library": "Find the perfect template",
+      "optimizer": "Enhance your prompts",
+      "settings": "Customize your experience"
+    }
+  },
+  "preferences": {
+    "title": "Personalize Your Experience",
+    "theme": {
+      "label": "Choose Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "language": {
+      "label": "Select Language",
+      "en": "English",
+      "ar": "العربية"
+    },
+    "notifications": {
+      "label": "Notification Preferences",
+      "updates": "Product Updates",
+      "tips": "Prompt Engineering Tips"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "loading": "جاري التحميل...",
+  "error": "خطأ",
+  "success": "تم بنجاح",
+  "required": "مطلوب",
+  "optional": "اختياري",
+  "save": "حفظ",
+  "cancel": "إلغاء",
+  "delete": "حذف",
+  "edit": "تعديل",
+  "create": "إنشاء",
+  "update": "تحديث",
+  "search": "بحث",
+  "filter": "تصفية",
+  "sort": "ترتيب",
+  "close": "إغلاق",
+  "back": "رجوع",
+  "next": "التالي",
+  "finish": "إنهاء",
+  "viewAll": "عرض الكل",
+  "learnMore": "معرفة المزيد",
+  "getStarted": "ابدأ الآن"
+}

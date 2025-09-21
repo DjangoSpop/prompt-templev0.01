@@ -1,0 +1,64 @@
+{
+  "main": {
+    "home": "Home",
+    "library": "Template Library",
+    "optimizer": "Prompt Optimizer",
+    "analytics": "Analytics",
+    "settings": "Settings"
+  },
+  "sub": {
+    "library": {
+      "all": "All Templates",
+      "myTemplates": "My Templates",
+      "shared": "Shared with Me",
+      "favorites": "Favorites",
+      "recent": "Recently Used"
+    },
+    "optimizer": {
+      "newSession": "New Session",
+      "mySessions": "My Sessions",
+      "history": "History",
+      "compare": "Compare Prompts"
+    },
+    "analytics": {
+      "overview": "Overview",
+      "performance": "Performance",
+      "insights": "Insights",
+      "reports": "Reports"
+    }
+  },
+  "user": {
+    "profile": "Profile",
+    "preferences": "Preferences",
+    "language": {
+      "title": "Language",
+      "en": "English",
+      "ar": "العربية",
+      "current": "Current: {{language}}"
+    },
+    "theme": {
+      "title": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "account": {
+      "settings": "Account Settings",
+      "help": "Help & Support",
+      "signOut": "Sign Out"
+    }
+  },
+  "mobile": {
+    "menu": "Menu",
+    "close": "Close Menu",
+    "back": "Back",
+    "search": "Search..."
+  },
+  "tooltips": {
+    "newTemplate": "Create new template",
+    "notifications": "View notifications",
+    "search": "Search templates and prompts",
+    "languageSwitch": "Change language",
+    "themeSwitch": "Switch theme"
+  }
+}

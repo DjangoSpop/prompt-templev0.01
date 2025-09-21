@@ -1,0 +1,34 @@
+{
+  "title": "Prompt Optimizer",
+  "description": "Enhance your prompts for better results",
+  "newSession": "New Session",
+  "savedSessions": "Saved Sessions",
+  "promptInput": "Enter your prompt",
+  "optimize": "Optimize",
+  "compare": "Compare Versions",
+  "suggestions": "Suggestions",
+  "metrics": {
+    "clarity": "Clarity",
+    "specificity": "Specificity",
+    "context": "Context",
+    "accuracy": "Accuracy",
+    "score": "Overall Score"
+  },
+  "analysis": {
+    "title": "Analysis",
+    "strengths": "Strengths",
+    "weaknesses": "Areas for Improvement",
+    "suggestions": "Suggested Improvements"
+  },
+  "history": {
+    "title": "Session History",
+    "empty": "No optimization history yet",
+    "compareWith": "Compare with current"
+  },
+  "export": {
+    "title": "Export Results",
+    "format": "Export Format",
+    "includeMetrics": "Include Metrics",
+    "includeHistory": "Include History"
+  }
+}

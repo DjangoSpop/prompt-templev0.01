@@ -1,0 +1,64 @@
+{
+  "main": {
+    "home": "الرئيسية",
+    "library": "مكتبة القوالب",
+    "optimizer": "محسن التلقين",
+    "analytics": "التحليلات",
+    "settings": "الإعدادات"
+  },
+  "sub": {
+    "library": {
+      "all": "جميع القوالب",
+      "myTemplates": "قوالبي",
+      "shared": "مشاركة معي",
+      "favorites": "المفضلة",
+      "recent": "المستخدمة مؤخراً"
+    },
+    "optimizer": {
+      "newSession": "جلسة جديدة",
+      "mySessions": "جلساتي",
+      "history": "السجل",
+      "compare": "مقارنة التلقينات"
+    },
+    "analytics": {
+      "overview": "نظرة عامة",
+      "performance": "الأداء",
+      "insights": "التحليلات",
+      "reports": "التقارير"
+    }
+  },
+  "user": {
+    "profile": "الملف الشخصي",
+    "preferences": "التفضيلات",
+    "language": {
+      "title": "اللغة",
+      "en": "English",
+      "ar": "العربية",
+      "current": "الحالية: {{language}}"
+    },
+    "theme": {
+      "title": "السمة",
+      "light": "فاتح",
+      "dark": "داكن",
+      "system": "النظام"
+    },
+    "account": {
+      "settings": "إعدادات الحساب",
+      "help": "المساعدة والدعم",
+      "signOut": "تسجيل الخروج"
+    }
+  },
+  "mobile": {
+    "menu": "القائمة",
+    "close": "إغلاق القائمة",
+    "back": "رجوع",
+    "search": "بحث..."
+  },
+  "tooltips": {
+    "newTemplate": "إنشاء قالب جديد",
+    "notifications": "عرض الإشعارات",
+    "search": "البحث في القوالب والتلقينات",
+    "languageSwitch": "تغيير اللغة",
+    "themeSwitch": "تغيير السمة"
+  }
+}

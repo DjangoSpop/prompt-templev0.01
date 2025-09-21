@@ -1,0 +1,84 @@
+{
+  "title": "Settings",
+  "sections": {
+    "general": "General",
+    "account": "Account",
+    "appearance": "Appearance",
+    "language": "Language",
+    "privacy": "Privacy",
+    "notifications": "Notifications",
+    "api": "API Integration",
+    "billing": "Billing",
+    "security": "Security"
+  },
+  "account": {
+    "profile": {
+      "title": "Profile Information",
+      "name": "Full Name",
+      "email": "Email Address",
+      "username": "Username",
+      "avatar": "Profile Picture",
+      "bio": "Bio",
+      "updateProfile": "Update Profile"
+    },
+    "password": {
+      "title": "Change Password",
+      "current": "Current Password",
+      "new": "New Password",
+      "confirm": "Confirm New Password",
+      "update": "Update Password"
+    },
+    "delete": {
+      "title": "Delete Account",
+      "warning": "This action cannot be undone",
+      "confirm": "I understand, delete my account"
+    }
+  },
+  "appearance": {
+    "theme": {
+      "title": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System Default"
+    },
+    "direction": {
+      "title": "Text Direction",
+      "ltr": "Left to Right",
+      "rtl": "Right to Left",
+      "auto": "Auto Detect"
+    },
+    "fontSize": {
+      "title": "Font Size",
+      "small": "Small",
+      "medium": "Medium",
+      "large": "Large"
+    }
+  },
+  "notifications": {
+    "email": {
+      "title": "Email Notifications",
+      "updates": "Product Updates",
+      "security": "Security Alerts",
+      "newsletter": "Newsletter"
+    },
+    "push": {
+      "title": "Push Notifications",
+      "comments": "Comments",
+      "mentions": "Mentions",
+      "shares": "Shares"
+    }
+  },
+  "privacy": {
+    "visibility": {
+      "title": "Profile Visibility",
+      "public": "Public",
+      "private": "Private"
+    },
+    "sharing": {
+      "title": "Default Sharing",
+      "public": "Public",
+      "private": "Private",
+      "team": "Team Only"
+    }
+  }
+}

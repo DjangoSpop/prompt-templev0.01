@@ -1,0 +1,51 @@
+{
+  "title": "مكتبة القوالب",
+  "description": "تصفح واكتشف قوالب التلقين الذكي",
+  "categories": {
+    "all": "جميع الفئات",
+    "featured": "مميز",
+    "popular": "شائع",
+    "recent": "حديث",
+    "myTemplates": "قوالبي",
+    "shared": "مشاركة معي"
+  },
+  "actions": {
+    "create": "إنشاء قالب",
+    "import": "استيراد قالب",
+    "export": "تصدير قالب",
+    "share": "مشاركة القالب",
+    "duplicate": "نسخ",
+    "delete": "حذف",
+    "edit": "تعديل"
+  },
+  "filters": {
+    "sortBy": "ترتيب حسب",
+    "category": "الفئة",
+    "status": "الحالة",
+    "dateRange": "النطاق الزمني",
+    "searchPlaceholder": "البحث في القوالب..."
+  },
+  "details": {
+    "overview": "نظرة عامة",
+    "variables": "المتغيرات",
+    "instructions": "التعليمات",
+    "examples": "الأمثلة",
+    "usage": "إحصائيات الاستخدام",
+    "metrics": "المقاييس",
+    "history": "سجل الإصدارات",
+    "comments": "التعليقات",
+    "relatedTemplates": "قوالب ذات صلة"
+  },
+  "stats": {
+    "usageCount": "{{count}} استخدام",
+    "rating": "تقييم {{rating}}",
+    "created": "تم الإنشاء {{date}}",
+    "lastUpdated": "تم التحديث {{date}}"
+  },
+  "validation": {
+    "titleRequired": "عنوان القالب مطلوب",
+    "descriptionRequired": "الوصف مطلوب",
+    "categoryRequired": "الرجاء اختيار فئة",
+    "contentRequired": "محتوى القالب مطلوب"
+  }
+}

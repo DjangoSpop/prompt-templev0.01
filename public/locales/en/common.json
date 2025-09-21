@@ -1,0 +1,27 @@
+{
+  "app": {
+    "title": "PromptCord",
+    "description": "AI Prompt Engineering Platform"
+  },
+  "nav": {
+    "home": "Home",
+    "library": "Library",
+    "optimizer": "Optimizer",
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "create": "Create",
+    "search": "Search"
+  },
+  "errors": {
+    "required": "This field is required",
+    "invalidEmail": "Please enter a valid email",
+    "generic": "Something went wrong. Please try again."
+  }
+}

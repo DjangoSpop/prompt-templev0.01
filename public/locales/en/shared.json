@@ -1,0 +1,23 @@
+{
+  "loading": "Loading...",
+  "error": "Error",
+  "success": "Success",
+  "required": "Required",
+  "optional": "Optional",
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "edit": "Edit",
+  "create": "Create",
+  "update": "Update",
+  "search": "Search",
+  "filter": "Filter",
+  "sort": "Sort",
+  "close": "Close",
+  "back": "Back",
+  "next": "Next",
+  "finish": "Finish",
+  "viewAll": "View All",
+  "learnMore": "Learn More",
+  "getStarted": "Get Started"
+}

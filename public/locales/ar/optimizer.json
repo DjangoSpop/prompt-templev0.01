@@ -1,0 +1,34 @@
+{
+  "title": "محسن التلقين",
+  "description": "تحسين التلقينات للحصول على نتائج أفضل",
+  "newSession": "جلسة جديدة",
+  "savedSessions": "الجلسات المحفوظة",
+  "promptInput": "أدخل التلقين",
+  "optimize": "تحسين",
+  "compare": "مقارنة الإصدارات",
+  "suggestions": "اقتراحات",
+  "metrics": {
+    "clarity": "الوضوح",
+    "specificity": "التحديد",
+    "context": "السياق",
+    "accuracy": "الدقة",
+    "score": "النتيجة الإجمالية"
+  },
+  "analysis": {
+    "title": "التحليل",
+    "strengths": "نقاط القوة",
+    "weaknesses": "مجالات التحسين",
+    "suggestions": "التحسينات المقترحة"
+  },
+  "history": {
+    "title": "سجل الجلسات",
+    "empty": "لا يوجد سجل تحسين حتى الآن",
+    "compareWith": "مقارنة مع الحالي"
+  },
+  "export": {
+    "title": "تصدير النتائج",
+    "format": "تنسيق التصدير",
+    "includeMetrics": "تضمين المقاييس",
+    "includeHistory": "تضمين السجل"
+  }
+}

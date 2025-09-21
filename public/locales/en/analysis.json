@@ -1,0 +1,69 @@
+{
+  "chat": {
+    "title": "Prompt Analysis",
+    "placeholder": "Enter your prompt or start a conversation...",
+    "send": "Send",
+    "retry": "Retry",
+    "clear": "Clear Chat",
+    "export": "Export Chat",
+    "copy": "Copy to Clipboard",
+    "stop": "Stop Generating",
+    "loading": "AI is thinking...",
+    "error": "Error generating response",
+    "temperature": {
+      "label": "Temperature",
+      "low": "Conservative",
+      "medium": "Balanced",
+      "high": "Creative"
+    }
+  },
+  "analysis": {
+    "title": "Analysis Results",
+    "promptStrength": "Prompt Strength",
+    "clarity": "Clarity Score",
+    "suggestions": "Improvement Suggestions",
+    "metrics": {
+      "wordCount": "Word Count",
+      "charCount": "Character Count",
+      "readability": "Readability Score",
+      "complexity": "Complexity Level",
+      "sentiment": "Sentiment Analysis"
+    },
+    "feedback": {
+      "title": "AI Feedback",
+      "strengths": "Strengths",
+      "weaknesses": "Areas for Improvement",
+      "suggestions": "Suggestions"
+    }
+  },
+  "comparison": {
+    "title": "Version Comparison",
+    "original": "Original",
+    "optimized": "Optimized",
+    "differences": "Key Differences",
+    "metrics": "Metric Changes",
+    "preferred": "Preferred Version"
+  },
+  "tools": {
+    "title": "Analysis Tools",
+    "semantic": "Semantic Analysis",
+    "grammar": "Grammar Check",
+    "tone": "Tone Analysis",
+    "context": "Context Analysis",
+    "bias": "Bias Detection",
+    "export": {
+      "title": "Export Analysis",
+      "pdf": "Export as PDF",
+      "json": "Export as JSON",
+      "csv": "Export as CSV"
+    }
+  },
+  "status": {
+    "analyzing": "Analyzing prompt...",
+    "generating": "Generating suggestions...",
+    "comparing": "Comparing versions...",
+    "saving": "Saving changes...",
+    "complete": "Analysis complete",
+    "error": "Analysis failed"
+  }
+}

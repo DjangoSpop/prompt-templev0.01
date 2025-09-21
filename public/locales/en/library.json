@@ -1,0 +1,51 @@
+{
+  "title": "Template Library",
+  "description": "Browse and discover AI prompt templates",
+  "categories": {
+    "all": "All Categories",
+    "featured": "Featured",
+    "popular": "Popular",
+    "recent": "Recent",
+    "myTemplates": "My Templates",
+    "shared": "Shared with Me"
+  },
+  "actions": {
+    "create": "Create Template",
+    "import": "Import Template",
+    "export": "Export Template",
+    "share": "Share Template",
+    "duplicate": "Duplicate",
+    "delete": "Delete",
+    "edit": "Edit"
+  },
+  "filters": {
+    "sortBy": "Sort by",
+    "category": "Category",
+    "status": "Status",
+    "dateRange": "Date Range",
+    "searchPlaceholder": "Search templates..."
+  },
+  "details": {
+    "overview": "Overview",
+    "variables": "Variables",
+    "instructions": "Instructions",
+    "examples": "Examples",
+    "usage": "Usage Stats",
+    "metrics": "Metrics",
+    "history": "Version History",
+    "comments": "Comments",
+    "relatedTemplates": "Related Templates"
+  },
+  "stats": {
+    "usageCount": "{{count}} uses",
+    "rating": "{{rating}} average rating",
+    "created": "Created {{date}}",
+    "lastUpdated": "Updated {{date}}"
+  },
+  "validation": {
+    "titleRequired": "Template title is required",
+    "descriptionRequired": "Description is required",
+    "categoryRequired": "Please select a category",
+    "contentRequired": "Template content is required"
+  }
+}
