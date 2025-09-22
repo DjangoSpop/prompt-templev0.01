@@ -280,7 +280,7 @@ export default function TemplateDetailView({ templateId }: TemplateDetailViewPro
       {/* Header Section */}
       <Card>
         <CardHeader className="pb-4">
-          <div className="flex items-start justify-between">
+          <div className="flex flex-col md:flex-row items-start justify-between gap-4">
             <div className="flex-1">
               <CardTitle className="text-2xl font-bold mb-2">{template.title}</CardTitle>
               <p className="text-muted-foreground mb-4">{template.description}</p>
@@ -301,7 +301,7 @@ export default function TemplateDetailView({ templateId }: TemplateDetailViewPro
               </div>
             </div>
             
-            <div className="flex flex-col items-end gap-2 min-w-0">
+            <div className="flex flex-col items-start md:items-end gap-2 min-w-0">
               <div className="flex items-center gap-1">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <Star
@@ -433,10 +433,10 @@ export default function TemplateDetailView({ templateId }: TemplateDetailViewPro
             <CardTitle className="text-lg">Rendered Preview</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="bg-gray-50 dark:bg-slate-800 dark:text-slate-50 border rounded-md p-4 min-h-[200px] max-h-[400px] overflow-y-auto font-mono text-sm whitespace-pre-wrap">
+            <div className="bg-gray-50 dark:bg-slate-900 dark:text-slate-200 border rounded-md p-4 min-h-[200px] overflow-y-auto font-mono text-sm whitespace-pre-wrap">
               {renderedPrompt || 'Enter variables to see the rendered prompt...'}
             </div>
-            <div className="flex flex-col sm:flex-row gap-2 mt-4">
+            <div className="flex flex-col sm:flex-row gap-3 mt-4">
               <Button
                 onClick={handleUseTemplate}
                 disabled={isUsing || !renderedPrompt}
@@ -473,7 +473,7 @@ export default function TemplateDetailView({ templateId }: TemplateDetailViewPro
           <CardTitle className="text-lg">Template Content</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="bg-gray-50 dark:bg-slate-800 dark:text-slate-50 border rounded-md p-4 max-h-[300px] overflow-y-auto font-mono text-sm whitespace-pre-wrap">
+          <div className="bg-gray-50 dark:bg-slate-900 dark:text-slate-200 border rounded-md p-4 overflow-y-auto font-mono text-sm whitespace-pre-wrap">
             {template.template_content}
           </div>
           <div className="flex gap-2 mt-4">

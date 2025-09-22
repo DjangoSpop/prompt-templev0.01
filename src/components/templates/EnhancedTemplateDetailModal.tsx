@@ -240,7 +240,17 @@ const QuickVariableInput = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+          <DialogContent className={[
+              "p-0 overflow-hidden",
+              isFullscreen
+                  ? "fixed inset-0 !max-w-none !w-screen !h-[100dvh] rounded-none"
+                  : [
+                      "w-[100vw] max-w-[100vw] sm:w-auto",
+                      "h-[88dvh] sm:h-[90dvh]",
+                      "sm:max-w-full md:max-w-3xl lg:max-w-5xl xl:max-w-7xl",
+                  ].join(" "),
+          ].join(" ")}
+          >
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <Edit3 className="w-5 h-5 text-pharaoh-gold" />

@@ -177,34 +177,34 @@ export default function SettingsView() {
   };
 
   const renderGeneralSettings = () => (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Notifications */}
       <div className="bg-bg-secondary rounded-lg border border-border">
-        <div className="p-6 border-b border-border">
+        <div className="p-4 sm:p-6 border-b border-border">
           <h3 className="text-text-primary font-medium flex items-center space-x-2">
-            <Bell className="w-5 h-5" />
+            <Bell className="w-5 h-5 flex-shrink-0" />
             <span>Notifications</span>
           </h3>
         </div>
-        <div className="p-6 space-y-4">
+        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
           {Object.entries(settings.notifications).map(([key, value]) => (
-            <div key={key} className="flex items-center justify-between">
-              <div>
-                <p className="text-text-primary font-medium capitalize">{key} Notifications</p>
-                <p className="text-text-muted text-sm">
+            <div key={key} className="flex items-start sm:items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <p className="text-text-primary font-medium capitalize text-sm sm:text-base">{key} Notifications</p>
+                <p className="text-text-muted text-xs sm:text-sm mt-1 leading-relaxed">
                   {key === 'email' && 'Receive updates via email'}
                   {key === 'push' && 'Browser push notifications'}
                   {key === 'marketing' && 'Product updates and promotions'}
                 </p>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
+              <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
                 <input
                   type="checkbox"
                   checked={value}
                   onChange={(e) => handleSettingChange('notifications', key, e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-interactive-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-brand rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand"></div>
+                <div className="w-12 h-7 bg-interactive-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-brand rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-brand touch-target"></div>
               </label>
             </div>
           ))}
@@ -213,22 +213,22 @@ export default function SettingsView() {
 
       {/* Appearance */}
       <div className="bg-bg-secondary rounded-lg border border-border">
-        <div className="p-6 border-b border-border">
+        <div className="p-4 sm:p-6 border-b border-border">
           <h3 className="text-text-primary font-medium flex items-center space-x-2">
-            <Palette className="w-5 h-5" />
+            <Palette className="w-5 h-5 flex-shrink-0" />
             <span>Appearance</span>
           </h3>
         </div>
-        <div className="p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-text-primary font-medium">Theme</p>
-              <p className="text-text-muted text-sm">Choose your preferred theme</p>
+        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+          <div className="flex items-start sm:items-center justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <p className="text-text-primary font-medium text-sm sm:text-base">Theme</p>
+              <p className="text-text-muted text-xs sm:text-sm mt-1">Choose your preferred theme</p>
             </div>
             <select
               value={settings.appearance.theme}
               onChange={(e) => handleSettingChange('appearance', 'theme', e.target.value)}
-              className="px-3 py-2 bg-bg-tertiary border border-border rounded text-text-primary"
+              className="px-3 py-2 bg-bg-tertiary border border-border rounded text-text-primary text-sm sm:text-base flex-shrink-0 touch-target"
             >
               <option value="dark">Dark</option>
               <option value="light">Light</option>
@@ -237,24 +237,24 @@ export default function SettingsView() {
           </div>
 
           {Object.entries(settings.appearance).filter(([key]) => key !== 'theme').map(([key, value]) => (
-            <div key={key} className="flex items-center justify-between">
-              <div>
-                <p className="text-text-primary font-medium capitalize">
+            <div key={key} className="flex items-start sm:items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <p className="text-text-primary font-medium capitalize text-sm sm:text-base">
                   {key.replace(/([A-Z])/g, ' $1').trim()}
                 </p>
-                <p className="text-text-muted text-sm">
+                <p className="text-text-muted text-xs sm:text-sm mt-1 leading-relaxed">
                   {key === 'compactMode' && 'Reduce spacing and padding'}
                   {key === 'animations' && 'Enable smooth transitions and animations'}
                 </p>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
+              <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
                 <input
                   type="checkbox"
                   checked={value as boolean}
                   onChange={(e) => handleSettingChange('appearance', key, e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-interactive-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-brand rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand"></div>
+                <div className="w-12 h-7 bg-interactive-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-brand rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-brand touch-target"></div>
               </label>
             </div>
           ))}
@@ -263,33 +263,33 @@ export default function SettingsView() {
 
       {/* AI Settings */}
       <div className="bg-bg-secondary rounded-lg border border-border">
-        <div className="p-6 border-b border-border">
+        <div className="p-4 sm:p-6 border-b border-border">
           <h3 className="text-text-primary font-medium flex items-center space-x-2">
-            <Database className="w-5 h-5" />
+            <Database className="w-5 h-5 flex-shrink-0" />
             <span>AI Features</span>
           </h3>
         </div>
-        <div className="p-6 space-y-4">
+        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
           {Object.entries(settings.ai).map(([key, value]) => (
-            <div key={key} className="flex items-center justify-between">
-              <div>
-                <p className="text-text-primary font-medium capitalize">
+            <div key={key} className="flex items-start sm:items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <p className="text-text-primary font-medium capitalize text-sm sm:text-base">
                   {key.replace(/([A-Z])/g, ' $1').trim()}
                 </p>
-                <p className="text-text-muted text-sm">
+                <p className="text-text-muted text-xs sm:text-sm mt-1 leading-relaxed">
                   {key === 'autoSave' && 'Automatically save your work as you type'}
                   {key === 'suggestions' && 'Show AI-powered suggestions and improvements'}
                   {key === 'qualityCheck' && 'Analyze generated content for quality and tone'}
                 </p>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
+              <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
                 <input
                   type="checkbox"
                   checked={value}
                   onChange={(e) => handleSettingChange('ai', key, e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-interactive-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-brand rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand"></div>
+                <div className="w-12 h-7 bg-interactive-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-brand rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-brand touch-target"></div>
               </label>
             </div>
           ))}
@@ -299,21 +299,21 @@ export default function SettingsView() {
   );
 
   const renderQuotasSettings = () => (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {quotas && <CreditsWidget quotas={quotas} />}
-      
+
       {/* Usage Guidelines */}
       <div className="bg-bg-secondary rounded-lg border border-border">
-        <div className="p-6 border-b border-border">
-          <h3 className="text-text-primary font-medium">Usage Guidelines</h3>
+        <div className="p-4 sm:p-6 border-b border-border">
+          <h3 className="text-text-primary font-medium text-sm sm:text-base">Usage Guidelines</h3>
         </div>
-        <div className="p-6">
-          <div className="space-y-4 text-sm text-text-secondary">
-            <p>• Template usage counts towards your daily and monthly limits</p>
-            <p>• Premium templates may consume more credits per use</p>
-            <p>• Limits reset at midnight UTC for daily quotas</p>
-            <p>• Monthly limits reset on the first day of each month</p>
-            <p>• Unused credits do not roll over to the next period</p>
+        <div className="p-4 sm:p-6">
+          <div className="space-y-3 sm:space-y-4 text-xs sm:text-sm text-text-secondary">
+            <p className="leading-relaxed">• Template usage counts towards your daily and monthly limits</p>
+            <p className="leading-relaxed">• Premium templates may consume more credits per use</p>
+            <p className="leading-relaxed">• Limits reset at midnight UTC for daily quotas</p>
+            <p className="leading-relaxed">• Monthly limits reset on the first day of each month</p>
+            <p className="leading-relaxed">• Unused credits do not roll over to the next period</p>
           </div>
         </div>
       </div>
@@ -321,36 +321,36 @@ export default function SettingsView() {
   );
 
   const renderPrivacySettings = () => (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Privacy Controls */}
       <div className="bg-bg-secondary rounded-lg border border-border">
-        <div className="p-6 border-b border-border">
+        <div className="p-4 sm:p-6 border-b border-border">
           <h3 className="text-text-primary font-medium flex items-center space-x-2">
-            <Shield className="w-5 h-5" />
+            <Shield className="w-5 h-5 flex-shrink-0" />
             <span>Privacy Controls</span>
           </h3>
         </div>
-        <div className="p-6 space-y-4">
+        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
           {Object.entries(settings.privacy).map(([key, value]) => (
-            <div key={key} className="flex items-center justify-between">
-              <div>
-                <p className="text-text-primary font-medium capitalize">
+            <div key={key} className="flex items-start sm:items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <p className="text-text-primary font-medium capitalize text-sm sm:text-base">
                   {key.replace(/([A-Z])/g, ' $1').trim()}
                 </p>
-                <p className="text-text-muted text-sm">
+                <p className="text-text-muted text-xs sm:text-sm mt-1 leading-relaxed">
                   {key === 'analytics' && 'Help improve the service by sharing usage analytics'}
                   {key === 'cookies' && 'Allow cookies for enhanced functionality'}
                   {key === 'dataSharing' && 'Share anonymized data with research partners'}
                 </p>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
+              <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
                 <input
                   type="checkbox"
                   checked={value}
                   onChange={(e) => handleSettingChange('privacy', key, e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-interactive-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-brand rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand"></div>
+                <div className="w-12 h-7 bg-interactive-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-brand rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-brand touch-target"></div>
               </label>
             </div>
           ))}
@@ -360,25 +360,25 @@ export default function SettingsView() {
   );
 
   const renderAdvancedSettings = () => (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* API Configuration */}
       <div className="bg-bg-secondary rounded-lg border border-border">
-        <div className="p-6 border-b border-border">
+        <div className="p-4 sm:p-6 border-b border-border">
           <h3 className="text-text-primary font-medium flex items-center space-x-2">
-            <Key className="w-5 h-5" />
+            <Key className="w-5 h-5 flex-shrink-0" />
             <span>API Configuration</span>
           </h3>
         </div>
-        <div className="p-6 space-y-4">
+        <div className="p-4 sm:p-6 space-y-4">
           <div>
-            <label className="block text-text-primary font-medium mb-2">API Base URL</label>
+            <label className="block text-text-primary font-medium mb-2 text-sm sm:text-base">API Base URL</label>
             <input
               type="text"
               value={process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8000'}
               readOnly
-              className="w-full p-3 bg-bg-tertiary border border-border rounded text-text-muted"
+              className="w-full p-3 bg-bg-tertiary border border-border rounded text-text-muted text-sm sm:text-base"
             />
-            <p className="text-text-muted text-sm mt-1">
+            <p className="text-text-muted text-xs sm:text-sm mt-1">
               This is configured via environment variables
             </p>
           </div>
@@ -387,32 +387,32 @@ export default function SettingsView() {
 
       {/* Data Management */}
       <div className="bg-bg-secondary rounded-lg border border-border">
-        <div className="p-6 border-b border-border">
-          <h3 className="text-text-primary font-medium">Data Management</h3>
+        <div className="p-4 sm:p-6 border-b border-border">
+          <h3 className="text-text-primary font-medium text-sm sm:text-base">Data Management</h3>
         </div>
-        <div className="p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-text-primary font-medium">Export Data</p>
-              <p className="text-text-muted text-sm">Download all your data in JSON format</p>
+        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <p className="text-text-primary font-medium text-sm sm:text-base">Export Data</p>
+              <p className="text-text-muted text-xs sm:text-sm mt-1 leading-relaxed">Download all your data in JSON format</p>
             </div>
             <button
               onClick={exportData}
-              className="px-4 py-2 bg-brand hover:bg-brand-hover text-white rounded-lg transition-colors flex items-center space-x-2"
+              className="px-4 py-3 bg-brand hover:bg-brand-hover text-white rounded-lg transition-colors flex items-center justify-center space-x-2 touch-target text-sm sm:text-base w-full sm:w-auto flex-shrink-0"
             >
               <Download className="w-4 h-4" />
               <span>Export</span>
             </button>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-text-primary font-medium text-red">Delete All Data</p>
-              <p className="text-text-muted text-sm">Permanently delete all your data and settings</p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <p className="text-text-primary font-medium text-red text-sm sm:text-base">Delete All Data</p>
+              <p className="text-text-muted text-xs sm:text-sm mt-1 leading-relaxed">Permanently delete all your data and settings</p>
             </div>
             <button
               onClick={deleteAllData}
-              className="px-4 py-2 bg-red hover:bg-red/80 text-white rounded-lg transition-colors flex items-center space-x-2"
+              className="px-4 py-3 bg-red hover:bg-red/80 text-white rounded-lg transition-colors flex items-center justify-center space-x-2 touch-target text-sm sm:text-base w-full sm:w-auto flex-shrink-0"
             >
               <Trash2 className="w-4 h-4" />
               <span>Delete</span>
@@ -423,12 +423,12 @@ export default function SettingsView() {
 
       {/* Danger Zone */}
       <div className="bg-red/5 border border-red/20 rounded-lg">
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           <div className="flex items-start space-x-3">
-            <AlertTriangle className="w-5 h-5 text-red mt-0.5" />
-            <div>
-              <h3 className="text-red font-medium">Danger Zone</h3>
-              <p className="text-text-muted text-sm mt-1">
+            <AlertTriangle className="w-5 h-5 text-red mt-0.5 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <h3 className="text-red font-medium text-sm sm:text-base">Danger Zone</h3>
+              <p className="text-text-muted text-xs sm:text-sm mt-1 leading-relaxed">
                 Actions in this section are irreversible. Please proceed with caution.
               </p>
             </div>
@@ -439,34 +439,34 @@ export default function SettingsView() {
   );
 
   return (
-    <div className="flex-1 bg-bg-primary min-h-screen">
+    <div className="flex-1 bg-bg-primary min-h-screen min-h-[100dvh]">
       {/* Header */}
-      <div className="h-12 bg-bg-primary border-b border-border px-4 flex items-center justify-between z-50 relative">
+      <div className="h-14 sm:h-12 bg-bg-primary border-b border-border px-3 sm:px-4 flex items-center justify-between z-50 relative">
         <div className="flex items-center space-x-2">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="md:hidden p-1 text-interactive-muted hover:text-text-primary"
+            className="md:hidden p-2 text-interactive-muted hover:text-text-primary touch-target"
           >
             <Menu className="w-5 h-5" />
           </button>
           <Settings className="w-5 h-5 text-interactive-muted" />
-          <h1 className="text-text-primary font-semibold">Settings</h1>
+          <h1 className="text-text-primary font-semibold text-base sm:text-lg">Settings</h1>
         </div>
-        
+
         <button
           onClick={saveSettings}
           disabled={saving}
-          className="px-4 py-2 bg-brand hover:bg-brand-hover text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+          className="px-3 sm:px-4 py-2 bg-brand hover:bg-brand-hover text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 touch-target text-sm sm:text-base"
         >
           {saving ? (
             <>
               <RefreshCw className="w-4 h-4 animate-spin" />
-              <span>Saving...</span>
+              <span className="hidden sm:inline">Saving...</span>
             </>
           ) : (
             <>
               <Save className="w-4 h-4" />
-              <span>Save Changes</span>
+              <span className="hidden sm:inline">Save Changes</span>
             </>
           )}
         </button>
@@ -483,18 +483,18 @@ export default function SettingsView() {
 
         {/* Sidebar */}
         <div className={`
-          w-64 bg-bg-secondary border-r border-border
+          w-72 sm:w-64 bg-bg-secondary border-r border-border
           md:relative md:translate-x-0
           fixed inset-y-0 left-0 z-50 transition-transform duration-200
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
           md:block
         `}>
-          <div className="p-4">
+          <div className="p-3 sm:p-4 pt-safe-top">
             <div className="flex items-center justify-between mb-4 md:hidden">
-              <h2 className="text-text-primary font-semibold">Settings</h2>
+              <h2 className="text-text-primary font-semibold text-lg">Settings</h2>
               <button
                 onClick={() => setSidebarOpen(false)}
-                className="p-1 text-interactive-muted hover:text-text-primary"
+                className="p-2 text-interactive-muted hover:text-text-primary touch-target"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -514,14 +514,14 @@ export default function SettingsView() {
                       setActiveTab(item.id as any);
                       setSidebarOpen(false);
                     }}
-                    className={`w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-left transition-colors min-h-[44px] ${
+                    className={`w-full flex items-center space-x-3 px-4 py-4 rounded-lg text-left transition-colors min-h-[48px] touch-target ${
                       activeTab === item.id
                         ? 'bg-brand/10 text-brand'
                         : 'text-text-secondary hover:text-text-primary hover:bg-interactive-hover/10'
                     }`}
                   >
-                    <Icon className="w-4 h-4" />
-                    <span>{item.label}</span>
+                    <Icon className="w-5 h-5 flex-shrink-0" />
+                    <span className="text-base">{item.label}</span>
                   </button>
                 );
               })}
@@ -530,12 +530,12 @@ export default function SettingsView() {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 max-w-full">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 max-w-full pb-safe-bottom pt-20 sm:pt-16 overflow-x-hidden">
           <div className="max-w-4xl mx-auto">
             {loading ? (
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className="h-32 bg-interactive-muted rounded-lg animate-pulse" />
+                  <div key={i} className="h-24 sm:h-32 bg-interactive-muted rounded-lg animate-pulse" />
                 ))}
               </div>
             ) : (

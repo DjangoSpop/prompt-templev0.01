@@ -430,7 +430,7 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({ isOpen, onClose, onCompl
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: -20 }}
-            className="bg-white dark:bg-gray-900 rounded-2xl p-4 sm:p-6 max-w-sm sm:max-w-md w-full max-h-[80vh] overflow-y-auto pointer-events-auto shadow-2xl"
+            className="bg-white dark:bg-gray-900 rounded-2xl flex flex-col p-4 sm:p-6 max-w-sm sm:max-w-md w-full max-h-[80vh] pointer-events-auto shadow-2xl"
             style={{
               ...(currentTourStep.position === 'center' && {
                 position: 'relative',
@@ -495,7 +495,7 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({ isOpen, onClose, onCompl
             </div>
 
             {/* Content */}
-            <div className="mb-6">
+            <div className="flex-1 overflow-y-auto mb-6">
               {currentTourStep.content}
             </div>
 
@@ -524,7 +524,7 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({ isOpen, onClose, onCompl
             )}
 
             {/* Navigation - Optimized for mobile */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-0">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-0 pt-4 border-t border-gray-200 dark:border-gray-700">
               <Button
                 onClick={handlePrev}
                 variant="outline"

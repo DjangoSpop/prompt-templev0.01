@@ -235,7 +235,7 @@ export default function LoginPage() {
                     required
                     value={formData.username}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-3 py-3 bg-white/90 dark:bg-gray-900/90 border-2 border-pharaoh-gold/50 rounded-temple text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-pharaoh-gold/40 focus:border-pharaoh-gold transition-all duration-300"
+                    className="w-full pl-10 pr-3 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-temple text-slate-900 dark:text-slate-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
                     placeholder="Enter your username or email"
                     aria-invalid={error ? 'true' : 'false'}
                     aria-describedby={error ? 'username-error' : 'username-help'}
@@ -263,7 +263,7 @@ export default function LoginPage() {
                     required
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-10 py-3 bg-white/90 dark:bg-gray-900/90 border-2 border-pharaoh-gold/50 rounded-temple text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-pharaoh-gold/40 focus:border-pharaoh-gold transition-all duration-300"
+                    className="w-full pl-10 pr-10 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-temple text-slate-900 dark:text-slate-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
                     placeholder="Enter your password"
                     aria-invalid={error ? 'true' : 'false'}
                     aria-describedby={error ? 'password-error' : 'password-help'}
