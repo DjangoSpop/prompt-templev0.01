@@ -260,7 +260,7 @@ export default function TemplateDetailView({ templateId }: TemplateDetailViewPro
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
+    <div className="w-full max-w-6xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6 min-h-0 overflow-hidden">
       {error && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
@@ -359,7 +359,7 @@ export default function TemplateDetailView({ templateId }: TemplateDetailViewPro
         </Card>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         {/* Variables Section */}
         <Card>
           <CardHeader className="pb-3">

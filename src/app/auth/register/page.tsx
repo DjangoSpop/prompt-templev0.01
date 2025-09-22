@@ -91,7 +91,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-bg-tertiary flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-desert-sand/30 via-background to-nile-teal/20 flex items-center justify-center px-4 py-8">
       <NefertitiIcon/>
       <NefertitiBackground/>
       <div className="w-full max-w-md space-y-8">
@@ -115,15 +115,16 @@ export default function RegisterPage() {
           </CardHeader>
           <CardContent>
             {error && (
-              <div className="flex items-center space-x-2 p-3 bg-red/10 border border-red/20 rounded-md mb-4">
-                <AlertCircle className="h-4 w-4 text-red flex-shrink-0" />
-                <span className="text-red text-sm">{error}</span>
+              <div id="register-error" role="alert" className="flex items-center space-x-2 p-3 bg-red-50 dark:bg-red-900/20 border-2 border-red-300 dark:border-red-700/50 rounded-md mb-4">
+                <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 flex-shrink-0" />
+                <span className="text-red-800 dark:text-red-200 text-sm font-medium">{error}</span>
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-text-secondary">Username</label>
+                <label className="block text-sm font-medium text-gray-900 dark:text-gray-100">Username</label>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Min. 4 characters, letters & numbers only</p>
                 <div className="relative mt-1">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <User className="h-4 w-4 text-text-muted" />

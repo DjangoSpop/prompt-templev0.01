@@ -422,41 +422,42 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({ isOpen, onClose, onCompl
           />
         )}
 
-        {/* Tour content */}
-        <div className="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
+        {/* Tour content - Fixed positioning for mobile */}
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 pb-[env(safe-area-inset-bottom)] pointer-events-none">
           <motion.div
             ref={overlayRef}
             key={currentStep}
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: -20 }}
-            className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-md w-full pointer-events-auto shadow-2xl"
+            className="bg-white dark:bg-gray-900 rounded-2xl p-4 sm:p-6 max-w-sm sm:max-w-md w-full max-h-[80vh] overflow-y-auto pointer-events-auto shadow-2xl"
             style={{
-              position: 'fixed',
               ...(currentTourStep.position === 'center' && {
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
+                position: 'relative',
               }),
-              ...(currentTourStep.position === 'top' && highlightedElement && {
-                top: highlightedElement.getBoundingClientRect().top - 350,
-                left: highlightedElement.getBoundingClientRect().left + highlightedElement.getBoundingClientRect().width / 2,
-                transform: 'translateX(-50%)',
+              ...(currentTourStep.position === 'top' && highlightedElement && window.innerWidth >= 640 && {
+                position: 'fixed',
+                top: Math.max(20, highlightedElement.getBoundingClientRect().top - 350),
+                left: Math.min(Math.max(20, highlightedElement.getBoundingClientRect().left + highlightedElement.getBoundingClientRect().width / 2 - 150), window.innerWidth - 320),
+                transform: 'none',
               }),
-              ...(currentTourStep.position === 'bottom' && highlightedElement && {
-                top: highlightedElement.getBoundingClientRect().bottom + 20,
-                left: highlightedElement.getBoundingClientRect().left + highlightedElement.getBoundingClientRect().width / 2,
-                transform: 'translateX(-50%)',
+              ...(currentTourStep.position === 'bottom' && highlightedElement && window.innerWidth >= 640 && {
+                position: 'fixed',
+                top: Math.min(highlightedElement.getBoundingClientRect().bottom + 20, window.innerHeight - 400),
+                left: Math.min(Math.max(20, highlightedElement.getBoundingClientRect().left + highlightedElement.getBoundingClientRect().width / 2 - 150), window.innerWidth - 320),
+                transform: 'none',
               }),
-              ...(currentTourStep.position === 'left' && highlightedElement && {
-                top: highlightedElement.getBoundingClientRect().top + highlightedElement.getBoundingClientRect().height / 2,
-                left: highlightedElement.getBoundingClientRect().left - 350,
-                transform: 'translateY(-50%)',
+              ...(currentTourStep.position === 'left' && highlightedElement && window.innerWidth >= 640 && {
+                position: 'fixed',
+                top: Math.min(Math.max(20, highlightedElement.getBoundingClientRect().top + highlightedElement.getBoundingClientRect().height / 2 - 200), window.innerHeight - 400),
+                left: Math.max(20, highlightedElement.getBoundingClientRect().left - 350),
+                transform: 'none',
               }),
-              ...(currentTourStep.position === 'right' && highlightedElement && {
-                top: highlightedElement.getBoundingClientRect().top + highlightedElement.getBoundingClientRect().height / 2,
-                left: highlightedElement.getBoundingClientRect().right + 20,
-                transform: 'translateY(-50%)',
+              ...(currentTourStep.position === 'right' && highlightedElement && window.innerWidth >= 640 && {
+                position: 'fixed',
+                top: Math.min(Math.max(20, highlightedElement.getBoundingClientRect().top + highlightedElement.getBoundingClientRect().height / 2 - 200), window.innerHeight - 400),
+                left: Math.min(highlightedElement.getBoundingClientRect().right + 20, window.innerWidth - 320),
+                transform: 'none',
               }),
             }}
           >
@@ -522,24 +523,25 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({ isOpen, onClose, onCompl
               </div>
             )}
 
-            {/* Navigation */}
-            <div className="flex items-center justify-between">
+            {/* Navigation - Optimized for mobile */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-0">
               <Button
                 onClick={handlePrev}
                 variant="outline"
                 size="sm"
                 disabled={currentStep === 0}
+                className="order-2 sm:order-1"
               >
                 <ChevronLeft className="h-4 w-4 mr-1" />
                 Previous
               </Button>
-              
-              <div className="flex items-center gap-2">
-                <Button onClick={handleSkip} variant="ghost" size="sm">
+
+              <div className="flex items-center gap-2 order-1 sm:order-2">
+                <Button onClick={handleSkip} variant="ghost" size="sm" className="flex-1 sm:flex-none">
                   <SkipForward className="h-4 w-4 mr-1" />
-                  Skip Tour
+                  Skip
                 </Button>
-                <Button onClick={handleNext} size="sm">
+                <Button onClick={handleNext} size="sm" className="flex-1 sm:flex-none">
                   {currentStep === tourSteps.length - 1 ? 'Complete' : 'Next'}
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>

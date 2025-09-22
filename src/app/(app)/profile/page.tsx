@@ -356,11 +356,11 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="temple-background min-h-screen p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <div className="temple-background min-h-screen p-4 md:p-6">
+      <div className="max-w-6xl mx-auto space-y-4 md:space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-fg flex items-center justify-center gap-3">
+          <h1 className="text-2xl md:text-3xl font-bold text-fg flex flex-col sm:flex-row items-center justify-center gap-2 md:gap-3">
             <User className="h-8 w-8 text-accent" />
             Profile Settings
           </h1>

@@ -118,7 +118,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-desert-sand/30 via-background to-nile-teal/20 flex items-center justify-center px-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-desert-sand/30 via-background to-nile-teal/20 flex items-center justify-center px-4 py-8 relative overflow-hidden">
       {/* Animated Background */}
       <div className="absolute inset-0">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-pharaoh-gold/20 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
@@ -209,17 +209,20 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Error Message */}
               {error && (
-                <div className="flex items-center space-x-2 p-4 bg-red-50/80 border border-red-300/50 rounded-temple backdrop-blur-sm">
-                  <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
-                  <span className="text-red-700 text-sm font-medium">{error}</span>
+                <div id="login-error" role="alert" className="flex items-center space-x-2 p-4 bg-red-50 dark:bg-red-900/20 border-2 border-red-300 dark:border-red-700/50 rounded-temple backdrop-blur-sm">
+                  <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0" />
+                  <span className="text-red-800 dark:text-red-200 text-sm font-medium">{error}</span>
                 </div>
               )}
 
               {/* Username/Email Field */}
               <div className="space-y-2">
-                <label htmlFor="username" className="block text-sm font-semibold text-foreground">
+                <label htmlFor="username" className="block text-sm font-semibold text-gray-900 dark:text-gray-100">
                   Sacred Identifier
                 </label>
+                <p id="username-help" className="text-xs text-gray-600 dark:text-gray-400">
+                  Min. 4 characters, letters & numbers only
+                </p>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Mail className="h-4 w-4 text-temple-stone" />
@@ -232,17 +235,22 @@ export default function LoginPage() {
                     required
                     value={formData.username}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-3 py-3 bg-desert-sand/20 border border-pharaoh-gold/30 rounded-temple text-foreground placeholder-temple-stone focus:outline-none focus:ring-2 focus:ring-pharaoh-gold focus:border-pharaoh-gold transition-all duration-300"
+                    className="w-full pl-10 pr-3 py-3 bg-white/90 dark:bg-gray-900/90 border-2 border-pharaoh-gold/50 rounded-temple text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-pharaoh-gold/40 focus:border-pharaoh-gold transition-all duration-300"
                     placeholder="Enter your username or email"
+                    aria-invalid={error ? 'true' : 'false'}
+                    aria-describedby={error ? 'username-error' : 'username-help'}
                   />
                 </div>
               </div>
 
               {/* Password Field */}
               <div className="space-y-2">
-                <label htmlFor="password" className="block text-sm font-semibold text-foreground">
+                <label htmlFor="password" className="block text-sm font-semibold text-gray-900 dark:text-gray-100">
                   Sacred Passphrase
                 </label>
+                <p id="password-help" className="text-xs text-gray-600 dark:text-gray-400">
+                  Min. 8 characters, 1 uppercase, 1 number
+                </p>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Lock className="h-4 w-4 text-temple-stone" />
@@ -255,8 +263,10 @@ export default function LoginPage() {
                     required
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-10 py-3 bg-desert-sand/20 border border-pharaoh-gold/30 rounded-temple text-foreground placeholder-temple-stone focus:outline-none focus:ring-2 focus:ring-pharaoh-gold focus:border-pharaoh-gold transition-all duration-300"
+                    className="w-full pl-10 pr-10 py-3 bg-white/90 dark:bg-gray-900/90 border-2 border-pharaoh-gold/50 rounded-temple text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-pharaoh-gold/40 focus:border-pharaoh-gold transition-all duration-300"
                     placeholder="Enter your password"
+                    aria-invalid={error ? 'true' : 'false'}
+                    aria-describedby={error ? 'password-error' : 'password-help'}
                   />
                   <button
                     type="button"

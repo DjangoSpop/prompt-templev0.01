@@ -73,18 +73,18 @@ export default function DashboardPage() {
           </RevealOnScroll>
 
           <RevealOnScroll direction="scale" duration={1.5} delay={0.6}>
-            <div className="flex justify-center space-x-4 mb-12">
+            <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-8 md:mb-12">
               <div className="parallax-element">
                 <PyramidGrid/>
               </div>
-              <Link href="/auth/login">
-                <Button size="lg" className="flex items-center space-x-2 hover:scale-105 transition-transform duration-300">
+              <Link href="/auth/login" className="w-full sm:w-auto">
+                <Button size="lg" className="w-full sm:w-auto flex items-center justify-center space-x-2 hover:scale-105 transition-transform duration-300">
                   <Play className="h-5 w-5" />
                   <span>Get Started</span>
                 </Button>
               </Link>
-              <Link href="/templates">
-                <Button size="lg" variant="outline" className="flex items-center space-x-2 hover:scale-105 transition-transform duration-300">
+              <Link href="/templates" className="w-full sm:w-auto">
+                <Button size="lg" variant="outline" className="w-full sm:w-auto flex items-center justify-center space-x-2 hover:scale-105 transition-transform duration-300">
                   <BookOpen className="h-5 w-5" />
                   <span>Browse Templates</span>
                 </Button>
@@ -106,7 +106,7 @@ export default function DashboardPage() {
         {/* Feature Cards Section */}
         <div className="scrollify-section container mx-auto px-4 py-16">
           <RevealOnScroll direction="up" duration={1}>
-            <div className="grid md:grid-cols-3 gap-8 mb-16">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 mb-8 md:mb-16">
               <Card className="temple-card p-6 text-center pyramid-elevation scale-element hover:scale-105 transition-transform duration-300">
                 <div className="w-12 h-12 bg-oasis/20 rounded-lg flex items-center justify-center mx-auto mb-4 stagger-element">
                   <BookOpen className="h-6 w-6 text-oasis" />
@@ -147,15 +147,15 @@ export default function DashboardPage() {
   return (
     <ScrollifyContainer className="min-h-screen temple-background">
       <FloatingParticles count={20} />
-      <div className="container mx-auto px-4 py-8 relative z-10">
+      <div className="container mx-auto px-4 py-4 md:py-8 relative z-10">
       {/* Welcome Header */}
       <div className="scrollify-section mb-8">
         <RevealOnScroll direction="up" duration={1}>
-          <div className="flex items-center space-x-3 mb-2 stagger-element">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-4 stagger-element">
             <div className="w-12 h-12 pharaoh-badge rounded-full flex items-center justify-center">
               <Crown className="h-6 w-6 text-white" />
             </div>
-            <h1 className="text-4xl font-bold text-hieroglyph text-glow-lg">
+            <h1 className="text-2xl md:text-4xl font-bold text-hieroglyph text-glow-lg">
               Welcome back to the Temple, {user?.first_name || user?.username}!
             </h1>
           </div>
@@ -169,7 +169,7 @@ export default function DashboardPage() {
       {dashboardData && (
         <div className="scrollify-section">
           <RevealOnScroll direction="scale" duration={1.2} stagger={0.2}>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
           <Card className="temple-card p-6 text-center pyramid-elevation pharaoh-glow">
             <div className="w-12 h-12 bg-oasis rounded-full flex items-center justify-center mx-auto mb-3">
               <BookOpen className="h-6 w-6 text-white" />
@@ -224,32 +224,32 @@ export default function DashboardPage() {
           </div>
           <h2 className="text-2xl font-bold text-hieroglyph text-glow">Enter the Sacred Chambers</h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <Link href="/templates" className="group">
-            <Button variant="outline" className="w-full h-16 flex flex-col items-center justify-center space-y-2 border-2 hover:border-oasis hover:bg-oasis/10 transition-all duration-300 group-hover:scale-105">
+            <Button variant="outline" className="w-full h-14 md:h-16 flex flex-col items-center justify-center space-y-1 md:space-y-2 border-2 hover:border-oasis hover:bg-oasis/10 transition-all duration-300 group-hover:scale-105">
               <BookOpen className="h-5 w-5 text-oasis" />
-              <span className="text-sm font-medium">The Archive</span>
+              <span className="text-xs md:text-sm font-medium">The Archive</span>
             </Button>
           </Link>
           
           <Link href="/templates/create" className="group">
-            <Button variant="outline" className="w-full h-16 flex flex-col items-center justify-center space-y-2 border-2 hover:border-primary hover:bg-primary/10 transition-all duration-300 group-hover:scale-105">
+            <Button variant="outline" className="w-full h-14 md:h-16 flex flex-col items-center justify-center space-y-1 md:space-y-2 border-2 hover:border-primary hover:bg-primary/10 transition-all duration-300 group-hover:scale-105">
               <Zap className="h-5 w-5 text-primary" />
-              <span className="text-sm font-medium">The Forge</span>
+              <span className="text-xs md:text-sm font-medium">The Forge</span>
             </Button>
           </Link>
           
           <Link href="/history" className="group">
-            <Button variant="outline" className="w-full h-16 flex flex-col items-center justify-center space-y-2 border-2 hover:border-pharaoh hover:bg-pharaoh/10 transition-all duration-300 group-hover:scale-105">
+            <Button variant="outline" className="w-full h-14 md:h-16 flex flex-col items-center justify-center space-y-1 md:space-y-2 border-2 hover:border-pharaoh hover:bg-pharaoh/10 transition-all duration-300 group-hover:scale-105">
               <TrendingUp className="h-5 w-5 text-pharaoh" />
-              <span className="text-sm font-medium">The Chronicle</span>
+              <span className="text-xs md:text-sm font-medium">The Chronicle</span>
             </Button>
           </Link>
           
           <Link href="/analysis" className="group">
-            <Button variant="outline" className="w-full h-16 flex flex-col items-center justify-center space-y-2 border-2 hover:border-destructive hover:bg-destructive/10 transition-all duration-300 group-hover:scale-105">
+            <Button variant="outline" className="w-full h-14 md:h-16 flex flex-col items-center justify-center space-y-1 md:space-y-2 border-2 hover:border-destructive hover:bg-destructive/10 transition-all duration-300 group-hover:scale-105">
               <BarChart3 className="h-5 w-5 text-destructive" />
-              <span className="text-sm font-medium">The Observatory</span>
+              <span className="text-xs md:text-sm font-medium">The Observatory</span>
             </Button>
           </Link>
         </div>
@@ -258,7 +258,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="scrollify-section">
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
         {/* Sacred Journey Log */}
         <div className="lg:col-span-2">
           <RevealOnScroll direction="left" duration={1}>

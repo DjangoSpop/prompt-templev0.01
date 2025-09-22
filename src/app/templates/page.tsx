@@ -508,10 +508,10 @@ export default function TemplatesPage() {
       </div>
       <NefertitiBackground opacity={0.03} />
       
-      <div className="relative z-10 container mx-auto px-6 py-8">
+      <div className="relative z-10 container mx-auto px-4 py-4 md:px-6 md:py-8">
         {/* Enhanced Header Section */}
         <motion.div 
-          className="text-center mb-12"
+          className="text-center mb-8 md:mb-12"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -525,10 +525,10 @@ export default function TemplatesPage() {
               <BookOpen className="h-8 w-8 text-white" />
             </motion.div>
             <div>
-              <h1 className="text-5xl font-display font-bold bg-gradient-to-r from-lapis-blue via-pharaoh-gold to-nile-teal bg-clip-text text-transparent">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold bg-gradient-to-r from-lapis-blue via-pharaoh-gold to-nile-teal bg-clip-text text-transparent text-center sm:text-left">
                 The Sacred Archive
               </h1>
-              <p className="text-xl text-muted-foreground mt-2">
+              <p className="text-lg md:text-xl text-muted-foreground mt-2 text-center sm:text-left">
                 Ancient wisdom meets modern AI • {templates.length.toLocaleString()} sacred scrolls
               </p>
             </div>
