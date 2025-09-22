@@ -260,7 +260,7 @@ export default function TemplateDetailView({ templateId }: TemplateDetailViewPro
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6 min-h-0 overflow-hidden">
+    <div className="w-full max-w-6xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6 pb-[max(16px,env(safe-area-inset-bottom))]">
       {error && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
@@ -285,7 +285,7 @@ export default function TemplateDetailView({ templateId }: TemplateDetailViewPro
               <CardTitle className="text-2xl font-bold mb-2">{template.title}</CardTitle>
               <p className="text-muted-foreground mb-4">{template.description}</p>
               
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-2 md:gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <User className="h-4 w-4" />
                   <span>{template.author?.username || 'Unknown'}</span>
@@ -301,7 +301,7 @@ export default function TemplateDetailView({ templateId }: TemplateDetailViewPro
               </div>
             </div>
             
-            <div className="flex flex-col items-end gap-2">
+            <div className="flex flex-col items-end gap-2 min-w-0">
               <div className="flex items-center gap-1">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <Star
@@ -319,7 +319,7 @@ export default function TemplateDetailView({ templateId }: TemplateDetailViewPro
                 </span>
               </div>
               
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button variant="outline" size="sm" onClick={exportAsJson}>
                   <FileJson className="h-4 w-4 mr-1" />
                   Export JSON
@@ -359,7 +359,7 @@ export default function TemplateDetailView({ templateId }: TemplateDetailViewPro
         </Card>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         {/* Variables Section */}
         <Card>
           <CardHeader className="pb-3">
@@ -433,14 +433,14 @@ export default function TemplateDetailView({ templateId }: TemplateDetailViewPro
             <CardTitle className="text-lg">Rendered Preview</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="bg-gray-50 border rounded-md p-4 min-h-[200px] font-mono text-sm whitespace-pre-wrap">
+            <div className="bg-gray-50 dark:bg-slate-800 dark:text-slate-50 border rounded-md p-4 min-h-[200px] max-h-[400px] overflow-y-auto font-mono text-sm whitespace-pre-wrap">
               {renderedPrompt || 'Enter variables to see the rendered prompt...'}
             </div>
-            <div className="flex gap-2 mt-4">
-              <Button 
-                onClick={handleUseTemplate} 
+            <div className="flex flex-col sm:flex-row gap-2 mt-4">
+              <Button
+                onClick={handleUseTemplate}
                 disabled={isUsing || !renderedPrompt}
-                className="flex-1"
+                className="flex-1 min-h-[44px] px-4 py-3"
               >
                 {isUsing ? (
                   <>
@@ -454,10 +454,11 @@ export default function TemplateDetailView({ templateId }: TemplateDetailViewPro
                   </>
                 )}
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => copyToClipboard(renderedPrompt, 'rendered prompt')}
                 disabled={!renderedPrompt}
+                className="min-h-[44px] min-w-[44px] px-4 py-3"
               >
                 <Copy className="h-4 w-4" />
               </Button>
@@ -472,7 +473,7 @@ export default function TemplateDetailView({ templateId }: TemplateDetailViewPro
           <CardTitle className="text-lg">Template Content</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="bg-gray-50 border rounded-md p-4 font-mono text-sm whitespace-pre-wrap">
+          <div className="bg-gray-50 dark:bg-slate-800 dark:text-slate-50 border rounded-md p-4 max-h-[300px] overflow-y-auto font-mono text-sm whitespace-pre-wrap">
             {template.template_content}
           </div>
           <div className="flex gap-2 mt-4">
@@ -497,7 +498,7 @@ export default function TemplateDetailView({ templateId }: TemplateDetailViewPro
       {(template.category || template.tags) && (
         <Card>
           <CardContent className="pt-6">
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-2 md:gap-4">
               {template.category && (
                 <div>
                   <span className="text-sm font-medium text-muted-foreground">Category: </span>
@@ -509,7 +510,7 @@ export default function TemplateDetailView({ templateId }: TemplateDetailViewPro
               {template.tags && Array.isArray(template.tags) && template.tags.length > 0 && (
                 <div>
                   <span className="text-sm font-medium text-muted-foreground">Tags: </span>
-                  <div className="inline-flex flex-wrap gap-1">
+                  <div className="inline-flex flex-wrap gap-1 max-w-full">
                     {template.tags.map((tag: string, index: number) => (
                       <span 
                         key={index}

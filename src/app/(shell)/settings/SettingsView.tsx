@@ -1,19 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { 
-  Settings, 
-  CreditCard, 
-  Shield, 
-  Bell, 
-  Palette, 
+import {
+  Settings,
+  CreditCard,
+  Shield,
+  Bell,
+  Palette,
   Database,
   Key,
   Download,
   Trash2,
   Save,
   RefreshCw,
-  AlertTriangle
+  AlertTriangle,
+  Menu,
+  X
 } from 'lucide-react';
 import CreditsWidget from '@/components/CreditsWidget';
 import type { Quota } from '@/lib/types';
@@ -69,6 +71,7 @@ export default function SettingsView() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'general' | 'quotas' | 'privacy' | 'advanced'>('general');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     console.log('Settings page viewed');
@@ -436,10 +439,16 @@ export default function SettingsView() {
   );
 
   return (
-    <div className="flex-1 bg-bg-primary">
+    <div className="flex-1 bg-bg-primary min-h-screen">
       {/* Header */}
-      <div className="h-12 bg-bg-primary border-b border-border px-4 flex items-center justify-between">
+      <div className="h-12 bg-bg-primary border-b border-border px-4 flex items-center justify-between z-50 relative">
         <div className="flex items-center space-x-2">
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="md:hidden p-1 text-interactive-muted hover:text-text-primary"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
           <Settings className="w-5 h-5 text-interactive-muted" />
           <h1 className="text-text-primary font-semibold">Settings</h1>
         </div>
@@ -463,10 +472,33 @@ export default function SettingsView() {
         </button>
       </div>
 
-      <div className="flex-1 flex">
+      <div className="flex-1 flex relative">
+        {/* Mobile Sidebar Overlay */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/50 z-40 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
         {/* Sidebar */}
-        <div className="w-64 bg-bg-secondary border-r border-border">
+        <div className={`
+          w-64 bg-bg-secondary border-r border-border
+          md:relative md:translate-x-0
+          fixed inset-y-0 left-0 z-50 transition-transform duration-200
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+          md:block
+        `}>
           <div className="p-4">
+            <div className="flex items-center justify-between mb-4 md:hidden">
+              <h2 className="text-text-primary font-semibold">Settings</h2>
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="p-1 text-interactive-muted hover:text-text-primary"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
             <nav className="space-y-1">
               {[
                 { id: 'general', label: 'General', icon: Settings },
@@ -478,8 +510,11 @@ export default function SettingsView() {
                 return (
                   <button
                     key={item.id}
-                    onClick={() => setActiveTab(item.id as any)}
-                    className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                    onClick={() => {
+                      setActiveTab(item.id as any);
+                      setSidebarOpen(false);
+                    }}
+                    className={`w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-left transition-colors min-h-[44px] ${
                       activeTab === item.id
                         ? 'bg-brand/10 text-brand'
                         : 'text-text-secondary hover:text-text-primary hover:bg-interactive-hover/10'
@@ -495,8 +530,8 @@ export default function SettingsView() {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
-          <div className="max-w-4xl">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 max-w-full">
+          <div className="max-w-4xl mx-auto">
             {loading ? (
               <div className="space-y-6">
                 {[...Array(3)].map((_, i) => (

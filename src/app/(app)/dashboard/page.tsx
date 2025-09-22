@@ -108,7 +108,7 @@ export default function TempleDashboard() {
   };
 
   return (
-    <div className="min-h-screen game-background p-6 space-y-6">
+    <div className="min-h-screen game-background p-4 md:p-6 space-y-4 md:space-y-6 pb-[max(16px,env(safe-area-inset-bottom))]">
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -208,7 +208,7 @@ export default function TempleDashboard() {
         </motion.div>
 
         {/* Temple Statistics */}
-        <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           {[
             {
               title: "Templates Created",
@@ -260,8 +260,8 @@ export default function TempleDashboard() {
                     </Badge>
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-glow">{formatNumber(stat.value)}</p>
-                    <p className="text-sm text-muted-foreground">{stat.title}</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{formatNumber(stat.value)}</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-300">{stat.title}</p>
                   </div>
                 </CardContent>
               </Card>
