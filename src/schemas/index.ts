@@ -17,3 +17,6 @@ export * from "./streams";
 
 // Search schemas
 export * from "./search";
+
+// Optimization schemas
+export * from "./optimization";

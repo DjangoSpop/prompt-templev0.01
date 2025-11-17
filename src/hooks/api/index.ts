@@ -22,6 +22,7 @@ export {
 // Optimize hooks
 export { useOptimizeTry } from "./useOptimizeTry";
 export { useOptimizeAuth } from "./useOptimizeAuth";
+export { useMultiStrategyOptimize } from "./useMultiStrategyOptimize";
 
 // Search hooks
 export { useSearch, useRelatedTemplates } from "./useSearch";
