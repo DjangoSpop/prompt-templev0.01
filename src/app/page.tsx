@@ -28,6 +28,7 @@ import { AssistantBadge } from '@/components/assistant';
 import { ScrollifyContainer } from '@/components/animations/ScrollifyContainer';
 import { FloatingParticles } from '@/components/animations/FloatingParticles';
 import { RevealOnScroll } from '@/components/animations/RevealOnScroll';
+import { TryMeButton } from '@/components/TryMe';
 
 const TempleGateHero = dynamic(() => import('@/components/temple/TempleGateHero').then(m => m.TempleGateHero), { ssr: false });
 
@@ -77,8 +78,13 @@ export default function DashboardPage() {
               <div className="parallax-element">
                 <PyramidGrid/>
               </div>
+              <TryMeButton
+                size="lg"
+                className="w-full sm:w-auto hover:scale-105 transition-transform duration-300"
+                initialPrompt="Write a professional email to a client about a project update"
+              />
               <Link href="/auth/login" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full sm:w-auto flex items-center justify-center space-x-2 hover:scale-105 transition-transform duration-300">
+                <Button size="lg" variant="outline" className="w-full sm:w-auto flex items-center justify-center space-x-2 hover:scale-105 transition-transform duration-300">
                   <Play className="h-5 w-5" />
                   <span>Get Started</span>
                 </Button>
@@ -133,9 +139,15 @@ export default function DashboardPage() {
                   <AssistantBadge/>
                 </div>
                 <h3 className="text-lg font-semibold mb-2 text-hieroglyph stagger-element">Divine Enhancement</h3>
-                <p className="text-muted-foreground stagger-element">
+                <p className="text-muted-foreground stagger-element mb-4">
                   Get AI-powered suggestions to improve your prompts and templates
                 </p>
+                <TryMeButton
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  initialPrompt="Help me write a creative blog post introduction"
+                />
               </Card>
             </div>
           </RevealOnScroll>

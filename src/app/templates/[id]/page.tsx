@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import TemplateDetailView from '@/components/TemplateDetailView';
+import EnhancedTemplateDetailView from '@/components/EnhancedTemplateDetailView';
 
 export default function TemplateDetailPage() {
   const params = useParams();
@@ -28,5 +28,5 @@ export default function TemplateDetailPage() {
     );
   }
 
-  return <TemplateDetailView templateId={templateId} />;
+  return <EnhancedTemplateDetailView templateId={templateId} />;
 }
