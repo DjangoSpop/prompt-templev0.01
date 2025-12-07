@@ -104,8 +104,19 @@ export class BaseApiClient {
 
   private static loadTokensFromStorage() {
     if (typeof window !== 'undefined') {
-      BaseApiClient.sharedAccessToken = localStorage.getItem('access_token');
-      BaseApiClient.sharedRefreshToken = localStorage.getItem('refresh_token');
+      const accessToken = localStorage.getItem('access_token');
+      const refreshToken = localStorage.getItem('refresh_token');
+      
+      // Validate tokens before assigning (reject 'undefined' or 'null' strings)
+      BaseApiClient.sharedAccessToken = (accessToken && accessToken !== 'undefined' && accessToken !== 'null') ? accessToken : null;
+      BaseApiClient.sharedRefreshToken = (refreshToken && refreshToken !== 'undefined' && refreshToken !== 'null') ? refreshToken : null;
+      
+      console.log('📥 Loaded tokens from storage:', {
+        hasAccess: !!BaseApiClient.sharedAccessToken,
+        hasRefresh: !!BaseApiClient.sharedRefreshToken,
+        accessPreview: BaseApiClient.sharedAccessToken?.substring(0, 20) + '...',
+        rawAccessToken: accessToken?.substring(0, 20) + '...'
+      });
     }
   }
 
@@ -204,9 +215,21 @@ export class BaseApiClient {
     this.axiosInstance.interceptors.request.use(
       (config) => {
         // CRITICAL: Always check and set Authorization header for each request
-        const currentToken = BaseApiClient.sharedAccessToken || (typeof window !== 'undefined' ? localStorage.getItem('access_token') : null);
+        // Try shared token first, then localStorage as fallback
+        let currentToken = BaseApiClient.sharedAccessToken;
         
-        if (currentToken && currentToken !== 'undefined' && !this.isTokenExpired(currentToken)) {
+        // If sharedToken is empty, try to sync from localStorage
+        if (!currentToken && typeof window !== 'undefined') {
+          const storageToken = localStorage.getItem('access_token');
+          if (storageToken && storageToken !== 'undefined' && storageToken !== 'null') {
+            console.log('🔄 Syncing token from localStorage to shared state');
+            BaseApiClient.sharedAccessToken = storageToken;
+            currentToken = storageToken;
+          }
+        }
+        
+        // Validate and use token
+        if (currentToken && currentToken !== 'undefined' && currentToken !== 'null' && !this.isTokenExpired(currentToken)) {
           // Force set the Authorization header for this request
           config.headers = config.headers || {};
           config.headers['Authorization'] = `Bearer ${currentToken}`;
@@ -216,8 +239,8 @@ export class BaseApiClient {
             hasAuth: !!config.headers['Authorization'],
             tokenPreview: currentToken.substring(0, 20) + '...'
           });
-        } else if (currentToken && typeof currentToken === 'string' && currentToken.includes('undefined')) {
-          console.error('❌ Detected undefined token, clearing it');
+        } else if (currentToken === 'undefined' || currentToken === 'null') {
+          console.error('❌ Detected invalid token string, clearing it:', currentToken);
           delete config.headers?.['Authorization'];
           BaseApiClient.clearTokens();
         } else if (!currentToken) {
@@ -231,6 +254,7 @@ export class BaseApiClient {
       },
       (error) => Promise.reject(error)
     );
+
 
     this.axiosInstance.interceptors.response.use(
       (response) => response,
@@ -395,7 +419,20 @@ export class BaseApiClient {
   }
 
   syncTokensFromStorage() {
+    console.log('🔄 Syncing tokens from storage...');
+    const beforeSync = {
+      sharedAccess: BaseApiClient.sharedAccessToken?.substring(0, 20),
+      sharedRefresh: BaseApiClient.sharedRefreshToken?.substring(0, 20)
+    };
+    
     BaseApiClient.loadTokensFromStorage();
+    
+    const afterSync = {
+      sharedAccess: BaseApiClient.sharedAccessToken?.substring(0, 20),
+      sharedRefresh: BaseApiClient.sharedRefreshToken?.substring(0, 20)
+    };
+    
+    console.log('📊 Token sync result:', { beforeSync, afterSync });
     this.updateAxiosHeaders();
   }
 

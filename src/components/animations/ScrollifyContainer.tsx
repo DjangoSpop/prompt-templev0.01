@@ -23,105 +23,195 @@ export function ScrollifyContainer({ children, className = '' }: ScrollifyContai
     const container = containerRef.current;
     const sections = container.querySelectorAll('.scrollify-section');
 
+    // Add a master timeline for coordinated animations
+    const masterTimeline = gsap.timeline();
+
     // Create smooth scrolling animations for each section
     sections.forEach((section, index) => {
-      // Fade in from bottom animation
+      // Enhanced fade in from bottom animation with better easing
       gsap.fromTo(
         section,
         {
           opacity: 0,
-          y: 60,
-          scale: 0.95,
+          y: 80,
+          scale: 0.92,
+          rotationX: 15,
         },
         {
           opacity: 1,
           y: 0,
           scale: 1,
-          duration: 1,
-          ease: 'power3.out',
+          rotationX: 0,
+          duration: 1.4,
+          ease: 'power4.out',
           scrollTrigger: {
             trigger: section,
-            start: 'top 85%',
-            end: 'bottom 20%',
+            start: 'top 90%',
+            end: 'bottom 15%',
             toggleActions: 'play none none reverse',
             markers: false,
+            fastScrollEnd: true,
+            preventOverlaps: true,
           },
         }
       );
 
-      // Parallax effect for background elements
+      // Enhanced parallax effect for background elements
       const parallaxElements = section.querySelectorAll('.parallax-element');
-      parallaxElements.forEach((element) => {
+      parallaxElements.forEach((element, i) => {
         gsap.to(element, {
-          yPercent: -50,
+          yPercent: -30 - (i * 10), // Vary the parallax effect
+          xPercent: Math.sin(i) * 5, // Add subtle horizontal movement
+          rotation: Math.sin(i) * 2, // Add subtle rotation
           ease: 'none',
           scrollTrigger: {
             trigger: section,
             start: 'top bottom',
             end: 'bottom top',
-            scrub: true,
+            scrub: 1.5,
+            invalidateOnRefresh: true,
           },
         });
       });
 
-      // Stagger animation for child elements
+      // Enhanced stagger animation for child elements
       const staggerElements = section.querySelectorAll('.stagger-element');
       if (staggerElements.length > 0) {
         gsap.fromTo(
           staggerElements,
           {
             opacity: 0,
-            y: 30,
+            y: 40,
+            scale: 0.95,
+            rotationY: 15,
           },
           {
             opacity: 1,
             y: 0,
-            duration: 0.8,
-            stagger: 0.15,
-            ease: 'power2.out',
+            scale: 1,
+            rotationY: 0,
+            duration: 1,
+            stagger: {
+              amount: 0.5,
+              from: 'start',
+              ease: 'power2.out',
+            },
+            ease: 'back.out(1.7)',
             scrollTrigger: {
               trigger: section,
-              start: 'top 80%',
-              end: 'bottom 30%',
+              start: 'top 85%',
+              end: 'bottom 25%',
               toggleActions: 'play none none reverse',
+              fastScrollEnd: true,
             },
           }
         );
       }
 
-      // Scale effect for cards/elements on scroll
+      // Enhanced scale effect for cards/elements on scroll
       const scaleElements = section.querySelectorAll('.scale-element');
-      scaleElements.forEach((element) => {
+      scaleElements.forEach((element, i) => {
         gsap.fromTo(
           element,
           {
-            scale: 0.8,
+            scale: 0.7,
             opacity: 0,
+            y: 60,
+            rotationZ: -5 + (i % 2) * 10, // Alternate rotation
           },
           {
             scale: 1,
             opacity: 1,
-            duration: 1.2,
-            ease: 'elastic.out(1, 0.8)',
+            y: 0,
+            rotationZ: 0,
+            duration: 1.5,
+            ease: 'elastic.out(1, 0.6)',
             scrollTrigger: {
               trigger: element,
-              start: 'top 90%',
-              end: 'bottom 20%',
+              start: 'top 95%',
+              end: 'bottom 15%',
               toggleActions: 'play none none reverse',
+              invalidateOnRefresh: true,
             },
           }
         );
+
+        // Add hover enhancement
+        element.addEventListener('mouseenter', () => {
+          gsap.to(element, {
+            scale: 1.05,
+            rotationY: 5,
+            duration: 0.3,
+            ease: 'power2.out',
+          });
+        });
+
+        element.addEventListener('mouseleave', () => {
+          gsap.to(element, {
+            scale: 1,
+            rotationY: 0,
+            duration: 0.3,
+            ease: 'power2.out',
+          });
+        });
+      });
+
+      // Add magnetic effect for interactive elements
+      const magneticElements = section.querySelectorAll('button, a, .magnetic-element');
+      magneticElements.forEach((element) => {
+        element.addEventListener('mousemove', (e) => {
+          const rect = element.getBoundingClientRect();
+          const x = e.clientX - rect.left - rect.width / 2;
+          const y = e.clientY - rect.top - rect.height / 2;
+
+          gsap.to(element, {
+            x: x * 0.15,
+            y: y * 0.15,
+            duration: 0.3,
+            ease: 'power2.out',
+          });
+        });
+
+        element.addEventListener('mouseleave', () => {
+          gsap.to(element, {
+            x: 0,
+            y: 0,
+            duration: 0.5,
+            ease: 'elastic.out(1, 0.3)',
+          });
+        });
       });
     });
 
-    // Smooth scroll behavior for the entire container
-    gsap.to(container, {
+    // Enhanced smooth scroll behavior
+    gsap.set(container, {
       scrollBehavior: 'smooth',
-      duration: 0,
     });
+
+    // Add scroll progress indicator
+    gsap.to('.scroll-progress', {
+      scaleX: 1,
+      transformOrigin: 'left center',
+      ease: 'none',
+      scrollTrigger: {
+        trigger: container,
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 0.3,
+      },
+    });
+
+    // Refresh ScrollTrigger on window resize
+    const handleResize = () => {
+      ScrollTrigger.refresh();
+    };
+
+    window.addEventListener('resize', handleResize);
 
     // Cleanup function
     return () => {
+      window.removeEventListener('resize', handleResize);
+      masterTimeline.kill();
       ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
     };
   }, []);

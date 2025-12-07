@@ -38,7 +38,7 @@ export interface UsageStats {
 }
 
 class BillingService {
-  private baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  private baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000/api/proxy';
 
   private async request<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
     const token = localStorage.getItem('auth_token');

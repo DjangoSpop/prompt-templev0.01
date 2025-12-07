@@ -65,6 +65,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
 
     loadUser();
+
+    // Listen for OAuth success events to refresh user
+    const handleAuthSuccess = () => {
+      console.log('🔄 AuthProvider: Received auth success event, refreshing user...');
+      loadUser();
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('auth:success', handleAuthSuccess);
+      return () => window.removeEventListener('auth:success', handleAuthSuccess);
+    }
   }, []);
 
   const login = async (username: string, password: string) => {

@@ -6,6 +6,8 @@ import { apiClient } from '@/lib/api-client';
 import type { TemplateDetail, TemplateCreateUpdate, TemplateCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Modal, ModalBody, ModalFooter } from '@/components/ui/modal';
+import { toast } from 'sonner';
 
 interface TemplateEditorProps {
   onClose?: () => void;

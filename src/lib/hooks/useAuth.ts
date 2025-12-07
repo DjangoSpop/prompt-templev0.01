@@ -44,17 +44,57 @@ export const useAuth = () => {
     
     // Also check on storage events (for cross-tab sync)
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'auth_token' || e.key === 'refresh_token') {
+      if (e.key === 'auth_token' || e.key === 'refresh_token' || e.key === 'access_token') {
         checkAuthState();
       }
     };
     
+    // Listen for OAuth success events
+    const handleAuthSuccess = (event: Event) => {
+      console.log('🎉 useAuth: Received auth:success event, forcing auth state refresh');
+      
+      // Tokens should already be synced by useSocialAuth via authService.saveTokensToStorage
+      // Just need to sync and update state
+      authService.syncTokensFromStorage();
+      
+      // Check if we have user data stored from OAuth
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          const userData = JSON.parse(storedUser);
+          console.log('📦 Found stored user data from OAuth:', userData.username);
+          // Pre-populate the query cache with the user data from OAuth
+          queryClient.setQueryData(['auth', 'profile'], userData);
+        } catch (e) {
+          console.error('Failed to parse stored user data:', e);
+        }
+      }
+      
+      // Force auth state update immediately
+      const isNowAuthenticated = authService.isAuthenticated();
+      console.log('🔐 Auth state after OAuth:', { isNowAuthenticated, previousState: authState.isAuthenticated });
+      
+      setAuthState({
+        isAuthenticated: isNowAuthenticated,
+        lastCheck: Date.now()
+      });
+      
+      // Force user profile refetch to get latest data from server
+      if (isNowAuthenticated) {
+        console.log('🔄 Refetching user profile after OAuth...');
+        refetchUser();
+      }
+    };
+    
     window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('auth:success', handleAuthSuccess);
     
     return () => {
       clearInterval(interval);
       window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('auth:success', handleAuthSuccess);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authState.isAuthenticated]);
 
   const {
@@ -189,7 +229,9 @@ export const useAuth = () => {
   return {
     // Data
     user,
-    isAuthenticated: authState.isAuthenticated && !!user,
+    // Return true if we have a token, even if user profile is still loading
+    // This allows the UI to show "authenticated" state (with skeletons) immediately
+    isAuthenticated: authState.isAuthenticated,
     
     // Loading states
     isLoadingUser,

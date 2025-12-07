@@ -3,14 +3,13 @@ import { QueryProvider } from "@/lib/providers/QueryProvider";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { ConfigProvider } from "@/providers/ConfigProvider";
 import { AnalyticsProvider } from "@/providers/AnalyticsProvider";
-import { ThemeProvider } from "@/providers/ThemeProvider";
+import { AppProviders } from "@/providers/AppProviders";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { HealthBanner } from "@/components/HealthBanner";
 import { TempleNavbar } from "@/components/TempleNavbar";
 import { AppShell } from "@/components/layout/AppShell";
 import { ClientOnly } from "@/components/ClientOnly";
 import { HydrationGuard } from "@/components/HydrationGuard";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
 import dynamic from "next/dynamic";
 // Dynamically load onboarding on client to avoid server bundling framer-motion
 
@@ -38,42 +37,33 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-sans antialiased min-h-screen overflow-x-hidden bg-background text-foreground" suppressHydrationWarning>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
+        <AppProviders>
           <HydrationGuard>
-            <ErrorBoundary>
-              <QueryProvider>
-                <ConfigProvider>
-                  <AuthProvider>
-                    <AnalyticsProvider>
-                      <TooltipProvider>
-                        <div className="flex flex-col min-h-screen">
+            <QueryProvider>
+              <ConfigProvider>
+                <AuthProvider>
+                  <AnalyticsProvider>
+                    <TooltipProvider>
+                      <div className="flex flex-col min-h-screen">
                         <ClientOnly fallback={<div className="h-16 bg-secondary/95 backdrop-blur-lg border-b border-primary/20"></div>}>
                           <HealthBanner />
                           <TempleNavbar />
                         </ClientOnly>
                         <main className="flex-1 overflow-y-auto">
-                          <ErrorBoundary>
-                            {children}
-                          </ErrorBoundary>
+                          {children}
                         </main>
                         {/* Onboarding system for new users (client-only) */}
                         <ClientOnly>
                           <UserOnboarding autoStart={true} />
                         </ClientOnly>
                       </div>
-                      </TooltipProvider>
-                    </AnalyticsProvider>
-                  </AuthProvider>
-                </ConfigProvider>
-              </QueryProvider>
-            </ErrorBoundary>
+                    </TooltipProvider>
+                  </AnalyticsProvider>
+                </AuthProvider>
+              </ConfigProvider>
+            </QueryProvider>
           </HydrationGuard>
-        </ThemeProvider>
+        </AppProviders>
       </body>
     </html>
   );

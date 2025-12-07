@@ -20,6 +20,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { useAuth } from '@/providers/AuthProvider';
+import { useSocialAuth } from '@/hooks/useSocialAuth';
 import { FcGoogle } from 'react-icons/fc';
 
 export default function LoginPage() {
@@ -32,7 +33,23 @@ export default function LoginPage() {
   const [socialLoading, setSocialLoading] = useState<string | null>(null);
   const [error, setError] = useState('');
 
-  const { login, socialLogin } = useAuth();
+  const { login } = useAuth();
+  const {
+    signInWithProvider,
+    isAuthenticating,
+    authError
+  } = useSocialAuth({
+    onAuthSuccess: (response) => {
+      // Handle successful social auth
+      console.log('Social auth successful:', response);
+      router.push(redirectTo);
+    },
+    onAuthError: (error) => {
+      console.error('Social auth failed:', error);
+      setError(error);
+      setSocialLoading(null);
+    }
+  });
   const router = useRouter();
   const [redirectTo, setRedirectTo] = useState('/dashboard');
 
@@ -41,7 +58,26 @@ export default function LoginPage() {
     try {
       const sp = new URLSearchParams(window.location.search);
       const r = sp.get('redirect');
+      const errorParam = sp.get('error');
+
       if (r) setRedirectTo(r);
+
+      // Handle OAuth errors from callback page
+      if (errorParam) {
+        switch (errorParam) {
+          case 'social_auth_failed':
+            setError('Social authentication failed. Please try again.');
+            break;
+          case 'oauth_cancelled':
+            setError('Authentication was cancelled. Please try again.');
+            break;
+          case 'invalid_callback':
+            setError('Invalid authentication response. Please try again.');
+            break;
+          default:
+            setError('Authentication error occurred. Please try again.');
+        }
+      }
     } catch (e) {
       // ignore
     }
@@ -107,12 +143,16 @@ export default function LoginPage() {
     setError('');
 
     try {
-      await socialLogin(provider);
-      router.push(redirectTo);
+      // Store redirect URL in localStorage before OAuth redirect
+      localStorage.setItem('auth_redirect', redirectTo);
+
+      // Use the social auth hook instead of the basic socialLogin
+      await signInWithProvider(provider);
+      // Note: After OAuth flow, user will be redirected to callback page
+      // The callback page will handle the redirect to the final destination
     } catch (error: unknown) {
       setError(`${provider} login failed. Please try again.`);
       console.error(`${provider} login error:`, error);
-    } finally {
       setSocialLoading(null);
     }
   };
@@ -170,7 +210,7 @@ export default function LoginPage() {
                 variant="outline"
                 className="w-full border-pharaoh-gold/30 hover:bg-pharaoh-gold/10 hover:border-pharaoh-gold/50 transition-all duration-300 rounded-temple"
                 onClick={() => handleSocialLogin('google')}
-                disabled={isLoading || socialLoading !== null}
+                disabled={isLoading || socialLoading !== null || isAuthenticating}
               >
                 {socialLoading === 'google' ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -185,7 +225,7 @@ export default function LoginPage() {
                 variant="outline"
                 className="w-full border-nile-teal/30 hover:bg-nile-teal/10 hover:border-nile-teal/50 transition-all duration-300 rounded-temple"
                 onClick={() => handleSocialLogin('github')}
-                disabled={isLoading || socialLoading !== null}
+                disabled={isLoading || socialLoading !== null || isAuthenticating}
               >
                 {socialLoading === 'github' ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -285,7 +325,7 @@ export default function LoginPage() {
               {/* Submit Button */}
               <Button
                 type="submit"
-                disabled={isLoading || socialLoading !== null}
+                disabled={isLoading || socialLoading !== null || isAuthenticating}
                 className="w-full bg-gradient-to-r from-pharaoh-gold to-nile-teal hover:from-pharaoh-gold/80 hover:to-nile-teal/80 text-white py-3 font-semibold shadow-pyramid hover:shadow-xl transition-all duration-300 transform hover:scale-105 rounded-temple"
               >
                 {isLoading ? (

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode, useEffect } from 'react';
 import { useAuth as useAuthHook } from '@/lib/hooks';
 import type { components } from '../types/api';
 
@@ -40,6 +40,19 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const auth = useAuthHook();
+
+  // Debug auth state changes
+  useEffect(() => {
+    if (process.env.NEXT_PUBLIC_ENABLE_DEBUG === 'true') {
+      console.log('🔍 AuthProvider State Update:', {
+        isAuthenticated: auth.isAuthenticated,
+        hasUser: !!auth.user,
+        username: auth.user?.username,
+        isLoading: auth.isLoadingUser,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }, [auth.isAuthenticated, auth.user, auth.isLoadingUser]);
 
   const login = async (username: string, password: string) => {
     return new Promise<void>((resolve, reject) => {
@@ -109,9 +122,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const socialLogin = async (provider: 'google' | 'github') => {
-    // TODO: Implement social login with your Django backend
-    console.log(`Social login with ${provider} not implemented yet`);
-    throw new Error(`${provider} login not implemented yet`);
+    const { SocialAuthManager } = await import('@/lib/api/social-auth');
+
+    try {
+      const authManager = new SocialAuthManager();
+      // This will redirect to the OAuth provider
+      authManager.redirectToProvider(provider);
+      // Note: After OAuth flow, user will be redirected back to callback page
+      // The callback handling is done in the useSocialAuth hook
+    } catch (error) {
+      console.error(`Social login with ${provider} failed:`, error);
+      throw error;
+    }
   };
 
   const value: AuthContextType = {

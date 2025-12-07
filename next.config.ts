@@ -1,4 +1,9 @@
+﻿import path from "path";
+import { fileURLToPath } from "url";
 import type { NextConfig } from "next";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const nextConfig: NextConfig = {
   // Enable experimental features
@@ -8,6 +13,8 @@ const nextConfig: NextConfig = {
       allowedOrigins: ['localhost:3000', '*.vercel.app', '127.0.0.1:3000', '192.168.56.1:3000', 'http://127.0.0.1:8000'],
     },
   },
+
+  outputFileTracingRoot: path.resolve(__dirname),
 
   // Note: i18n configuration is not supported in App Router
   // For internationalization in App Router, use next-intl or similar libraries

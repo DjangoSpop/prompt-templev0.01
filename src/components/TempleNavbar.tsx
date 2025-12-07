@@ -54,10 +54,34 @@ const mainNavLinks: NavLink[] = [
     description: 'Prompt library & manager'
   },
   {
+    href: '/library',
+    label: 'Library (v1)',
+    icon: BookOpen,
+    description: 'Template library - route group version'
+  },
+  {
+    href: '/template-library',
+    label: 'Library (v2)',
+    icon: BookOpen,
+    description: 'Template library - gamified version'
+  },
+  {
     href: '/optimization',
     label: 'Optimizer',
     icon: Zap,
     description: 'AI prompt optimization'
+  },
+  {
+    href: '/optimizer',
+    label: 'Optimizer (v1)',
+    icon: Zap,
+    description: 'AI optimizer - route group version'
+  },
+  {
+    href: '/prompt-optimizer',
+    label: 'Optimizer (v2)',
+    icon: Zap,
+    description: 'AI optimizer - enhanced version'
   },
   {
     href: '/enhanced',
@@ -110,6 +134,18 @@ export function TempleNavbar() {
     setIsClient(true);
   }, []);
 
+  // Debug auth state
+  useEffect(() => {
+    if (isClient && process.env.NEXT_PUBLIC_ENABLE_DEBUG === 'true') {
+      console.log('🔍 Navbar Auth State:', { 
+        isAuthenticated, 
+        hasUser: !!user, 
+        username: user?.username,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }, [isClient, isAuthenticated, user]);
+
   const isActivePath = (href: string) => {
     if (href === '/') return pathname === '/';
     return pathname.startsWith(href);
@@ -123,7 +159,7 @@ export function TempleNavbar() {
   // Prevent hydration mismatch by not rendering interactive elements until client-side
   if (!isClient) {
     return (
-      <nav className="sticky top-0 z-50 bg-secondary/95 backdrop-blur-lg border-b border-primary/20 pyramid-elevation">
+      <nav className="sticky top-0 z-50 bg-secondary/95 backdrop-blur-lg border-b border-primary/20 pyramid-elevation rounded-b-2xl mx-2 md:mx-4 overflow-hidden">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16 md:h-20">
             {/* Logo */}
@@ -161,7 +197,7 @@ export function TempleNavbar() {
 
   return (
     <>
-      <nav className="sticky top-0 z-50 bg-gradient-to-r from-secondary/95 via-papyrus/95 to-secondary/95 backdrop-blur-lg border-b-2 border-gold-accent/30 shadow-lg">
+      <nav className="sticky top-0 z-50 bg-gradient-to-r from-secondary/95 via-papyrus/95 to-secondary/95 backdrop-blur-lg border-b-2 border-gold-accent/30 shadow-lg rounded-b-2xl mx-2 md:mx-4 overflow-hidden">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16 md:h-20">
             {/* Enhanced Logo with Pyramid Motif */}
@@ -224,7 +260,7 @@ export function TempleNavbar() {
                             ? 'bg-gradient-to-r from-gold-accent/20 to-yellow-500/20 text-gold-accent border border-gold-accent/30 shadow-lg'
                             : 'hover:bg-gold-accent/10 hover:text-gold-accent text-foreground/80'
                           }
-                          transition-all duration-300 group-hover:scale-105 rounded-xl
+                          transition-all duration-300 group-hover:scale-105 rounded-full
                         `}
                       >
                         {/* Pyramid bullet for active state */}
@@ -263,20 +299,30 @@ export function TempleNavbar() {
               {isAuthenticated ? (
                 <>
                   {/* Enhanced User Info with Egyptian styling */}
-                  <div className="hidden lg:flex items-center space-x-3">
-                    <div className="text-right">
-                      <p className="text-sm font-semibold text-foreground">
-                        {user?.first_name || user?.username}
-                      </p>
-                      <div className="flex items-center space-x-1">
-                        <Crown className="h-3 w-3 text-gold-accent" />
-                        <span className="text-xs text-muted-foreground">Pharaoh Level {user?.level || 1}</span>
+                  {user ? (
+                    <div className="hidden lg:flex items-center space-x-3">
+                      <div className="text-right">
+                        <p className="text-sm font-semibold text-foreground">
+                          {user?.first_name || user?.username}
+                        </p>
+                        <div className="flex items-center space-x-1">
+                          <Crown className="h-3 w-3 text-gold-accent" />
+                          <span className="text-xs text-muted-foreground">Pharaoh Level {user?.level || 1}</span>
+                        </div>
+                      </div>
+                      <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-gold-accent to-yellow-600 rounded-full flex items-center justify-center text-basalt-black font-bold shadow-lg border-2 border-gold-accent/30">
+                        {(user?.first_name?.[0] || user?.username?.[0] || 'U').toUpperCase()}
                       </div>
                     </div>
-                    <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-gold-accent to-yellow-600 rounded-full flex items-center justify-center text-basalt-black font-bold shadow-lg border-2 border-gold-accent/30">
-                      {(user?.first_name?.[0] || user?.username?.[0] || 'U').toUpperCase()}
+                  ) : (
+                    <div className="hidden lg:flex items-center space-x-3 animate-pulse">
+                      <div className="space-y-1 text-right">
+                        <div className="w-24 h-4 bg-gold-accent/20 rounded ml-auto"></div>
+                        <div className="w-16 h-3 bg-muted/30 rounded ml-auto"></div>
+                      </div>
+                      <div className="w-10 h-10 bg-gold-accent/20 rounded-full border-2 border-gold-accent/10"></div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Enhanced Desktop User Menu */}
                   <div className="hidden lg:flex items-center space-x-2">
@@ -284,7 +330,7 @@ export function TempleNavbar() {
                     <LanguageSwitcher />
                     <ThemeToggle />
                     <Link href="/settings">
-                      <Button variant="ghost" size="sm" className="hover:bg-accent/10 hover:text-accent rounded-xl focus-ring">
+                        <Button variant="ghost" size="sm" className="hover:bg-accent/10 hover:text-accent rounded-full focus-ring">
                         <Settings className="h-4 w-4" />
                       </Button>
                     </Link>
@@ -292,21 +338,21 @@ export function TempleNavbar() {
                       variant="ghost"
                       size="sm"
                       onClick={logout}
-                      className="hover:bg-red-500/10 hover:text-red-600 rounded-xl focus-ring"
+                      className="hover:bg-red-500/10 hover:text-red-600 rounded-full focus-ring"
                     >
                       <LogOut className="h-4 w-4" />
                     </Button>
                   </div>
 
                   {/* Enhanced Mobile Menu Button */}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="xl:hidden hover:bg-gold-accent/10 hover:text-gold-accent rounded-xl p-2"
-                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                    aria-label="Toggle navigation menu"
-                    aria-expanded={isMobileMenuOpen}
-                  >
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="xl:hidden hover:bg-gold-accent/10 hover:text-gold-accent rounded-full p-2"
+                      onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                      aria-label="Toggle navigation menu"
+                      aria-expanded={isMobileMenuOpen}
+                    >
                     {isMobileMenuOpen ? (
                       <X className="h-5 w-5" aria-hidden="true" />
                     ) : (
@@ -317,12 +363,12 @@ export function TempleNavbar() {
               ) : (
                 <div className="flex items-center space-x-3">
                   <Link href="/auth/login">
-                    <Button variant="ghost" size="sm" className="hover:bg-gold-accent/10 hover:text-gold-accent rounded-xl">
+                    <Button variant="ghost" size="sm" className="hover:bg-gold-accent/10 hover:text-gold-accent rounded-full">
                       Sign In
                     </Button>
                   </Link>
                   <Link href="/auth/register">
-                    <Button size="sm" className="bg-gradient-to-r from-gold-accent to-yellow-600 hover:from-yellow-600 hover:to-gold-accent text-basalt-black font-semibold rounded-xl shadow-lg">
+                    <Button size="sm" className="bg-gradient-to-r from-gold-accent to-yellow-600 hover:from-yellow-600 hover:to-gold-accent text-basalt-black font-semibold rounded-full shadow-lg">
                       Enter Temple
                     </Button>
                   </Link>

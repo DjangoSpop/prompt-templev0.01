@@ -3,6 +3,8 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Button } from './ui/button';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { getErrorBoundaryFallback, errorLogger } from '@/lib/errors/error-handler';
+import { AppError } from '@/types/core';
 
 interface Props {
   children: ReactNode;
@@ -26,7 +28,18 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    // Log to our centralized error logger
+    errorLogger.log({
+      message: error.message,
+      code: 'REACT_ERROR',
+      statusCode: 500,
+      context: {
+        componentStack: errorInfo.componentStack,
+        errorInfo: errorInfo,
+      },
+    });
+
+    // Call custom error handler if provided
     this.props.onError?.(error, errorInfo);
   }
 
@@ -36,30 +49,47 @@ export class ErrorBoundary extends Component<Props, State> {
         return this.props.fallback;
       }
 
+      // Get error details
+      const errorDetails = getErrorBoundaryFallback(
+        this.state.error || new Error('Unknown error')
+      );
+
+      // Render error UI
       return (
-        <div className="min-h-[200px] flex flex-col items-center justify-center p-8 text-center border border-red-200 rounded-lg bg-red-50">
-          <AlertTriangle className="h-12 w-12 text-red-500 mb-4" />
-          <h2 className="text-lg font-semibold text-red-700 mb-2">
-            Something went wrong
-          </h2>
-          <p className="text-sm text-red-600 mb-4 max-w-md">
-            {process.env.NODE_ENV === 'development' 
-              ? `Error: ${this.state.error?.message}`
-              : 'An unexpected error occurred. Please try refreshing the page.'
-            }
-          </p>
-          <Button
-            onClick={() => {
-              this.setState({ hasError: false, error: undefined });
-              window.location.reload();
-            }}
-            variant="outline"
-            size="sm"
-            className="text-red-700 border-red-300 hover:bg-red-100"
-          >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Try Again
-          </Button>
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-desert-sand/30 via-background to-nile-teal/20 p-4">
+          <div className="max-w-md w-full space-y-6 text-center">
+            <div className="flex justify-center">
+              <AlertTriangle className="h-16 w-16 text-red-500" />
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-2xl font-bold text-foreground">
+                {errorDetails.title}
+              </h1>
+              <p className="text-temple-stone">
+                {errorDetails.description}
+              </p>
+              {this.state.error && (
+                <details className="text-xs text-left mt-4 p-4 bg-muted rounded-md">
+                  <summary className="cursor-pointer font-semibold mb-2">
+                    Technical Details
+                  </summary>
+                  <pre className="whitespace-pre-wrap break-words">
+                    {this.state.error.message}
+                  </pre>
+                </details>
+              )}
+            </div>
+            <Button
+              onClick={() => {
+                this.setState({ hasError: false, error: undefined });
+                window.location.reload();
+              }}
+              className="bg-pharaoh-gold hover:bg-pharaoh-gold/90"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              {errorDetails.action || 'Reload'}
+            </Button>
+          </div>
         </div>
       );
     }

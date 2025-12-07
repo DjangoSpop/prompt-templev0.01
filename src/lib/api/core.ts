@@ -51,7 +51,7 @@ interface NotificationMarkReadRequest {
 export class CoreService extends BaseApiClient {
   async getHealth(): Promise<HealthStatus> {
     // Health endpoint is at the root level, not under /api/v1
-    const baseUrl = this.axiosInstance.defaults.baseURL?.replace('/api/v1', '') || 'http://127.0.0.1:8000';
+    const baseUrl = this.axiosInstance.defaults.baseURL?.replace('/api/v2', '') || 'http://127.0.0.1:8000';
     const response = await this.axiosInstance.get(`${baseUrl}/health/`);
     return response.data;
   }

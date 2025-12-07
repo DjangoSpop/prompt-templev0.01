@@ -2,7 +2,11 @@ import { z } from 'zod';
 
 const envSchema = z.object({
   // API Configuration
-  NEXT_PUBLIC_API_BASE_URL: z.string().url().default('https://api.prompt-temple.com'),
+  // Allow both full URLs and relative paths (e.g., /api/proxy for Next.js proxy)
+  NEXT_PUBLIC_API_BASE_URL: z.string().refine(
+    (val) => val.startsWith('http://') || val.startsWith('https://') || val.startsWith('/'),
+    { message: 'Must be a valid URL or relative path starting with /' }
+  ).default('http://localhost:3000/api/proxy'),
   NEXT_PUBLIC_APP_NAME: z.string().default('PromptCraft'),
   NEXT_PUBLIC_APP_VERSION: z.string().default('1.0.0'),
   
@@ -11,7 +15,10 @@ const envSchema = z.object({
   NEXT_PUBLIC_APP_ENVIRONMENT: z.string().default('development'),
   
   // Authentication
-  NEXTAUTH_URL: z.string().url().default('https://api.prompt-temple.com'),
+  NEXTAUTH_URL: z.string().refine(
+    (val) => val.startsWith('http://') || val.startsWith('https://'),
+    { message: 'Must be a valid URL' }
+  ).default('http://localhost:3000'),
   NEXTAUTH_SECRET: z.string().default('development-secret-key-change-in-production'),
   
   // Third-party Authentication
@@ -40,7 +47,7 @@ const envSchema = z.object({
   NEXT_PUBLIC_MOCK_API: z.string().transform(val => val === 'true').default('false'),
   
   // CORS
-  ALLOWED_ORIGINS: z.string().default('https://api.prompt-temple.com'),
+  ALLOWED_ORIGINS: z.string().default('http://127.0.0.1:8000'),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;
@@ -53,12 +60,12 @@ function validateEnv(): EnvConfig {
       // On client side, use defaults for missing variables
       console.warn('Environment validation failed, using defaults:', error);
       return {
-        NEXT_PUBLIC_API_BASE_URL: 'https://api.prompt-temple.com',
+        NEXT_PUBLIC_API_BASE_URL: 'http://localhost:3000/api/proxy',
         NEXT_PUBLIC_APP_NAME: 'PromptCraft',
         NEXT_PUBLIC_APP_VERSION: '1.0.0',
         NODE_ENV: 'development' as const,
         NEXT_PUBLIC_APP_ENVIRONMENT: 'development',
-        NEXTAUTH_URL: 'https://api.prompt-temple.com',
+        NEXTAUTH_URL: 'http://127.0.0.1:8000',
         NEXTAUTH_SECRET: 'development-secret-key-change-in-production',
         NEXT_PUBLIC_GOOGLE_CLIENT_ID: undefined,
         GOOGLE_CLIENT_SECRET: undefined,
@@ -73,7 +80,7 @@ function validateEnv(): EnvConfig {
         ENABLE_BILLING: true,
         NEXT_PUBLIC_DEV_MODE: true,
         NEXT_PUBLIC_MOCK_API: true,
-        ALLOWED_ORIGINS: 'api.prompt-temple.com',
+        ALLOWED_ORIGINS: 'http://127.0.0.1:8000',
       } as EnvConfig;
     }
     

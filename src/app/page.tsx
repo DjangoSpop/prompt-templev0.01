@@ -26,10 +26,13 @@ import { PyramidGrid } from '@/components/pharaonic/PyramidGrid';
 import { HeroSection } from '@/components/HeroSection';
 import { AssistantBadge } from '@/components/assistant';
 import { ScrollifyContainer } from '@/components/animations/ScrollifyContainer';
-import { FloatingParticles } from '@/components/animations/FloatingParticles';
+import { EnhancedFloatingParticles } from '@/components/animations/EnhancedFloatingParticles';
 import { RevealOnScroll } from '@/components/animations/RevealOnScroll';
+import { ProgressIndicator } from '@/components/animations/ProgressIndicator';
 
 const TempleGateHero = dynamic(() => import('@/components/temple/TempleGateHero').then(m => m.TempleGateHero), { ssr: false });
+import ChatInterface from './../components/ChatInterface';
+import { TryMeButton } from '@/components/try-me/TryMeButton';
 
 export default function DashboardPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -50,8 +53,20 @@ export default function DashboardPage() {
 
   if (!isAuthenticated) {
     return (
-      <ScrollifyContainer className="min-h-screen temple-background">
-        <FloatingParticles count={30} />
+      <>
+        <ProgressIndicator
+          color="#8B5CF6"
+          height={4}
+          className="z-50"
+        />
+        <ScrollifyContainer className="min-h-screen temple-background">
+          <EnhancedFloatingParticles
+            count={40}
+            colors={['#3B82F6', '#8B5CF6', '#F59E0B', '#10B981', '#EF4444', '#EC4899']}
+            interactive={true}
+            size={{ min: 3, max: 12 }}
+            speed={{ min: 3, max: 12 }}
+          />
 
         {/* Hero Section */}
         <div className="scrollify-section relative z-10">
@@ -64,6 +79,7 @@ export default function DashboardPage() {
             <h1 className="text-5xl font-bold text-foreground mb-6 text-hieroglyph">
               Welcome to PromptTemple
             </h1>
+  
           </RevealOnScroll>
 
           <RevealOnScroll direction="up" duration={1} delay={0.3}>
@@ -76,6 +92,7 @@ export default function DashboardPage() {
             <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-8 md:mb-12">
               <div className="parallax-element">
                 <PyramidGrid/>
+               
               </div>
               <Link href="/auth/login" className="w-full sm:w-auto">
                 <Button size="lg" className="w-full sm:w-auto flex items-center justify-center space-x-2 hover:scale-105 transition-transform duration-300">
@@ -141,12 +158,25 @@ export default function DashboardPage() {
           </RevealOnScroll>
         </div>
       </ScrollifyContainer>
+      </>
     );
   }
 
   return (
-    <ScrollifyContainer className="min-h-screen temple-background">
-      <FloatingParticles count={20} />
+    <>
+      <ProgressIndicator
+        color="#F59E0B"
+        height={4}
+        className="z-50"
+      />
+      <ScrollifyContainer className="min-h-screen temple-background">
+        <EnhancedFloatingParticles
+          count={25}
+          colors={['#3B82F6', '#8B5CF6', '#F59E0B', '#10B981']}
+          interactive={true}
+          size={{ min: 2, max: 8 }}
+          speed={{ min: 4, max: 10 }}
+        />
       <div className="container mx-auto px-4 py-4 md:py-8 relative z-10">
       {/* Welcome Header */}
       <div className="scrollify-section mb-8">
@@ -345,5 +375,6 @@ export default function DashboardPage() {
       </div>
       </div>
     </ScrollifyContainer>
+    </>
   );
 }

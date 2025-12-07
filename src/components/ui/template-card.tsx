@@ -247,12 +247,12 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
                   'flex flex-wrap gap-1',
                   isRTL && 'flex-row-reverse'
                 )}>
-                  {template.tags.slice(0, 4).map(tag => (
+                  {(Array.isArray(template.tags) ? template.tags : []).slice(0, 4).map(tag => (
                     <Badge key={tag} variant="outline" className="text-xs">
                       {tag}
                     </Badge>
                   ))}
-                  {template.tags.length > 4 && (
+                  {Array.isArray(template.tags) && template.tags.length > 4 && (
                     <Badge variant="outline" className="text-xs">
                       +{template.tags.length - 4}
                     </Badge>
@@ -508,12 +508,12 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
             'flex flex-wrap gap-1',
             isRTL && 'flex-row-reverse'
           )}>
-            {template.tags.slice(0, 3).map(tag => (
+            {(Array.isArray(template.tags) ? template.tags : []).slice(0, 3).map(tag => (
               <Badge key={tag} variant="outline" className="text-xs">
                 {tag}
               </Badge>
             ))}
-            {template.tags.length > 3 && (
+            {Array.isArray(template.tags) && template.tags.length > 3 && (
               <Badge variant="outline" className="text-xs">
                 +{template.tags.length - 3}
               </Badge>
