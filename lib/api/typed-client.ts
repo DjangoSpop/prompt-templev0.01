@@ -372,6 +372,110 @@ class ApiClient {
     return this.request('/api/v2/ai/agent/stats/');
   }
 
+  // Billing Methods
+  async getBillingPlans(): Promise<any> {
+    return this.request('/api/v2/billing/plans/');
+  }
+
+  async getBillingPlan(id: number): Promise<any> {
+    return this.request(`/api/v2/billing/plans/${id}/`);
+  }
+
+  async getSubscription(): Promise<any> {
+    return this.request('/api/v2/billing/me/subscription/');
+  }
+
+  async getEntitlements(): Promise<any> {
+    return this.request('/api/v2/billing/me/entitlements/');
+  }
+
+  async getBillingUsage(): Promise<any> {
+    return this.request('/api/v2/billing/me/usage/');
+  }
+
+  async createCheckoutSession(data: { plan_id: number; success_url?: string; cancel_url?: string }): Promise<any> {
+    return this.request('/api/v2/billing/checkout/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async createPortalSession(): Promise<any> {
+    return this.request('/api/v2/billing/portal/', {
+      method: 'POST',
+    });
+  }
+
+  // History & Chat Sessions
+  async getChatSessions(page: number = 1, limit: number = 50): Promise<any> {
+    return this.request(`/api/v2/chat/sessions/?page=${page}&limit=${limit}`);
+  }
+
+  // Gamification Methods
+  async getAchievements(): Promise<any> {
+    return this.request('/api/v2/gamification/achievements/');
+  }
+
+  async getBadges(): Promise<any> {
+    return this.request('/api/v2/gamification/badges/');
+  }
+
+  async getLeaderboard(limit: number = 50): Promise<any> {
+    return this.request(`/api/v2/gamification/leaderboard/?limit=${limit}`);
+  }
+
+  async getDailyChallenges(): Promise<any> {
+    return this.request('/api/v2/gamification/daily-challenges/');
+  }
+
+  async getUserLevel(): Promise<any> {
+    return this.request('/api/v2/gamification/user-level/');
+  }
+
+  async getStreak(): Promise<any> {
+    return this.request('/api/v2/gamification/streak/');
+  }
+
+  // Analytics Methods
+  async getAnalyticsDashboard(): Promise<any> {
+    return this.request('/api/v2/analytics/dashboard/');
+  }
+
+  async getUserInsights(): Promise<any> {
+    return this.request('/api/v2/analytics/user-insights/');
+  }
+
+  async getTemplateAnalytics(): Promise<any> {
+    return this.request('/api/v2/analytics/template-analytics/');
+  }
+
+  async getRecommendations(): Promise<any> {
+    return this.request('/api/v2/analytics/recommendations/');
+  }
+
+  async trackAnalytics(event: { event_type: string; data?: any }): Promise<void> {
+    await this.request('/api/v2/analytics/track/', {
+      method: 'POST',
+      body: JSON.stringify(event),
+    });
+  }
+
+  // Core Methods
+  async getAppConfig(): Promise<any> {
+    return this.request('/api/v2/core/config/');
+  }
+
+  async getNotifications(): Promise<any> {
+    return this.request('/api/v2/core/notifications/');
+  }
+
+  async markNotificationRead(notificationId: string): Promise<void> {
+    await this.request('/api/v2/core/notifications/', {
+      method: 'POST',
+      body: JSON.stringify({ notification_id: notificationId }),
+    });
+  }
+
   // Health Check
   async healthCheck(): Promise<any> {
     return this.request('/health/');

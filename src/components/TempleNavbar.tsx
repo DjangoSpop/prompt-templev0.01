@@ -22,10 +22,37 @@ import {
   Bot,
   TrendingUp,
   HelpCircle,
-  Activity
+  Activity,
+  Download,
+  Gem
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+
+// Styles for pharaonic glowing effects
+const pharaohicGlowStyle = `
+  @keyframes pharaohGlow {
+    0%, 100% { box-shadow: 0 0 10px rgba(217, 119, 6, 0.3), inset 0 0 10px rgba(217, 119, 6, 0.1); }
+    50% { box-shadow: 0 0 20px rgba(217, 119, 6, 0.6), inset 0 0 15px rgba(217, 119, 6, 0.2); }
+  }
+  @keyframes pyramidFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-4px); }
+  }
+  @keyframes shimmer {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+  }
+  .pharaoh-glow-active {
+    animation: pharaohGlow 3s ease-in-out infinite;
+  }
+  .pyramid-float {
+    animation: pyramidFloat 4s ease-in-out infinite;
+  }
+  .shimmer-text {
+    animation: shimmer 3s infinite;
+  }
+`;
 
 interface NavLink {
   href: string;
@@ -118,12 +145,21 @@ const mainNavLinks: NavLink[] = [
     label: 'Help',
     icon: HelpCircle,
     description: 'Documentation & support'
+  },
+  {
+    href: '/download',
+    label: 'Download',
+    icon: Crown,
+    description: 'Get the browser extension'
   }
 ];
 
 export function TempleNavbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [activePyramid, setActivePyramid] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
   const pathname = usePathname();
 
@@ -132,6 +168,32 @@ export function TempleNavbar() {
 
   useEffect(() => {
     setIsClient(true);
+
+    // Add scroll listener for floating effect
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+
+    // Track mouse position for interactive effects
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePos({ x: e.clientX, y: e.clientY });
+    };
+
+    handleScroll(); // Check initial scroll position
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    
+    // Periodic pyramid glow trigger
+    const pyramidInterval = setInterval(() => {
+      setActivePyramid(true);
+      setTimeout(() => setActivePyramid(false), 1000);
+    }, 4000);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('mousemove', handleMouseMove);
+      clearInterval(pyramidInterval);
+    };
   }, []);
 
   // Debug auth state
@@ -197,7 +259,17 @@ export function TempleNavbar() {
 
   return (
     <>
-      <nav className="sticky top-0 z-50 bg-gradient-to-r from-secondary/95 via-papyrus/95 to-secondary/95 backdrop-blur-lg border-b-2 border-gold-accent/30 shadow-lg rounded-b-2xl mx-2 md:mx-4 overflow-hidden">
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-out ${
+        isScrolled
+          ? 'py-1 md:py-2'
+          : 'py-2 md:py-3'
+      }`}>
+        <div className={`mx-2 md:mx-4 lg:mx-6 xl:mx-8 transition-all duration-500 ${
+          isScrolled
+            ? 'rounded-2xl shadow-2xl scale-[0.98]'
+            : 'rounded-b-2xl shadow-lg scale-100'
+        }`}>
+          <div className="bg-gradient-to-r from-secondary/95 via-papyrus/95 to-secondary/95 backdrop-blur-xl border-b-2 border-gold-accent/30 overflow-hidden rounded-inherit">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16 md:h-20">
             {/* Enhanced Logo with Pyramid Motif */}
@@ -377,7 +449,13 @@ export function TempleNavbar() {
             </div>
           </div>
         </div>
+          </div>
+        </div>
       </nav>
+      {/* Spacer to prevent content jump when navbar becomes fixed */}
+      <div className={`transition-all duration-300 ${
+        isScrolled ? 'h-20 md:h-24' : 'h-24 md:h-28'
+      }`} aria-hidden="true" />
 
       {/* Enhanced Mobile Drawer Menu with Pharaonic Theme */}
       {isAuthenticated && (
