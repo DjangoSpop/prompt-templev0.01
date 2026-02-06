@@ -35,9 +35,9 @@ export function ModuleSidebar({
   if (!module) return null;
 
   const totalLessons = module.lessons.length;
-  const completedLessonsCount = moduleProgress?.lessonsCompleted.length || 0;
+  const completedLessonsCount = moduleProgress?.lessonsCompleted?.length || 0;
   const progressPercentage = Math.round((completedLessonsCount / totalLessons) * 100);
-  const quizCompleted = moduleProgress?.quizScore !== null;
+  const quizCompleted = moduleProgress != null && moduleProgress.quizScore !== null;
 
   return (
     <aside
@@ -173,9 +173,9 @@ export function ModuleSidebar({
                 <p className="text-xs text-desert-sand-400">
                   {module.quiz.questions.length} questions • +{module.quiz.xpReward} XP
                 </p>
-                {quizCompleted && moduleProgress?.quizScore !== null && (
+                {quizCompleted && (
                   <p className="text-xs text-nile-teal-400 font-semibold mt-1">
-                    Score: {moduleProgress.quizScore}%
+                    Score: {moduleProgress?.quizScore}%
                   </p>
                 )}
               </div>
