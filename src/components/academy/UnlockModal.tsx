@@ -110,7 +110,7 @@ export function UnlockModal({ isOpen, onClose, module }: UnlockModalProps) {
                       Unlock All Modules
                     </DialogTitle>
                     <DialogDescription className="text-desert-sand-300">
-                      Access all 5 modules and advanced features
+                      Access all 6 modules and advanced features
                     </DialogDescription>
                   </div>
                 </div>

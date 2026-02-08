@@ -35,14 +35,15 @@ export function ModuleSidebar({
   if (!module) return null;
 
   const totalLessons = module.lessons.length;
-  const completedLessonsCount = moduleProgress?.lessonsCompleted?.length || 0;
+  const completedLessons = moduleProgress?.lessonsCompleted || [];
+  const completedLessonsCount = completedLessons.length;
   const progressPercentage = Math.round((completedLessonsCount / totalLessons) * 100);
   const quizCompleted = moduleProgress != null && moduleProgress.quizScore !== null;
 
   return (
     <aside
       className={cn(
-        'fixed left-0 top-0 h-screen w-80 bg-obsidian-900 border-r border-royal-gold-500/20 overflow-y-auto',
+        'w-80 flex-shrink-0 bg-obsidian-900 border-r border-royal-gold-500/20 overflow-y-auto hidden md:block',
         className
       )}
     >
@@ -50,36 +51,36 @@ export function ModuleSidebar({
         {/* Module Header */}
         <div className="mb-6">
           <div className="text-4xl mb-3">{module.badge}</div>
-          <h2 className="text-xl font-bold text-royal-gold-400 mb-2">
+          <h2 className="text-xl font-bold text-amber-400 mb-2">
             {module.shortTitle || module.title}
           </h2>
-          <p className="text-sm text-desert-sand-300 mb-4">
+          <p className="text-sm text-gray-300 mb-4">
             {module.duration} minutes • {module.xpReward} XP
           </p>
 
           {/* Overall Progress */}
           <div className="mb-2">
-            <div className="flex items-center justify-between text-xs text-desert-sand-400 mb-1">
+            <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
               <span>Progress</span>
               <span>{progressPercentage}%</span>
             </div>
             <Progress value={progressPercentage} className="h-2" />
           </div>
 
-          <p className="text-xs text-desert-sand-400">
+          <p className="text-xs text-gray-400">
             {completedLessonsCount} of {totalLessons} lessons completed
           </p>
         </div>
 
         {/* Lessons List */}
         <div className="space-y-2 mb-6">
-          <h3 className="text-sm font-semibold text-desert-sand-300 mb-3 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2">
             <BookOpen className="w-4 h-4" />
             Lessons
           </h3>
 
           {module.lessons.map((lesson, index) => {
-            const isCompleted = useAcademyStore(selectLessonCompleted(moduleId, lesson.id));
+            const isCompleted = completedLessons.includes(lesson.id);
             const isCurrent = index === currentLessonIndex && !showQuiz;
 
             return (
@@ -103,7 +104,7 @@ export function ModuleSidebar({
                       <Circle
                         className={cn(
                           'w-5 h-5',
-                          isCurrent ? 'text-royal-gold-400' : 'text-desert-sand-600'
+                          isCurrent ? 'text-amber-400' : 'text-gray-600'
                         )}
                       />
                     )}
@@ -114,12 +115,12 @@ export function ModuleSidebar({
                     <p
                       className={cn(
                         'text-sm font-medium mb-1',
-                        isCurrent ? 'text-royal-gold-300' : 'text-desert-sand-200'
+                        isCurrent ? 'text-amber-300' : 'text-gray-200'
                       )}
                     >
                       {lesson.title}
                     </p>
-                    <p className="text-xs text-desert-sand-400">
+                    <p className="text-xs text-gray-400">
                       {lesson.estimatedTime} min • +{lesson.xpReward} XP
                     </p>
                   </div>
@@ -131,7 +132,7 @@ export function ModuleSidebar({
 
         {/* Quiz Button */}
         <div>
-          <h3 className="text-sm font-semibold text-desert-sand-300 mb-3 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2">
             <Award className="w-4 h-4" />
             Assessment
           </h3>
@@ -154,7 +155,7 @@ export function ModuleSidebar({
                   <Circle
                     className={cn(
                       'w-5 h-5',
-                      showQuiz ? 'text-royal-gold-400' : 'text-desert-sand-600'
+                      showQuiz ? 'text-amber-400' : 'text-gray-600'
                     )}
                   />
                 )}
@@ -165,12 +166,12 @@ export function ModuleSidebar({
                 <p
                   className={cn(
                     'text-sm font-medium mb-1',
-                    showQuiz ? 'text-royal-gold-300' : 'text-desert-sand-200'
+                    showQuiz ? 'text-amber-300' : 'text-gray-200'
                   )}
                 >
                   Module Quiz
                 </p>
-                <p className="text-xs text-desert-sand-400">
+                <p className="text-xs text-gray-400">
                   {module.quiz.questions.length} questions • +{module.quiz.xpReward} XP
                 </p>
                 {quizCompleted && (
@@ -185,13 +186,13 @@ export function ModuleSidebar({
 
         {/* Module Objectives */}
         <div className="mt-8 p-4 bg-obsidian-800/50 rounded-lg border border-royal-gold-500/20">
-          <h4 className="text-sm font-semibold text-royal-gold-400 mb-3">
+          <h4 className="text-sm font-semibold text-amber-400 mb-3">
             Learning Objectives
           </h4>
-          <ul className="space-y-2 text-xs text-desert-sand-300">
+          <ul className="space-y-2 text-xs text-gray-300">
             {module.objectives.map((objective, index) => (
               <li key={index} className="flex items-start gap-2">
-                <span className="text-royal-gold-400 flex-shrink-0 mt-0.5">→</span>
+                <span className="text-amber-400 flex-shrink-0 mt-0.5">→</span>
                 <span>{objective}</span>
               </li>
             ))}

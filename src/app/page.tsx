@@ -1,20 +1,23 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/providers/AuthProvider';
 import { useEventTracker } from '@/providers/AnalyticsProvider';
 import { useDashboard } from '@/lib/hooks';
 import { GamificationDashboard } from '@/components/GamificationDashboard';
-import { 
-  TrendingUp, 
-  Zap, 
+import {
+  TrendingUp,
+  Zap,
   Star,
   ArrowRight,
   Play,
   BookOpen,
   BarChart3,
   Crown,
-  Sparkles
+  Sparkles,
+  Brain,
+  Trophy,
+  RotateCcw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -29,6 +32,8 @@ import { ScrollifyContainer } from '@/components/animations/ScrollifyContainer';
 import { EnhancedFloatingParticles } from '@/components/animations/EnhancedFloatingParticles';
 import { RevealOnScroll } from '@/components/animations/RevealOnScroll';
 import { ProgressIndicator } from '@/components/animations/ProgressIndicator';
+import { PromptIQTestModal } from '@/components/academy/PromptIQTestModal';
+import { useAcademyStore } from '@/lib/stores/academyStore';
 
 const TempleGateHero = dynamic(() => import('@/components/temple/TempleGateHero').then(m => m.TempleGateHero), { ssr: false });
 import ChatInterface from './../components/ChatInterface';
@@ -37,11 +42,14 @@ import { TryMeButton } from '@/components/try-me/TryMeButton';
 export default function DashboardPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { data: dashboardData, isLoading: dashboardLoading } = useDashboard();
-  // const { trackPageView } = useEventTracker();
+  const { trackPageView } = useEventTracker();
+  const [iqTestOpen, setIqTestOpen] = useState(false);
+  const promptIQScore = useAcademyStore((s) => s.promptIQScore);
+  const promptIQCompleted = useAcademyStore((s) => s.promptIQCompleted);
 
-  // useEffect(() => {
-  //   trackPageView('dashboard');
-  // }, [trackPageView]);
+  useEffect(() => {
+    trackPageView('dashboard');
+  }, [trackPageView]);
 
   if (isLoading || dashboardLoading) {
     return (
@@ -59,7 +67,7 @@ export default function DashboardPage() {
           height={4}
           className="z-50"
         />
-        <ScrollifyContainer className="min-h-screen temple-background">
+        <ScrollifyContainer className="temple-background">
           <EnhancedFloatingParticles
             count={40}
             colors={['#3B82F6', '#8B5CF6', '#F59E0B', '#10B981', '#EF4444', '#EC4899']}
@@ -164,12 +172,13 @@ export default function DashboardPage() {
 
   return (
     <>
+      {/*    */}
       <ProgressIndicator
         color="#F59E0B"
         height={4}
         className="z-50"
       />
-      <ScrollifyContainer className="min-h-screen temple-background">
+      <ScrollifyContainer className="temple-background">
         <EnhancedFloatingParticles
           count={25}
           colors={['#3B82F6', '#8B5CF6', '#F59E0B', '#10B981']}
@@ -192,6 +201,63 @@ export default function DashboardPage() {
           <p className="text-muted-foreground mt-2 text-lg stagger-element">
             Your journey through the sacred halls of prompt mastery continues. Here&apos;s your current progress.
           </p>
+        </RevealOnScroll>
+      </div>
+
+      {/* Prompt IQ Test CTA */}
+      <div className="scrollify-section mb-6">
+        <RevealOnScroll direction="up" duration={1}>
+          <Card className="temple-card overflow-hidden pyramid-elevation">
+            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 p-6">
+              <div className="w-14 h-14 shrink-0 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
+                <Brain className="h-7 w-7 text-white" />
+              </div>
+              <div className="flex-1 text-center sm:text-left">
+                {promptIQCompleted ? (
+                  <>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-1">
+                      <h3 className="text-lg font-bold text-hieroglyph">Your Prompt IQ: {promptIQScore}</h3>
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-primary bg-primary/10 rounded-full px-2 py-0.5 w-fit mx-auto sm:mx-0">
+                        <Trophy className="h-3 w-3" />
+                        Completed
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Head to the Academy to raise your score, or retake the test to see how you&apos;ve improved.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-lg font-bold text-hieroglyph mb-1">Test Your Prompt IQ</h3>
+                    <p className="text-sm text-muted-foreground">
+                      10 questions on AI fundamentals and prompt engineering. 2 minutes. Find out where you stand.
+                    </p>
+                  </>
+                )}
+              </div>
+              <div className="flex gap-2 shrink-0">
+                {promptIQCompleted ? (
+                  <>
+                    <Link href="/academy">
+                      <Button size="sm" className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground">
+                        Academy
+                        <ArrowRight className="ml-1.5 h-4 w-4" />
+                      </Button>
+                    </Link>
+                    <Button size="sm" variant="outline" onClick={() => setIqTestOpen(true)}>
+                      <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
+                      Retake
+                    </Button>
+                  </>
+                ) : (
+                  <Button size="sm" onClick={() => setIqTestOpen(true)} className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground">
+                    <Brain className="mr-1.5 h-4 w-4" />
+                    Take the Test
+                  </Button>
+                )}
+              </div>
+            </div>
+          </Card>
         </RevealOnScroll>
       </div>
 
@@ -375,6 +441,15 @@ export default function DashboardPage() {
       </div>
       </div>
     </ScrollifyContainer>
+
+      {/* IQ Test Modal */}
+      <PromptIQTestModal
+        open={iqTestOpen}
+        onOpenChange={setIqTestOpen}
+        onStartLearning={() => {
+          window.location.href = '/academy';
+        }}
+      />
     </>
   );
 }

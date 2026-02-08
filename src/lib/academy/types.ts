@@ -1,7 +1,7 @@
 /**
  * PromptCraft Academy - Type Definitions
  *
- * Core TypeScript interfaces for the 5-module interactive learning system
+ * Core TypeScript interfaces for the 6-module interactive learning system
  */
 
 // ============================================================================

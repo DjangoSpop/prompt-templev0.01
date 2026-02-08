@@ -1,12 +1,22 @@
 /**
  * PromptCraft Academy - Module Definitions
  *
- * All 5 modules with metadata, lessons, and quizzes
+ * All 6 modules with metadata, lessons, and quizzes
  */
 
 import type { Module } from '../types';
 import { module1Lessons } from './lessons/module-1-lessons';
 import { module1Quiz } from './quizzes/module-1-quiz';
+import { module2Lessons } from './lessons/module-2-lessons';
+import { module2Quiz } from './quizzes/module-2-quiz';
+import { module3Lessons } from './lessons/module-3-lessons';
+import { module3Quiz } from './quizzes/module-3-quiz';
+import { module4Lessons } from './lessons/module-4-lessons';
+import { module4Quiz } from './quizzes/module-4-quiz';
+import { module5Lessons } from './lessons/module-5-lessons';
+import { module5Quiz } from './quizzes/module-5-quiz';
+import { module6Lessons } from './lessons/module-6-lessons';
+import { module6Quiz } from './quizzes/module-6-quiz';
 
 export const modules: Module[] = [
   {
@@ -45,8 +55,8 @@ export const modules: Module[] = [
     xpReward: 150,
     order: 2,
     locked: true,
-    lessons: [], // To be implemented
-    quiz: {} as any, // To be implemented
+    lessons: module2Lessons,
+    quiz: module2Quiz,
     prerequisites: ['module-1'],
   },
   {
@@ -65,8 +75,8 @@ export const modules: Module[] = [
     xpReward: 150,
     order: 3,
     locked: true,
-    lessons: [], // To be implemented
-    quiz: {} as any, // To be implemented
+    lessons: module3Lessons,
+    quiz: module3Quiz,
     prerequisites: ['module-1', 'module-2'],
   },
   {
@@ -85,8 +95,8 @@ export const modules: Module[] = [
     xpReward: 200,
     order: 4,
     locked: true,
-    lessons: [], // To be implemented
-    quiz: {} as any, // To be implemented
+    lessons: module4Lessons,
+    quiz: module4Quiz,
     prerequisites: ['module-1', 'module-2', 'module-3'],
   },
   {
@@ -105,9 +115,29 @@ export const modules: Module[] = [
     xpReward: 200,
     order: 5,
     locked: true,
-    lessons: [], // To be implemented
-    quiz: {} as any, // To be implemented
+    lessons: module5Lessons,
+    quiz: module5Quiz,
     prerequisites: ['module-1', 'module-2', 'module-3', 'module-4'],
+  },
+  {
+    id: 'module-6',
+    title: 'The Pharaoh\'s Decree: Capstone Project',
+    shortTitle: 'Capstone',
+    duration: 30,
+    description: 'Design, build, and validate a production-grade prompt workflow for a real-world problem',
+    objectives: [
+      'Define a measurable problem statement for prompt automation',
+      'Architect a multi-step prompt workflow with validation gates',
+      'Write production-grade prompt templates with variables and error handling',
+      'Test and validate workflow quality using the 5-Point Validation Protocol',
+    ],
+    badge: '👑',
+    xpReward: 300,
+    order: 6,
+    locked: true,
+    lessons: module6Lessons,
+    quiz: module6Quiz,
+    prerequisites: ['module-1', 'module-2', 'module-3', 'module-4', 'module-5'],
   },
 ];
 

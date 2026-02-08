@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion';
 import { useAuth } from '@/providers/AuthProvider';
 import { useSuppressHydrationWarning } from '@/hooks/useSuppressHydrationWarning';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -22,456 +23,801 @@ import {
   Bot,
   TrendingUp,
   HelpCircle,
-  Activity,
   Download,
-  Gem
+  Gem,
+  ChevronRight,
+  Search,
+  Command,
+  Bell,
+  User,
+  Layers,
+  ScrollText, // Added for Academy
+  Pyramid // Using a custom shape or general icon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+
+// --- Types & Interfaces ---
 
 interface NavLink {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   description: string;
+  badge?: string;
+  priority: 'primary' | 'secondary' | 'utility';
+  isHighlighted?: boolean; // For Academy
 }
 
-const mainNavLinks: NavLink[] = [
+interface NavGroup {
+  label: string;
+  links: NavLink[];
+}
+
+// --- Navigation Configuration ---
+
+const navigationGroups: NavGroup[] = [
   {
-    href: '/',
-    label: 'Dashboard',
-    icon: BarChart3,
-    description: 'Overview and analytics'
+    label: 'Core',
+    links: [
+      {
+        href: '/',
+        label: 'Dashboard',
+        icon: BarChart3,
+        description: 'Overview and analytics',
+        priority: 'primary'
+      },
+      {
+        href: '/assistant-full',
+        label: 'AI Assistant',
+        icon: Sparkles,
+        description: 'Smart AI conversations',
+        badge: 'New',
+        priority: 'primary'
+      },
+      {
+        href: '/templates',
+        label: 'Templates',
+        icon: BookOpen,
+        description: 'Prompt library & manager',
+        priority: 'primary'
+      }
+    ]
   },
   {
-    href: '/assistant-full',
-    label: 'AI Assistant',
-    icon: Sparkles,
-    description: 'Smart AI conversations'
+    label: 'Knowledge', // Renamed from Resources for Ancient feel
+    links: [
+      {
+        href: '/academy',
+        label: 'The Academy',
+        icon: ScrollText,
+        description: 'Master the art of prompting',
+        priority: 'primary',
+        isHighlighted: true // Special flag for styling
+      },
+      {
+        href: '/optimization',
+        label: 'Optimizer',
+        icon: Zap,
+        description: 'AI prompt optimization',
+        priority: 'secondary'
+      },
+      {
+        href: '/enhanced',
+        label: 'Oracle Chat',
+        icon: MessageSquare,
+        description: 'Live AI conversations',
+        priority: 'secondary'
+      },
+      {
+        href: '/rag',
+        label: 'RAG',
+        icon: Bot,
+        description: 'Knowledge retrieval',
+        priority: 'secondary'
+      }
+    ]
   },
   {
-    href: '/templates',
-    label: 'Templates',
-    icon: BookOpen,
-    description: 'Prompt library & manager'
-  },
-  {
-    href: '/optimization',
-    label: 'Optimizer',
-    icon: Zap,
-    description: 'AI prompt optimization'
-  },
-  {
-    href: '/enhanced',
-    label: 'Oracle Chat',
-    icon: MessageSquare,
-    description: 'Live AI conversations'
-  },
-  {
-    href: '/rag',
-    label: 'RAG',
-    icon: Bot,
-    description: 'Knowledge retrieval'
-  },
-  {
-    href: '/analysis',
-    label: 'Analytics',
-    icon: TrendingUp,
-    description: 'Performance insights'
-  },
-  {
-    href: '/help',
-    label: 'Help',
-    icon: HelpCircle,
-    description: 'Documentation & support'
-  },
-  {
-    href: '/download',
-    label: 'Download',
-    icon: Download,
-    description: 'Get the browser extension'
+    label: 'System',
+    links: [
+      {
+        href: '/analysis',
+        label: 'Analytics',
+        icon: TrendingUp,
+        description: 'Performance insights',
+        priority: 'secondary'
+      },
+      {
+        href: '/help',
+        label: 'Help',
+        icon: HelpCircle,
+        description: 'Documentation & support',
+        priority: 'utility'
+      },
+      {
+        href: '/download',
+        label: 'Download',
+        icon: Download,
+        description: 'Get the browser extension',
+        priority: 'utility'
+      }
+    ]
   }
 ];
 
+const allNavLinks = navigationGroups.flatMap(g => g.links);
+
+// --- Components ---
+
+/**
+ * PharaohSigil - The Professional Pharaonic Logo
+ * Features: Pyramids, Benben Stone, Eye of Horus, Rotating Sun Rays
+ */
+const PharaohSigil = ({ className, active = false }: { className?: string; active?: boolean }) => {
+  return (
+    <div className={cn("relative flex items-center justify-center", className)}>
+      {/* Rotating Sun Rays (Background) */}
+      <motion.div
+        className="absolute inset-0 text-amber-500/20"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+      >
+        <svg viewBox="0 0 100 100" fill="none" className="w-full h-full">
+          {[...Array(8)].map((_, i) => (
+            <path
+              key={i}
+              d="M50 50 L50 10"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              transform={`rotate(${i * 45} 50 50)`}
+            />
+          ))}
+        </svg>
+      </motion.div>
+
+      {/* Main Sigil SVG */}
+      <motion.svg
+        width="48"
+        height="48"
+        viewBox="0 0 48 48"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="relative z-10 drop-shadow-[0_0_10px_rgba(245,158,11,0.5)]"
+        animate={active ? { scale: [1, 1.05, 1] } : { scale: 1 }}
+        transition={{ duration: 2, repeat: Infinity }}
+      >
+        <defs>
+          <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#FCD34D" /> {/* Amber 300 */}
+            <stop offset="50%" stopColor="#F59E0B" /> {/* Amber 500 */}
+            <stop offset="100%" stopColor="#B45309" /> {/* Amber 700 */}
+          </linearGradient>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+            <feMerge>
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+
+        {/* The Great Pyramid Base */}
+        <path d="M24 14 L40 40 H8 L24 14Z" fill="url(#goldGrad)" stroke="#78350F" strokeWidth="0.5" />
+        
+        {/* Inner Detail Lines (Bricks) */}
+        <path d="M24 22 L34 38" stroke="#B45309" strokeWidth="0.5" opacity="0.3" />
+        <path d="M24 22 L14 38" stroke="#B45309" strokeWidth="0.5" opacity="0.3" />
+        <path d="M24 30 L24 38" stroke="#B45309" strokeWidth="0.5" opacity="0.3" />
+
+        {/* The Floating Benben Stone (Capstone) */}
+        <motion.path
+          d="M24 4 L32 14 H16 L24 4Z"
+          fill="#FEF3C7"
+          stroke="#F59E0B"
+          strokeWidth="1"
+          animate={{ y: [0, -2, 0] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        />
+
+        {/* Eye of Horus / Ra (Center) */}
+        <g transform="translate(24, 26)">
+          {/* Eye Shape */}
+          <path d="M-6 0 Q0 -6 6 0 Q0 6 -6 0 Z" fill="#1C1917" />
+          {/* Pupil */}
+          <motion.circle
+            cx="0"
+            cy="0"
+            r="2"
+            fill="#FCD34D"
+            animate={{ scale: [1, 1.2, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+          {/* Eyebrow (Royal) */}
+          <path d="M-7 -3 Q0 -6 7 -3" stroke="#F59E0B" strokeWidth="0.5" fill="none" />
+        </g>
+      </motion.svg>
+    </div>
+  );
+};
+
+/**
+ * NavItem - Enhanced with Academy Highlighting
+ */
+const NavItem = ({
+  link,
+  isActive,
+  onHover,
+  hoveredPath,
+  layoutId
+}: {
+  link: NavLink;
+  isActive: boolean;
+  onHover: (path: string | null) => void;
+  hoveredPath: string | null;
+  layoutId: string;
+}) => {
+  const Icon = link.icon;
+  
+  // Special styling for The Academy
+  if (link.isHighlighted) {
+    return (
+      <Link
+        href={link.href}
+        className="relative group"
+        onMouseEnter={() => onHover(link.href)}
+        onMouseLeave={() => onHover(null)}
+      >
+        <div className="relative z-10 flex items-center gap-2 px-4 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/5 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 transition-all duration-300 shadow-[0_0_10px_rgba(245,158,11,0.1)] hover:shadow-[0_0_15px_rgba(245,158,11,0.3)]">
+          <ScrollText className="h-4 w-4" />
+          <span className="text-sm font-semibold tracking-wide">{link.label}</span>
+        </div>
+        {isActive && (
+          <motion.div
+            layoutId={`${layoutId}-active`}
+            className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-amber-500 shadow-[0_0_8px_#F59E0B]"
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          />
+        )}
+      </Link>
+    );
+  }
+
+  // Standard Item
+  return (
+    <Link
+      href={link.href}
+      className="relative px-3 py-2 rounded-full group"
+      onMouseEnter={() => onHover(link.href)}
+      onMouseLeave={() => onHover(null)}
+    >
+      <div className="relative z-10 flex items-center gap-2">
+        <Icon className={cn(
+          "h-4 w-4 transition-colors duration-200",
+          isActive ? "text-amber-600 dark:text-amber-400" : "text-stone-600 dark:text-stone-400 group-hover:text-stone-900 dark:group-hover:text-stone-100"
+        )} />
+        <span className={cn(
+          "text-sm font-medium transition-colors duration-200 hidden lg:inline-block",
+          isActive ? "text-stone-900 dark:text-stone-100" : "text-stone-600 dark:text-stone-400 group-hover:text-stone-900 dark:group-hover:text-stone-100"
+        )}>
+          {link.label}
+        </span>
+        {link.badge && (
+          <span className="flex h-2 w-2 relative ml-1">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+          </span>
+        )}
+      </div>
+      
+      <AnimatePresence>
+        {(hoveredPath === link.href || isActive) && (
+          <motion.div
+            layoutId={layoutId}
+            className={cn(
+              "absolute inset-0 rounded-full",
+              isActive 
+                ? "bg-amber-100/80 dark:bg-amber-900/30" 
+                : "bg-stone-100 dark:bg-stone-800"
+            )}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{
+              type: "spring",
+              bounce: 0.2,
+              stiffness: 130,
+              damping: 15,
+            }}
+          />
+        )}
+      </AnimatePresence>
+    </Link>
+  );
+};
+
+/**
+ * CommandPaletteTrigger - Search Button
+ */
+const CommandPaletteTrigger = ({ onClick }: { onClick: () => void }) => (
+  <button
+    onClick={onClick}
+    className="hidden md:flex items-center gap-2 px-3 py-1.5 text-sm text-stone-500 bg-stone-100/50 dark:bg-stone-800/50 rounded-full border border-stone-200 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-800 hover:border-amber-500/30 transition-all duration-300"
+  >
+    <Search className="h-3.5 w-3.5 text-stone-400" />
+    <span className="hidden lg:inline">Search Oracle...</span>
+    <kbd className="hidden lg:inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-mono text-stone-400 bg-white dark:bg-stone-900 rounded border border-stone-200 dark:border-stone-700">
+      <Command className="h-3 w-3" />
+      <span>K</span>
+    </kbd>
+  </button>
+);
+
+/**
+ * UserMenu - Profile Dropdown
+ */
+const UserMenu = ({ user, onLogout }: { user: any; onLogout: () => void }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+  
+  return (
+    <div className="relative" ref={menuRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-3 pl-3 pr-1 py-1 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors duration-200"
+      >
+        <div className="text-right hidden md:block">
+          <p className="text-sm font-semibold text-stone-900 dark:text-stone-100 leading-tight">
+            {user?.first_name || user?.username}
+          </p>
+          <div className="flex items-center gap-1 justify-end">
+            <Gem className="h-3 w-3 text-amber-500 fill-amber-500/20" />
+            <span className="text-xs text-stone-500 font-mono">LVL {user?.level || 1}</span>
+          </div>
+        </div>
+        <div className="relative">
+          <div className="w-9 h-9 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg ring-2 ring-white dark:ring-stone-900 transition-transform hover:scale-105">
+            {(user?.first_name?.[0] || user?.username?.[0] || 'U').toUpperCase()}
+          </div>
+          <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white dark:border-stone-900 rounded-full animate-pulse"></div>
+        </div>
+      </button>
+      
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="absolute right-0 mt-3 w-64 bg-white/95 dark:bg-stone-950/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-stone-200 dark:border-stone-800 overflow-hidden z-50"
+          >
+            <div className="p-4 border-b border-stone-100 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/50">
+              <p className="font-semibold text-stone-900 dark:text-stone-100 truncate">{user?.email}</p>
+              <div className="flex items-center gap-2 mt-1">
+                 <Crown className="h-3 w-3 text-amber-500" />
+                 <p className="text-xs font-medium text-amber-600 dark:text-amber-400">Temple Scribe</p>
+              </div>
+            </div>
+            <div className="p-2">
+              <Link href="/settings" className="flex items-center gap-3 px-3 py-2.5 text-sm text-stone-700 dark:text-stone-300 hover:bg-amber-50 dark:hover:bg-amber-900/10 hover:text-amber-700 dark:hover:text-amber-400 rounded-xl transition-colors">
+                <Settings className="h-4 w-4" />
+                Settings
+              </Link>
+              <Link href="/profile" className="flex items-center gap-3 px-3 py-2.5 text-sm text-stone-700 dark:text-stone-300 hover:bg-amber-50 dark:hover:bg-amber-900/10 hover:text-amber-700 dark:hover:text-amber-400 rounded-xl transition-colors">
+                <User className="h-4 w-4" />
+                Profile
+              </Link>
+            </div>
+            <div className="p-2 border-t border-stone-100 dark:border-stone-800">
+              <button
+                onClick={onLogout}
+                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+/**
+ * MobileMenu
+ */
+const MobileMenu = ({
+  isOpen,
+  onClose,
+  links,
+  pathname,
+  user,
+  onLogout
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  links: NavLink[];
+  pathname: string;
+  user: any;
+  onLogout: () => void;
+}) => {
+  const menuVariants = {
+    closed: {
+      x: '100%',
+      transition: {
+        type: 'tween',
+        duration: 0.4,
+        ease: [0.25, 1, 0.5, 1] // Custom ease for premium feel
+      }
+    },
+    open: {
+      x: 0,
+      transition: {
+        type: 'tween',
+        duration: 0.4,
+        ease: [0.25, 1, 0.5, 1]
+      }
+    }
+  };
+  
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/40 backdrop-blur-md z-40 lg:hidden"
+            onClick={onClose}
+          />
+          <motion.div
+            variants={menuVariants}
+            initial="closed"
+            animate="open"
+            exit="closed"
+            className="fixed top-0 right-0 h-full w-full max-w-sm bg-stone-50 dark:bg-stone-950 z-50 shadow-2xl lg:hidden flex flex-col"
+          >
+            {/* Header */}
+            <div className="p-6 border-b border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                    {(user?.first_name?.[0] || user?.username?.[0] || 'U').toUpperCase()}
+                  </div>
+                  <div>
+                    <h2 className="font-bold text-lg text-stone-900 dark:text-stone-100 font-serif">{user?.first_name || user?.username}</h2>
+                    <p className="text-xs text-stone-500 uppercase tracking-widest">Scribe Level {user?.level || 1}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={onClose}
+                  className="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full transition-colors"
+                >
+                  <X className="h-6 w-6 text-stone-500" />
+                </button>
+              </div>
+              
+              {/* Featured: The Academy Card */}
+              <Link href="/academy" onClick={onClose} className="block group relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-100 to-orange-50 dark:from-amber-900/40 dark:to-orange-900/20 border border-amber-200 dark:border-amber-800 p-4">
+                 <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <ScrollText className="h-16 w-16 text-amber-600" />
+                 </div>
+                 <div className="relative z-10">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Crown className="h-4 w-4 text-amber-600" />
+                      <span className="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Featured</span>
+                    </div>
+                    <h3 className="text-lg font-bold text-stone-900 dark:text-stone-100 font-serif">The Academy</h3>
+                    <p className="text-xs text-stone-600 dark:text-stone-400 mt-1">Master the ancient art of prompting.</p>
+                 </div>
+              </Link>
+            </div>
+            
+            {/* Scrollable Links */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-6">
+              {navigationGroups.map((group) => (
+                <div key={group.label}>
+                  <p className="px-3 text-xs font-bold text-stone-400 uppercase tracking-widest mb-3 font-serif">{group.label}</p>
+                  <div className="space-y-1">
+                    {group.links.map((link) => {
+                      const Icon = link.icon;
+                      const isActive = pathname === link.href || pathname.startsWith(link.href + '/');
+                      
+                      // Skip Academy link here as it's featured above
+                      if(link.isHighlighted) return null;
+
+                      return (
+                        <Link
+                          key={link.href}
+                          href={link.href}
+                          onClick={onClose}
+                          className={cn(
+                            "flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group",
+                            isActive
+                              ? "bg-amber-100 dark:bg-amber-900/30 text-amber-900 dark:text-amber-100"
+                              : "text-stone-600 dark:text-stone-400 hover:bg-white dark:hover:bg-stone-900 hover:shadow-sm"
+                          )}
+                        >
+                          <div className={cn("p-1.5 rounded-lg", isActive ? "bg-amber-200/50" : "bg-stone-100 dark:bg-stone-800 group-hover:bg-stone-200 dark:group-hover:bg-stone-700")}>
+                            <Icon className={cn("h-4 w-4", isActive ? "text-amber-700" : "text-stone-500")} />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-medium text-sm">{link.label}</p>
+                          </div>
+                          {isActive && <ChevronRight className="h-4 w-4 text-amber-600" />}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Footer */}
+            <div className="p-4 border-t border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900">
+               <div className="flex items-center justify-between mb-4">
+                 <div className="flex gap-2">
+                    <ThemeToggle />
+                    <LanguageSwitcher />
+                 </div>
+                 <Button variant="ghost" size="sm" onClick={() => { onLogout(); onClose(); }} className="text-red-500 hover:bg-red-50 hover:text-red-600">
+                   <LogOut className="h-4 w-4 mr-2" /> Sign Out
+                 </Button>
+               </div>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+};
+
+/**
+ * Main Navbar Component
+ */
 export function TempleNavbarEnhanced() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [hoveredPath, setHoveredPath] = useState<string | null>(null);
   const [activePyramid, setActivePyramid] = useState(false);
+  
+  const { scrollY } = useScroll();
   const { user, isAuthenticated, logout } = useAuth();
   const pathname = usePathname();
-
+  
+  // Scroll Logic: Hide on scroll down, show on scroll up
+  const [hidden, setHidden] = useState(false);
+  const { scrollYProgress } = useScroll();
+  const y = useTransform(scrollYProgress, [0, 0.1, 1], [0, -20, -20]); // subtle parallax
+  const scale = useSpring(useTransform(scrollY, [0, 100], [1, 0.95]), { stiffness: 300, damping: 30 });
+  const opacity = useTransform(scrollY, [0, 50], [1, 0.95]); // slight fade on scroll
+  
   useSuppressHydrationWarning();
-
+  
   useEffect(() => {
     setIsClient(true);
-
+    
+    let lastScroll = 0;
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      const currentScroll = window.scrollY;
+      if (currentScroll > lastScroll && currentScroll > 100) {
+        setHidden(true);
+      } else {
+        setHidden(false);
+      }
+      lastScroll = currentScroll;
     };
-
-    handleScroll();
+    
     window.addEventListener('scroll', handleScroll, { passive: true });
-
+    
     const pyramidInterval = setInterval(() => {
       setActivePyramid(true);
-      setTimeout(() => setActivePyramid(false), 1000);
-    }, 4000);
-
+      setTimeout(() => setActivePyramid(false), 2000);
+    }, 6000);
+    
     return () => {
       window.removeEventListener('scroll', handleScroll);
       clearInterval(pyramidInterval);
     };
   }, []);
-
-  const isActivePath = (href: string) => {
-    if (href === '/') return pathname === '/';
-    return pathname.startsWith(href);
-  };
-
+  
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [pathname]);
-
+  
+  const isActivePath = useCallback((href: string) => {
+    if (href === '/') return pathname === '/';
+    return pathname.startsWith(href);
+  }, [pathname]);
+  
+  const primaryLinks = allNavLinks.filter(l => l.priority === 'primary' && !l.isHighlighted);
+  const academyLink = allNavLinks.find(l => l.isHighlighted);
+  const secondaryLinks = allNavLinks.filter(l => l.priority === 'secondary' && !l.isHighlighted);
+  
   if (!isClient) {
     return (
-      <nav className="fixed top-0 left-0 right-0 z-50 py-2 md:py-3">
-        <div className="mx-2 md:mx-4 lg:mx-6 xl:mx-8 rounded-3xl shadow-lg">
-          <div className="bg-gradient-to-r from-secondary/95 via-papyrus/95 to-secondary/95 backdrop-blur-xl border-2 border-gold-accent/30 overflow-hidden rounded-3xl p-4">
-            <div className="flex items-center justify-between h-12 animate-pulse">
-              <div className="w-32 h-8 bg-muted rounded-full"></div>
-              <div className="flex gap-2">
-                <div className="w-20 h-8 bg-muted rounded-full"></div>
-                <div className="w-20 h-8 bg-muted rounded-full"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <div className="fixed top-0 left-0 right-0 z-50 h-20 bg-white/80 dark:bg-stone-950/80 backdrop-blur-xl border-b border-stone-200 dark:border-stone-800" />
     );
   }
-
+  
   return (
     <>
-      <style>{`
-        @keyframes pharaohGlow {
-          0%, 100% { box-shadow: 0 0 15px rgba(217, 119, 6, 0.3), 0 0 30px rgba(217, 119, 6, 0.1); }
-          50% { box-shadow: 0 0 25px rgba(217, 119, 6, 0.6), 0 0 40px rgba(217, 119, 6, 0.2); }
-        }
-        @keyframes pyramidFloat {
-          0%, 100% { transform: translateY(0px) rotateZ(0deg); }
-          50% { transform: translateY(-6px) rotateZ(1deg); }
-        }
-        @keyframes shimmerWave {
-          0% { background-position: -1000px 0; }
-          100% { background-position: 1000px 0; }
-        }
-        @keyframes goldenPulse {
-          0%, 100% { opacity: 0.6, filter: drop-shadow(0 0 8px rgba(217, 119, 6, 0.2)); }
-          50% { opacity: 1, filter: drop-shadow(0 0 16px rgba(217, 119, 6, 0.5)); }
-        }
-        .pharaoh-glow {
-          animation: pharaohGlow 3s ease-in-out infinite;
-        }
-        .pyramid-float {
-          animation: pyramidFloat 4s ease-in-out infinite;
-        }
-        .golden-pulse {
-          animation: goldenPulse 2s ease-in-out infinite;
-        }
-      `}</style>
-
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-out ${
-        isScrolled ? 'py-1 md:py-2' : 'py-2 md:py-3'
-      }`}>
-        <div className={`mx-2 md:mx-4 lg:mx-6 xl:mx-8 transition-all duration-500 ${
-          isScrolled
-            ? 'rounded-3xl shadow-2xl md:shadow-3xl scale-[0.97]'
-            : 'rounded-3xl shadow-xl scale-100'
-        }`}>
-          <div className={`bg-gradient-to-r from-secondary/95 via-papyrus/95 to-secondary/95 backdrop-blur-2xl border-2 transition-all duration-500 overflow-hidden rounded-3xl ${
-            isScrolled
-              ? 'border-gold-accent/50 pharaoh-glow'
-              : 'border-gold-accent/30'
-          }`}>
-            <div className="container mx-auto px-4 py-2 md:py-3">
-              <div className="flex items-center justify-between h-16 md:h-20">
-                {/* Logo with Enhanced Pharaonic Design */}
-                <Link href="/" className="flex items-center space-x-2 md:space-x-3 group flex-shrink-0">
-                  <div className={`relative ${activePyramid ? 'pyramid-float' : ''}`}>
-                    <div className={`w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-gold-accent to-yellow-600 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 group-hover:scale-110 group-hover:shadow-3xl ${
-                      activePyramid ? 'pharaoh-glow' : ''
-                    }`}>
-                      <svg className="h-5 w-5 md:h-6 md:w-6 text-basalt-black" viewBox="0 0 24 24" fill="currentColor">
-                        <polygon points="12,2 22,22 2,22" />
-                        <polygon points="12,6 18,18 6,18" className="opacity-70" />
-                        <polygon points="12,10 14,14 10,14" className="opacity-50" />
-                      </svg>
-                    </div>
-                    <div className="absolute -top-2 -right-2 w-4 h-4 md:w-5 md:h-5 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
-                  </div>
+      <motion.header
+        className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8 pt-4 pointer-events-none" // pointer-events-none allows clicking through the padding
+        initial={{ y: -100 }}
+        animate={{ y: hidden ? -120 : 0 }}
+        transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
+      >
+        <div className="mx-auto max-w-7xl pointer-events-auto">
+          <motion.nav
+            style={{ scale, opacity }}
+            className={cn(
+              "relative rounded-3xl border transition-all duration-500",
+              scrollY.get() > 20
+                ? "bg-white/90 dark:bg-stone-950/90 backdrop-blur-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-stone-200/50 dark:border-stone-800/50 py-2"
+                : "bg-white/70 dark:bg-stone-950/70 backdrop-blur-xl border-stone-200/30 dark:border-stone-800/30 py-3 shadow-lg"
+            )}
+          >
+            <div className="flex items-center justify-between px-4">
+              {/* Logo Section */}
+              <div className="flex items-center gap-8">
+                <Link href="/" className="flex items-center gap-3 group">
+                  <PharaohSigil 
+                    className="w-10 h-10" 
+                    active={activePyramid} 
+                  />
                   <div className="hidden sm:block">
-                    <h1 className="text-lg md:text-xl font-bold bg-gradient-to-r from-gold-accent to-yellow-600 bg-clip-text text-transparent">
+                    <h1 className="text-xl font-bold bg-gradient-to-r from-amber-600 via-yellow-600 to-amber-600 bg-clip-text text-transparent font-serif tracking-tight">
                       Prompt Temple
                     </h1>
-                    <p className="text-xs text-muted-foreground/80">Sacred Sanctuary</p>
+                    <motion.p 
+                       className="text-[10px] text-stone-500 font-medium tracking-[0.2em] uppercase"
+                       initial={{ opacity: 0.6 }}
+                       animate={{ opacity: 1 }}
+                       transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
+                    >
+                        Sacred Sanctuary
+                    </motion.p>
                   </div>
                 </Link>
-
-                {/* Desktop Navigation - Centered */}
+                
+                {/* Desktop Navigation */}
                 {isAuthenticated && (
-                  <div className="hidden xl:flex items-center gap-1" data-onboarding="main-nav">
-                    {mainNavLinks.map((link) => {
-                      const Icon = link.icon;
-                      const isActive = isActivePath(link.href);
+                  <div className="hidden lg:flex items-center gap-1">
+                    {primaryLinks.map((link) => (
+                      <NavItem
+                        key={link.href}
+                        link={link}
+                        isActive={isActivePath(link.href)}
+                        onHover={setHoveredPath}
+                        hoveredPath={hoveredPath}
+                        layoutId="primary-nav"
+                      />
+                    ))}
+                    
+                    {/* The Academy - Highlighted */}
+                    {academyLink && (
+                      <NavItem
+                        key={academyLink.href}
+                        link={academyLink}
+                        isActive={isActivePath(academyLink.href)}
+                        onHover={setHoveredPath}
+                        hoveredPath={hoveredPath}
+                        layoutId="academy-nav"
+                      />
+                    )}
 
-                      return (
-                        <Link key={link.href} href={link.href} className="group relative">
-                          <Button
-                            variant="ghost"
-                            className={`h-10 px-3 flex items-center gap-2 relative overflow-hidden transition-all duration-300 rounded-full ${
-                              isActive
-                                ? 'bg-gradient-to-r from-gold-accent/20 to-yellow-500/20 text-gold-accent border border-gold-accent/40 shadow-lg pharaoh-glow'
-                                : 'hover:bg-gold-accent/10 hover:text-gold-accent text-foreground/70 hover:scale-105'
-                            }`}
-                          >
-                            {isActive && (
-                              <div className="absolute left-2 top-1/2 -translate-y-1/2">
-                                <svg className="h-2 w-2 text-gold-accent" viewBox="0 0 12 12" fill="currentColor">
-                                  <polygon points="6,1 11,9 1,9" />
-                                </svg>
-                              </div>
-                            )}
-                            <Icon className={`h-4 w-4 ${isActive ? 'text-gold-accent' : ''}`} />
-                            <span className="text-sm font-medium">{link.label}</span>
-                            {isActive && (
-                              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-gold-accent to-yellow-500"></div>
-                            )}
-                          </Button>
-                          
-                          {/* Floating Tooltip */}
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-50">
-                            <div className="bg-basalt-black/95 text-papyrus text-xs rounded-lg px-3 py-2 whitespace-nowrap shadow-2xl border border-gold-accent/30 backdrop-blur-sm">
-                              {link.description}
-                              <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-basalt-black/95 rotate-45 border-l border-t border-gold-accent/30"></div>
-                            </div>
-                          </div>
-                        </Link>
-                      );
-                    })}
+                    {/* More Dropdown */}
+                    <div className="relative group ml-2">
+                      <button className="relative px-3 py-2 rounded-full flex items-center gap-2 text-sm font-medium text-stone-500 hover:text-stone-900 dark:hover:text-stone-100 transition-colors">
+                        <Layers className="h-4 w-4" />
+                        <span className="hidden xl:inline">Tools</span>
+                        <ChevronRight className="h-3 w-3 rotate-90 transition-transform group-hover:rotate-180" />
+                      </button>
+                      
+                      <div className="absolute top-full left-0 mt-2 w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left">
+                        <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl border border-stone-200 dark:border-stone-800 p-2">
+                          {secondaryLinks.map((link) => {
+                            const Icon = link.icon;
+                            const isActive = isActivePath(link.href);
+                            return (
+                              <Link
+                                key={link.href}
+                                href={link.href}
+                                className={cn(
+                                  "flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-colors",
+                                  isActive
+                                    ? "bg-amber-50 dark:bg-amber-900/20 text-amber-900 dark:text-amber-100"
+                                    : "text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800"
+                                )}
+                              >
+                                <Icon className={cn("h-4 w-4", isActive ? "text-amber-600" : "text-stone-500")} />
+                                <span className="flex-1">{link.label}</span>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
-
-                {/* User Menu & Actions */}
-                <div className="flex items-center gap-2 md:gap-3">
-                  {isAuthenticated ? (
-                    <>
-                      {/* User Info - Desktop */}
-                      {user && (
-                        <div className="hidden lg:flex items-center gap-3 pr-4 border-r border-gold-accent/20">
-                          <div className="text-right">
-                            <p className="text-sm font-semibold text-foreground">
-                              {user?.first_name || user?.username}
-                            </p>
-                            <div className="flex items-center gap-1">
-                              <Gem className="h-3 w-3 text-gold-accent" />
-                              <span className="text-xs text-muted-foreground">Level {user?.level || 1}</span>
-                            </div>
-                          </div>
-                          <div className="w-10 h-10 bg-gradient-to-br from-gold-accent to-yellow-600 rounded-full flex items-center justify-center text-basalt-black font-bold shadow-lg border-2 border-gold-accent/50 group hover:scale-110 transition-all duration-300">
-                            {(user?.first_name?.[0] || user?.username?.[0] || 'U').toUpperCase()}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Action Buttons */}
-                      <div className="hidden lg:flex items-center gap-2">
-                        <OnboardingTrigger variant="help" />
-                        <LanguageSwitcher />
-                        <ThemeToggle />
-                        <Link href="/settings">
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="hover:bg-gold-accent/10 hover:text-gold-accent rounded-full transition-all duration-300"
-                          >
-                            <Settings className="h-4 w-4" />
-                          </Button>
-                        </Link>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={logout}
-                          className="hover:bg-red-500/10 hover:text-red-600 rounded-full transition-all duration-300"
-                        >
-                          <LogOut className="h-4 w-4" />
-                        </Button>
-                      </div>
-
-                      {/* Mobile Menu Button */}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="xl:hidden hover:bg-gold-accent/10 hover:text-gold-accent rounded-full p-2 transition-all duration-300"
-                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                        aria-label="Toggle menu"
-                      >
-                        {isMobileMenuOpen ? (
-                          <X className="h-5 w-5" />
-                        ) : (
-                          <Menu className="h-5 w-5" />
-                        )}
-                      </Button>
-                    </>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <Link href="/auth/login">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="hover:bg-gold-accent/10 hover:text-gold-accent rounded-full transition-all duration-300"
-                        >
-                          Sign In
-                        </Button>
-                      </Link>
-                      <Link href="/auth/register">
-                        <Button 
-                          size="sm" 
-                          className="bg-gradient-to-r from-gold-accent to-yellow-600 hover:from-yellow-600 hover:to-gold-accent text-basalt-black font-semibold rounded-full shadow-lg transition-all duration-300 hover:scale-105"
-                        >
-                          Enter Temple
-                        </Button>
-                      </Link>
-                    </div>
-                  )}
-                </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* Spacer for fixed navbar */}
-      <div className={`transition-all duration-300 ${
-        isScrolled ? 'h-20 md:h-24' : 'h-24 md:h-28'
-      }`} aria-hidden="true" />
-
-      {/* Mobile Drawer Menu */}
-      {isAuthenticated && (
-        <>
-          {isMobileMenuOpen && (
-            <div
-              className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm xl:hidden"
-              onClick={() => setIsMobileMenuOpen(false)}
-            />
-          )}
-
-          <div className={`
-            fixed top-24 right-0 h-[calc(100vh-6rem)] w-72 max-w-[90vw] z-50 xl:hidden
-            bg-gradient-to-b from-papyrus/98 to-desert-sand/98 backdrop-blur-2xl
-            border-l-2 border-gold-accent/30 shadow-2xl rounded-l-3xl
-            transition-transform duration-300 ease-in-out overflow-hidden
-            ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}
-          `}>
-            <div className="h-full overflow-y-auto pb-4">
-              {/* Header */}
-              <div className="sticky top-0 z-10 bg-gradient-to-r from-secondary/95 via-papyrus/95 to-secondary/95 backdrop-blur-xl border-b-2 border-gold-accent/30 p-4 rounded-bl-3xl">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-bold bg-gradient-to-r from-gold-accent to-yellow-600 bg-clip-text text-transparent">
-                    Navigation
-                  </h2>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="hover:bg-gold-accent/10 hover:text-gold-accent rounded-full"
-                  >
-                    <X className="h-5 w-5" />
-                  </Button>
-                </div>
-
-                {/* User Info Mobile */}
-                {user && (
-                  <Card className="p-3 bg-gradient-to-r from-gold-accent/10 to-yellow-500/10 border-2 border-gold-accent/30">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-gold-accent to-yellow-600 rounded-full flex items-center justify-center text-basalt-black font-bold shadow-lg border-2 border-gold-accent/50">
-                        {(user?.first_name?.[0] || user?.username?.[0] || 'U').toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-sm text-foreground">
-                          {user?.first_name || user?.username}
-                        </p>
-                        <div className="flex items-center gap-1">
-                          <Gem className="h-3 w-3 text-gold-accent" />
-                          <span className="text-xs text-muted-foreground">Level {user?.level || 1}</span>
-                        </div>
-                      </div>
+              
+              {/* Right Actions */}
+              <div className="flex items-center gap-2 md:gap-3">
+                {isAuthenticated ? (
+                  <>
+                    <CommandPaletteTrigger onClick={() => {}} />
+                    
+                    <div className="h-6 w-px bg-stone-200 dark:bg-stone-800 hidden md:block" />
+                    
+                    <button className="relative p-2 text-stone-500 hover:text-stone-900 dark:hover:text-stone-100 rounded-full transition-colors hidden md:block hover:bg-stone-100 dark:hover:bg-stone-800">
+                      <Bell className="h-5 w-5" />
+                      <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-stone-950"></span>
+                    </button>
+                    
+                    <div className="hidden md:block">
+                      <UserMenu user={user} onLogout={logout} />
                     </div>
-                  </Card>
+                    
+                    {/* Mobile Toggle */}
+                    <button
+                      onClick={() => setIsMobileMenuOpen(true)}
+                      className="lg:hidden p-2 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full transition-colors"
+                    >
+                      <Menu className="h-6 w-6" />
+                    </button>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <Link 
+                      href="/auth/login"
+                      className="hidden sm:block text-sm font-medium text-stone-600 dark:text-stone-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
+                    >
+                      Sign In
+                    </Link>
+                    <Link href="/auth/register">
+                      <Button 
+                        className="bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-white font-semibold rounded-full shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:shadow-[0_0_25px_rgba(245,158,11,0.5)] transition-all duration-300 hover:scale-105 border border-amber-400/20"
+                      >
+                        Enter Temple
+                      </Button>
+                    </Link>
+                  </div>
                 )}
               </div>
-
-              {/* Navigation Links */}
-              <div className="p-4 space-y-2">
-                {mainNavLinks.map((link) => {
-                  const Icon = link.icon;
-                  const isActive = isActivePath(link.href);
-
-                  return (
-                    <Link key={link.href} href={link.href} onClick={() => setIsMobileMenuOpen(false)}>
-                      <Card className={`p-3 cursor-pointer transition-all duration-300 rounded-2xl ${
-                        isActive
-                          ? 'bg-gradient-to-r from-gold-accent/20 to-yellow-500/20 border-2 border-gold-accent/50 shadow-lg pharaoh-glow'
-                          : 'hover:bg-gold-accent/10 border border-gold-accent/20 hover:border-gold-accent/40 hover:scale-105'
-                      }`}>
-                        <div className="flex items-center gap-3">
-                          <Icon className={`h-5 w-5 ${isActive ? 'text-gold-accent golden-pulse' : 'text-foreground'}`} />
-                          <div>
-                            <p className={`font-medium text-sm ${isActive ? 'text-gold-accent' : 'text-foreground'}`}>
-                              {link.label}
-                            </p>
-                            <p className={`text-xs ${isActive ? 'text-gold-accent/70' : 'text-muted-foreground'}`}>
-                              {link.description}
-                            </p>
-                          </div>
-                        </div>
-                      </Card>
-                    </Link>
-                  );
-                })}
-              </div>
-
-              {/* Action Buttons */}
-              <div className="p-4 space-y-2 border-t-2 border-gold-accent/20 mt-4">
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <LanguageSwitcher />
-                  <ThemeToggle />
-                </div>
-                <Link href="/settings" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button
-                    variant="outline"
-                    className="w-full border-gold-accent/30 hover:bg-gold-accent/10 hover:border-gold-accent/50 rounded-2xl justify-start transition-all duration-300"
-                  >
-                    <Settings className="h-4 w-4 mr-2" />
-                    Settings
-                  </Button>
-                </Link>
-                <Button
-                  variant="outline"
-                  className="w-full hover:bg-red-500/10 hover:text-red-600 hover:border-red-300 rounded-2xl justify-start transition-all duration-300"
-                  onClick={() => {
-                    logout();
-                    setIsMobileMenuOpen(false);
-                  }}
-                >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
-                </Button>
-              </div>
             </div>
-          </div>
-        </>
-      )}
+          </motion.nav>
+        </div>
+      </motion.header>
+      
+      {/* Spacer */}
+      <div className="h-24" />
+      
+      {/* Mobile Menu */}
+      <MobileMenu
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+        links={allNavLinks}
+        pathname={pathname}
+        user={user}
+        onLogout={logout}
+      />
     </>
   );
 }

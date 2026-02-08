@@ -11,7 +11,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Info, AlertTriangle, CheckCircle, Lightbulb, AlertCircle } from 'lucide-react';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useCallback } from 'react';
 import { useAcademyStore } from '@/lib/stores/academyStore';
 
 // Lazy load interactive components (Phase 2)
@@ -74,7 +74,7 @@ function ContentBlock({ block, blockIndex }: { block: LessonContentType; blockIn
 
 function TextBlock({ value }: { value: string }) {
   return (
-    <p className="text-desert-sand-100 leading-relaxed text-base lg:text-lg">
+    <p className="academy-body-font text-desert-sand-50 leading-relaxed text-base lg:text-lg">
       {value}
     </p>
   );
@@ -85,7 +85,7 @@ function TextBlock({ value }: { value: string }) {
 // ============================================================================
 
 function HeadingBlock({ level, value }: { level: 2 | 3 | 4; value: string }) {
-  const baseClasses = "font-bold text-royal-gold-400 mb-3";
+  const baseClasses = "academy-heading-font font-bold text-royal-gold-300 mb-3";
 
   switch (level) {
     case 2:
@@ -104,8 +104,8 @@ function HeadingBlock({ level, value }: { level: 2 | 3 | 4; value: string }) {
 function ListBlock({ items, ordered }: { items: string[]; ordered?: boolean }) {
   const ListTag = ordered ? 'ol' : 'ul';
   const listClasses = ordered
-    ? "list-decimal list-inside space-y-2 text-desert-sand-100 ml-4"
-    : "list-disc list-inside space-y-2 text-desert-sand-100 ml-4";
+    ? "academy-body-font list-decimal list-inside space-y-2 text-desert-sand-50 ml-4"
+    : "academy-body-font list-disc list-inside space-y-2 text-desert-sand-50 ml-4";
 
   return (
     <ListTag className={listClasses}>
@@ -145,7 +145,7 @@ function CodeBlock({ language, code, caption }: { language: string; code: string
         </SyntaxHighlighter>
       </div>
       {caption && (
-        <p className="text-sm text-desert-sand-400 mt-2 text-center italic">
+        <p className="academy-body-font text-sm text-desert-sand-200 mt-2 text-center italic">
           {caption}
         </p>
       )}
@@ -198,11 +198,11 @@ function CalloutBlock({ variant, text, title }: { variant: string; text: string;
     <Alert className={`${config.className} my-6`}>
       <Icon className={`h-5 w-5 ${config.iconColor}`} />
       {title && (
-        <AlertTitle className={`${config.titleColor} font-semibold mb-2`}>
+        <AlertTitle className={`academy-heading-font ${config.titleColor} font-semibold mb-2`}>
           {title}
         </AlertTitle>
       )}
-      <AlertDescription className="text-desert-sand-100 leading-relaxed">
+      <AlertDescription className="academy-body-font text-desert-sand-50 leading-relaxed">
         {text}
       </AlertDescription>
     </Alert>
@@ -225,7 +225,7 @@ function ImageBlock({ src, alt, caption }: { src: string; alt: string; caption?:
         />
       </div>
       {caption && (
-        <figcaption className="text-sm text-desert-sand-400 mt-3 text-center italic">
+        <figcaption className="academy-body-font text-sm text-desert-sand-200 mt-3 text-center italic">
           {caption}
         </figcaption>
       )}
@@ -240,12 +240,29 @@ function ImageBlock({ src, alt, caption }: { src: string; alt: string; caption?:
 function InteractiveBlock({ component, props }: { component: string; props?: Record<string, any> }) {
   const { saveInteractiveState } = useAcademyStore();
 
-  const handleStateChange = (componentId: string, state: any) => {
-    saveInteractiveState(componentId, state);
-  };
+  const onPromptBuilderChange = useCallback(
+    (state: any) => saveInteractiveState('prompt-builder', state),
+    [saveInteractiveState]
+  );
+  const onBeforeAfterChange = useCallback(
+    (state: any) => saveInteractiveState('before-after', state),
+    [saveInteractiveState]
+  );
+  const onROIChange = useCallback(
+    (state: any) => saveInteractiveState('roi-calculator', state),
+    [saveInteractiveState]
+  );
+  const onQualitySliderChange = useCallback(
+    (state: any) => saveInteractiveState('quality-slider', state),
+    [saveInteractiveState]
+  );
+  const onSpotProblemChange = useCallback(
+    (state: any) => saveInteractiveState('spot-problem', state),
+    [saveInteractiveState]
+  );
 
   return (
-    <div className="my-8 p-6 bg-obsidian-900/50 rounded-lg border border-royal-gold-500/30">
+    <div className="my-8 p-6 bg-obsidian-900/70 rounded-lg border border-royal-gold-500/35 shadow-[0_10px_32px_rgba(0,0,0,0.25)]">
       <Suspense
         fallback={
           <div className="flex items-center justify-center py-12">
@@ -254,19 +271,19 @@ function InteractiveBlock({ component, props }: { component: string; props?: Rec
         }
       >
         {component === 'PromptBuilder' && (
-          <PromptBuilder {...props} onStateChange={(state) => handleStateChange('prompt-builder', state)} />
+          <PromptBuilder {...props} onStateChange={onPromptBuilderChange} />
         )}
         {component === 'BeforeAfterTransformer' && (
-          <BeforeAfterTransformer {...props} onStateChange={(state) => handleStateChange('before-after', state)} />
+          <BeforeAfterTransformer {...props} onStateChange={onBeforeAfterChange} />
         )}
         {component === 'ROICalculator' && (
-          <ROICalculator {...props} onStateChange={(state) => handleStateChange('roi-calculator', state)} />
+          <ROICalculator {...props} onStateChange={onROIChange} />
         )}
         {component === 'PromptQualitySlider' && (
-          <PromptQualitySlider {...props} onStateChange={(state) => handleStateChange('quality-slider', state)} />
+          <PromptQualitySlider {...props} onStateChange={onQualitySliderChange} />
         )}
         {component === 'SpotTheProblemGame' && (
-          <SpotTheProblemGame {...props} onStateChange={(state) => handleStateChange('spot-problem', state)} />
+          <SpotTheProblemGame {...props} onStateChange={onSpotProblemChange} />
         )}
       </Suspense>
     </div>

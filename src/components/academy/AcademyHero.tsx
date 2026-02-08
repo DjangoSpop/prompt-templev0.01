@@ -10,9 +10,11 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { GraduationCap, TrendingUp, Users, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { PromptIQTestModal } from '@/components/academy/PromptIQTestModal';
 
 export function AcademyHero() {
   const [animatedCount, setAnimatedCount] = useState(2500);
+  const [iqTestOpen, setIqTestOpen] = useState(false);
 
   // Animate the "people leveled up" counter
   useEffect(() => {
@@ -136,6 +138,7 @@ export function AcademyHero() {
               size="lg"
               variant="outline"
               className="border-royal-gold-500/50 hover:border-royal-gold-500 px-8 py-6 text-lg"
+              onClick={() => setIqTestOpen(true)}
             >
               <TrendingUp className="w-5 h-5 mr-2" />
               Take Prompt IQ Test
@@ -214,6 +217,14 @@ export function AcademyHero() {
           <div className="w-1.5 h-1.5 bg-royal-gold-400 rounded-full" />
         </motion.div>
       </div>
+
+      <PromptIQTestModal
+        open={iqTestOpen}
+        onOpenChange={setIqTestOpen}
+        onStartLearning={() => {
+          document.getElementById('modules')?.scrollIntoView({ behavior: 'smooth' });
+        }}
+      />
     </section>
   );
 }
