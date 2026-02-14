@@ -13,9 +13,11 @@ import {
   Copy,
   RefreshCw,
   AlertCircle,
-  CheckCircle
+  CheckCircle,
+  BookOpen,
 } from 'lucide-react';
 import { usePromptStore } from '@/store/usePromptStore';
+import { useSavedPromptsStore } from '@/store/saved-prompts';
 import { TemplateGallery } from './TemplateGallery';
 import { VariablesPanel } from './VariablesPanel';
 import { cn } from '@/lib/utils';
@@ -80,6 +82,27 @@ export function Composer({
       navigator.clipboard.writeText(previewText);
       // Could add toast notification here
     }
+  };
+
+  const handleSaveToLibrary = () => {
+    if (!previewText.trim() || !selectedTemplate) return;
+    
+    const { openSaveModal } = useSavedPromptsStore.getState();
+    openSaveModal({
+      mode: 'save-from-template',
+      sourceTemplateId: selectedTemplate.id,
+      sourceTemplateName: selectedTemplate.title,
+      initialData: {
+        title: `${selectedTemplate.title} — filled`,
+        content: previewText,
+        description: `Generated from template "${selectedTemplate.title}"`,
+        category: selectedTemplate.category || 'General',
+        tags: selectedTemplate.tags || [],
+        source: 'template',
+        source_template_id: selectedTemplate.id,
+        variables_snapshot: variables,
+      },
+    });
   };
 
   const handleTemplateSelect = (_templateId: string) => {
@@ -207,23 +230,36 @@ export function Composer({
                     Reset
                   </Button>
                   
-                  <Button
-                    onClick={handleSend}
-                    disabled={!isValid || isLoading || !previewText.trim()}
-                    className="flex items-center gap-2 pharaoh-button"
-                  >
-                    {isLoading ? (
-                      <>
-                        <RefreshCw className="h-4 w-4 animate-spin" />
-                        Sending...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="h-4 w-4" />
-                        Send Prompt
-                      </>
-                    )}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleSaveToLibrary}
+                      disabled={!isValid || !previewText.trim()}
+                      className="flex items-center gap-2"
+                    >
+                      <BookOpen className="h-3.5 w-3.5" />
+                      Save to Library
+                    </Button>
+                    
+                    <Button
+                      onClick={handleSend}
+                      disabled={!isValid || isLoading || !previewText.trim()}
+                      className="flex items-center gap-2 pharaoh-button"
+                    >
+                      {isLoading ? (
+                        <>
+                          <RefreshCw className="h-4 w-4 animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="h-4 w-4" />
+                          Send Prompt
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </div>
             </>

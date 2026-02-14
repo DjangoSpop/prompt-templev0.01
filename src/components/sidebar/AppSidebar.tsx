@@ -15,6 +15,7 @@ import {
   Download,
   HelpCircle,
   Home,
+  Library,
   Menu,
   MessageSquare,
   Sparkles,
@@ -24,6 +25,7 @@ import {
   Settings,
   User,
   LogOut,
+  LogIn,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -32,6 +34,9 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
+import { useAuth } from '@/providers/AuthProvider';
+import { useRouter } from 'next/navigation';
+import Eyehorus from '../pharaonic/Eyehorus';
 
 // Navigation items configuration
 interface NavItem {
@@ -60,6 +65,15 @@ const navigationItems: NavItem[] = [
     href: '/templates',
     icon: BookOpen,
     description: 'Prompt library',
+    category: 'main',
+  },
+  {
+    id: 'prompt-library',
+    label: 'Prompt Library',
+    href: '/prompt-library',
+    icon: Library,
+    description: 'Save & iterate prompts',
+    badge: 'New',
     category: 'main',
   },
   {
@@ -164,12 +178,27 @@ interface AppSidebarProps {
 
 export function AppSidebar({ className }: AppSidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const { isCollapsed, toggleCollapsed, isOpen, close } = useSidebarStore();
+  const { user, isAuthenticated, logout, isLoading } = useAuth();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  const handleSignOut = async () => {
+    try {
+      await logout();
+      router.push('/auth/login');
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
+  };
+
+  const handleSignIn = () => {
+    router.push('/auth/login');
+  };
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/';
@@ -208,17 +237,30 @@ export function AppSidebar({ className }: AppSidebarProps) {
         )}
       >
         {/* Header */}
-        <div className="flex h-16 items-center justify-between border-b border-royal-gold-500/20 px-4">
+        <div className="flex h-20 items-center justify-between border-b border-royal-gold-500/20 px-4 bg-gradient-to-r from-obsidian-950/50 to-obsidian-900/30">
           {!isCollapsed && (
-            <Link href="/" className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-royal-gold-400 to-royal-gold-600 shadow-lg shadow-royal-gold-500/30">
-                <Crown className="h-5 w-5 text-obsidian-950" />
+            <Link href="/" className="flex items-center gap-3 group">
+              <div className="relative flex items-center justify-center">
+                {/* Animated glow ring */}
+                <div className="absolute inset-0 rounded-full bg-royal-gold-500/20 blur-xl animate-pulse" />
+
+                {/* Eye of Horus */}
+                <div className="relative">
+                  <Eyehorus
+                    size={48}
+                    variant="sidebar"
+                    glow={true}
+                    glowIntensity="high"
+                    showLabel={false}
+                  />
+                </div>
               </div>
+
               <div className="flex flex-col">
-                <span className="font-serif text-lg font-bold text-royal-gold-300">
+                <span className="font-serif text-lg font-bold bg-gradient-to-r from-royal-gold-300 via-royal-gold-400 to-royal-gold-300 bg-clip-text text-transparent">
                   PromptTemple
                 </span>
-                <span className="text-[10px] text-desert-sand-400">
+                <span className="text-[10px] text-desert-sand-400 tracking-wider uppercase">
                   Sacred Prompts
                 </span>
               </div>
@@ -226,9 +268,36 @@ export function AppSidebar({ className }: AppSidebarProps) {
           )}
 
           {isCollapsed && (
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-royal-gold-400 to-royal-gold-600 shadow-lg shadow-royal-gold-500/30 mx-auto">
-              <Crown className="h-5 w-5 text-obsidian-950" />
-            </div>
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <Link href="/" className="flex items-center justify-center mx-auto">
+                  <div className="relative flex items-center justify-center">
+                    {/* Animated glow ring */}
+                    <div className="absolute inset-0 rounded-full bg-royal-gold-500/20 blur-lg animate-pulse" />
+
+                    {/* Eye of Horus */}
+                    <div className="relative">
+                      <Eyehorus
+                        size={42}
+                        variant="sidebar-collapsed"
+                        glow={true}
+                        glowIntensity="medium"
+                        showLabel={false}
+                      />
+                    </div>
+                  </div>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent
+                side="right"
+                className="border-royal-gold-500/30 bg-obsidian-900 text-desert-sand-100"
+              >
+                <div className="flex flex-col items-center">
+                  <span className="font-serif font-bold text-royal-gold-300">PromptTemple</span>
+                  <span className="text-xs text-desert-sand-400">Sacred Prompts</span>
+                </div>
+              </TooltipContent>
+            </Tooltip>
           )}
 
           {/* Mobile close button */}
@@ -348,6 +417,49 @@ export function AppSidebar({ className }: AppSidebarProps) {
 
         {/* Footer */}
         <div className="border-t border-royal-gold-500/20 p-3">
+          {/* User Profile Section */}
+          {isAuthenticated && user && !isCollapsed && (
+            <div className="mb-3 rounded-lg bg-gradient-to-r from-royal-gold-500/10 to-royal-gold-500/5 p-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-royal-gold-400 to-royal-gold-600 shadow-lg">
+                  <User className="h-5 w-5 text-obsidian-950" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-royal-gold-300">
+                    {user.username || user.email || 'User'}
+                  </p>
+                  {user.email && (
+                    <p className="truncate text-xs text-desert-sand-400">
+                      {user.email}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Collapsed User Avatar */}
+          {isAuthenticated && user && isCollapsed && (
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-royal-gold-400 to-royal-gold-600 shadow-lg mx-auto">
+                  <User className="h-5 w-5 text-obsidian-950" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent
+                side="right"
+                className="border-royal-gold-500/30 bg-obsidian-900 text-desert-sand-100"
+              >
+                <div>
+                  <p className="font-semibold">{user.username || user.email}</p>
+                  {user.email && (
+                    <p className="text-xs text-desert-sand-400">{user.email}</p>
+                  )}
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          )}
+
           {/* Settings */}
           {settingsItems.map((item) => {
             const Icon = item.icon;
@@ -383,6 +495,62 @@ export function AppSidebar({ className }: AppSidebarProps) {
               </Tooltip>
             );
           })}
+
+          {/* Sign In/Out Button */}
+          <Separator className="my-3 bg-royal-gold-500/20" />
+
+          {isAuthenticated ? (
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSignOut}
+                  disabled={isLoading}
+                  className={cn(
+                    'w-full text-desert-sand-300 hover:text-red-400 hover:bg-red-500/10',
+                    isCollapsed ? 'justify-center px-2' : 'justify-start gap-3 px-3'
+                  )}
+                >
+                  <LogOut className="h-5 w-5 flex-shrink-0" />
+                  {!isCollapsed && <span>Sign Out</span>}
+                </Button>
+              </TooltipTrigger>
+              {isCollapsed && (
+                <TooltipContent
+                  side="right"
+                  className="border-red-500/30 bg-obsidian-900 text-desert-sand-100"
+                >
+                  Sign Out
+                </TooltipContent>
+              )}
+            </Tooltip>
+          ) : (
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSignIn}
+                  className={cn(
+                    'w-full text-desert-sand-300 hover:text-emerald-400 hover:bg-emerald-500/10',
+                    isCollapsed ? 'justify-center px-2' : 'justify-start gap-3 px-3'
+                  )}
+                >
+                  <LogIn className="h-5 w-5 flex-shrink-0" />
+                  {!isCollapsed && <span>Sign In</span>}
+                </Button>
+              </TooltipTrigger>
+              {isCollapsed && (
+                <TooltipContent
+                  side="right"
+                  className="border-emerald-500/30 bg-obsidian-900 text-desert-sand-100"
+                >
+                  Sign In
+                </TooltipContent>
+              )}
+            </Tooltip>
+          )}
 
           <Separator className="my-3 bg-royal-gold-500/20" />
 

@@ -14,8 +14,10 @@ import {
   Zap,
   Copy,
   ThumbsUp,
-  ThumbsDown
+  ThumbsDown,
+  BookmarkPlus
 } from 'lucide-react';
+import { useSavedPromptsStore } from '@/store/saved-prompts';
 import { wsService, PromptOptimizationResponse } from '@/lib/services/websocket';
 
 interface Message {
@@ -199,6 +201,20 @@ const MessageBubble: React.FC<{
                     title="Poor response"
                   >
                     <ThumbsDown className="w-3 h-3" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      const store = useSavedPromptsStore.getState();
+                      store.openSaveModal({
+                        mode: 'save-from-chat',
+                        initialContent: message.optimized?.optimizedPrompt || message.content,
+                        initialTitle: `Chat: ${(message.optimized?.optimizedPrompt || message.content).slice(0, 50)}...`,
+                      });
+                    }}
+                    className="hover:bg-white hover:bg-opacity-20 p-1 rounded transition-colors"
+                    title="Save to Prompt Library"
+                  >
+                    <BookmarkPlus className="w-3 h-3" />
                   </button>
                 </div>
               )}

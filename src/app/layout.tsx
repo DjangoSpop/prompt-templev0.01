@@ -12,6 +12,8 @@ import "./globals.css";
 import '../styles/chat.css';
 import UserOnboarding from "@/components/onboarding/UserOnboarding";
 import { AppLayoutWithSidebar } from "@/components/sidebar/AppLayoutWithSidebar";
+import { PromptLibraryModals } from "@/components/prompt/PromptLibraryModals";
+import { FastNavWidget } from "@/components/navbar/FastNavWidget";
 
 export const metadata: Metadata = {
   title: "Prompt Temple - The Ultimate AI Prompt Sanctuary",
@@ -45,6 +47,8 @@ export default function RootLayout({
                       </AppLayoutWithSidebar>
                       <ClientOnly>
                         <UserOnboarding autoStart={true} />
+                          <FastNavWidget />
+                        <PromptLibraryModals />
                       </ClientOnly>
                     </TooltipProvider>
                   </AnalyticsProvider>

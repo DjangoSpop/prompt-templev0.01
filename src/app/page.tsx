@@ -17,7 +17,8 @@ import {
   Sparkles,
   Brain,
   Trophy,
-  RotateCcw
+  RotateCcw,
+  Library
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -320,11 +321,18 @@ export default function DashboardPage() {
           </div>
           <h2 className="text-2xl font-bold text-hieroglyph text-glow">Enter the Sacred Chambers</h2>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
           <Link href="/templates" className="group">
             <Button variant="outline" className="w-full h-14 md:h-16 flex flex-col items-center justify-center space-y-1 md:space-y-2 border-2 hover:border-oasis hover:bg-oasis/10 transition-all duration-300 group-hover:scale-105">
               <BookOpen className="h-5 w-5 text-oasis" />
               <span className="text-xs md:text-sm font-medium">The Archive</span>
+            </Button>
+          </Link>
+
+          <Link href="/prompt-library" className="group">
+            <Button variant="outline" className="w-full h-14 md:h-16 flex flex-col items-center justify-center space-y-1 md:space-y-2 border-2 hover:border-amber-500 hover:bg-amber-500/10 transition-all duration-300 group-hover:scale-105">
+              <Library className="h-5 w-5 text-amber-500" />
+              <span className="text-xs md:text-sm font-medium">The Scroll Vault</span>
             </Button>
           </Link>
           

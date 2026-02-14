@@ -109,7 +109,7 @@ export const TempleLogo: React.FC<TempleLogoProps> = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       role="img"
-      aria-label="Prompt Temple Logo"
+      aria-label="Eye of Horus Temple Logo"
     >
       <svg
         width={size}
@@ -120,172 +120,99 @@ export const TempleLogo: React.FC<TempleLogoProps> = ({
         className={cn(
           'transition-all duration-500',
           glow && 'animate-temple-glow',
-          interactive && isHovered && 'scale-110 rotate-3'
+          interactive && isHovered && 'scale-105'
         )}
         style={{
           filter: glow
-            ? `drop-shadow(0 0 ${size / 6}px ${colors.glow})`
+            ? `drop-shadow(0 0 ${Math.max(6, size / 8)}px ${colors.glow})`
             : undefined,
         }}
       >
-        {/* ========== GRADIENT DEFINITIONS ========== */}
+        {/* ========== GRADIENTS & FILTERS ========== */}
         <defs>
-          <linearGradient id={`gold-gradient-${variant}`} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor={colors.primary} stopOpacity="1" />
-            <stop offset="50%" stopColor={colors.secondary} stopOpacity="1" />
-            <stop offset="100%" stopColor={colors.tertiary} stopOpacity="1" />
+          <linearGradient id={`eye-gradient-${variant}`} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor={colors.primary} />
+            <stop offset="60%" stopColor={colors.secondary} />
           </linearGradient>
 
-          <radialGradient id={`sphere-gradient-${variant}`}>
-            <stop offset="0%" stopColor={colors.primary} />
-            <stop offset="100%" stopColor={colors.secondary} />
+          <radialGradient id={`iris-gradient-${variant}`} cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor={colors.primary} stopOpacity="1" />
+            <stop offset="100%" stopColor={colors.tertiary} stopOpacity="0.9" />
           </radialGradient>
 
-          <filter id={`temple-glow-${variant}`} x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="2" result="coloredBlur" />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-
           <filter id={`eye-glow-${variant}`} x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="1.5" result="coloredBlur" />
+            <feGaussianBlur stdDeviation="2" result="blur" />
             <feMerge>
-              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
         </defs>
 
-        {/* ========== BACKGROUND CIRCLE ========== */}
-        <circle
-          cx="50"
-          cy="50"
-          r="48"
-          fill={`url(#sphere-gradient-${variant})`}
-          filter={`url(#temple-glow-${variant})`}
-        />
+        {/* BACKGROUND SPHERE */}
+        <circle cx="50" cy="50" r="48" fill={`url(#iris-gradient-${variant})`} />
 
         {!simplified && (
-          <circle
-            cx="50"
-            cy="50"
-            r="42"
-            fill="none"
-            stroke="rgba(0, 0, 0, 0.2)"
-            strokeWidth="1"
-          />
+          <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(0,0,0,0.12)" strokeWidth="1" />
         )}
 
-        {/* ========== MAIN PYRAMID STRUCTURE ========== */}
-        <g className="pyramid-main">
-          {/* Base Pyramid - Foundation */}
+        {/* EYE SHAPE - Almond / Horus Eye */}
+        <g className="eye-group" transform="translate(0,0)">
           <path
-            d="M 50 15 L 75 75 L 25 75 Z"
-            fill="rgba(26, 26, 26, 0.9)"
-            strokeWidth="1.5"
-            stroke={`url(#gold-gradient-${variant})`}
+            d="M15 50 C28 28 72 28 85 50 C72 72 28 72 15 50 Z"
+            fill="rgba(0,0,0,0.06)"
+            stroke={`url(#eye-gradient-${variant})`}
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           />
 
-          {/* Middle Pyramid - Knowledge */}
+          {/* Eyebrow / Brow curve */}
           <path
-            d="M 50 25 L 68 65 L 32 65 Z"
-            fill="rgba(26, 26, 26, 0.7)"
-            strokeWidth="1"
-            stroke={`url(#gold-gradient-${variant})`}
+            d="M18 34 C36 18 64 18 82 34"
+            fill="none"
+            stroke={colors.secondary}
+            strokeWidth="3"
+            strokeLinecap="round"
+            opacity="0.95"
           />
+
+          {/* Iris + pupil */}
+          <circle cx="50" cy="50" r="9" fill={`url(#iris-gradient-${variant})`} filter={`url(#eye-glow-${variant})`} />
+          <circle cx="50" cy="50" r="4" fill="rgba(12,12,12,1)" />
 
           {!simplified && (
-            /* Inner Pyramid - Wisdom */
+            <circle cx="53" cy="47" r="1.2" fill="rgba(255,255,255,0.75)" />
+          )}
+
+          {/* Horus stylized tail / marking */}
+          {!simplified && (
             <path
-              d="M 50 35 L 60 55 L 40 55 Z"
-              fill="rgba(26, 26, 26, 0.5)"
-              strokeWidth="0.5"
-              stroke={`url(#gold-gradient-${variant})`}
+              d="M28 62 C22 68 36 76 46 70"
+              stroke={colors.tertiary}
+              strokeWidth="2"
+              strokeLinecap="round"
+              fill="none"
             />
           )}
 
-          {/* Capstone - All-Seeing Eye */}
-          <circle
-            cx="50"
-            cy="25"
-            r="4"
-            fill={colors.primary}
-            filter={`url(#eye-glow-${variant})`}
-          />
-
-          {/* Eye Pupil */}
-          <circle cx="50" cy="25" r="2" fill="rgba(26, 26, 26, 1)" />
-
+          {/* Teardrop / accent beneath eye (animated when hovered) */}
           {!simplified && (
-            /* Eye Highlight */
-            <circle cx="51" cy="24" r="0.8" fill="rgba(255, 255, 255, 0.6)" />
+            <path
+              d="M62 62 C64 66 60 72 56 74 C53 75 50 74 49 71 C48 68 52 66 54 65 C58 63 60 62 62 62 Z"
+              fill={colors.primary}
+              opacity={interactive && isHovered ? 0.95 : 0.65}
+            >
+              <animateTransform
+                attributeName="transform"
+                type="translate"
+                values="0 0; 0 1; 0 0"
+                dur="1.6s"
+                repeatCount={interactive && isHovered ? 'indefinite' : '0'}
+              />
+            </path>
           )}
         </g>
-
-        {/* ========== TEMPLE PILLARS ========== */}
-        <g className="temple-pillars">
-          <rect
-            x="28"
-            y="75"
-            width="6"
-            height="15"
-            fill={`${colors.secondary}CC`}
-            rx="1"
-          />
-          <rect
-            x="66"
-            y="75"
-            width="6"
-            height="15"
-            fill={`${colors.secondary}CC`}
-            rx="1"
-          />
-          <line
-            x1="25"
-            y1="90"
-            x2="75"
-            y2="90"
-            stroke={colors.tertiary}
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-        </g>
-
-        {/* ========== SACRED SYMBOLS ========== */}
-        {!simplified && (
-          <g className="sacred-symbols" opacity="0.6">
-            {/* Top Star */}
-            <path d="M 50 12 L 51 14 L 49 14 Z" fill={colors.primary} />
-
-            {/* Side Ankhs */}
-            <circle cx="20" cy="50" r="2" fill={`${colors.primary}80`} />
-            <circle cx="80" cy="50" r="2" fill={`${colors.primary}80`} />
-          </g>
-        )}
-
-        {/* ========== ENERGY LINES ========== */}
-        {!simplified && isHovered && (
-          <g className="energy-lines" opacity="0.4">
-            <line
-              x1="50"
-              y1="25"
-              x2="50"
-              y2="10"
-              stroke={colors.primary}
-              strokeWidth="1"
-              strokeDasharray="2,2"
-            >
-              <animate
-                attributeName="y1"
-                values="25;20;25"
-                dur="2s"
-                repeatCount="indefinite"
-              />
-            </line>
-          </g>
-        )}
       </svg>
 
       {/* ========== FLOATING PARTICLES ========== */}

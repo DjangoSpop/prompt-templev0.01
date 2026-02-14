@@ -490,6 +490,172 @@ class ApiClient {
   async getStatus(): Promise<any> {
     return this.request('/api/v2/status/');
   }
+
+  // ============================================
+  // Saved Prompts (Prompt Library) Methods
+  // ============================================
+
+  async getSavedPrompts(params?: {
+    search?: string;
+    category?: string;
+    tags?: string[];
+    is_favorite?: boolean;
+    is_public?: boolean;
+    source?: string;
+    sort_by?: string;
+    sort_order?: 'asc' | 'desc';
+    ordering?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<PaginatedResponse<any>> {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      const { sort_by, sort_order, ...rest } = params;
+      if (sort_by && !params.ordering) {
+        const prefix = sort_order === 'desc' ? '-' : '';
+        queryParams.append('ordering', `${prefix}${sort_by}`);
+      }
+      Object.entries(rest).forEach(([key, value]) => {
+        if (value !== undefined) {
+          if (Array.isArray(value)) {
+            queryParams.append(key, value.join(','));
+          } else {
+            queryParams.append(key, String(value));
+          }
+        }
+      });
+    }
+    return this.request<PaginatedResponse<any>>(
+      `/api/v2/history/saved-prompts/?${queryParams.toString()}`
+    );
+  }
+
+  async getSavedPrompt(id: string): Promise<any> {
+    return this.request(`/api/v2/history/saved-prompts/${id}/`);
+  }
+
+  async createSavedPrompt(data: {
+    title: string;
+    content: string;
+    description?: string;
+    category: string;
+    tags?: string[];
+    is_favorite?: boolean;
+    is_public?: boolean;
+    source?: string;
+    source_template_id?: string;
+    variables_snapshot?: Record<string, any>;
+    metadata?: Record<string, any>;
+  }): Promise<any> {
+    return this.request('/api/v2/history/saved-prompts/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateSavedPrompt(id: string, data: {
+    title?: string;
+    content?: string;
+    description?: string;
+    category?: string;
+    tags?: string[];
+    is_favorite?: boolean;
+    is_public?: boolean;
+    metadata?: Record<string, any>;
+  }): Promise<any> {
+    return this.request(`/api/v2/history/saved-prompts/${id}/`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteSavedPrompt(id: string): Promise<void> {
+    await this.request(`/api/v2/history/saved-prompts/${id}/`, {
+      method: 'DELETE',
+    });
+  }
+
+  async toggleFavoritePrompt(id: string): Promise<any> {
+    return this.request(`/api/v2/history/saved-prompts/${id}/toggle-favorite/`, {
+      method: 'POST',
+    });
+  }
+
+  async recordPromptUsage(id: string, data?: {
+    context?: string;
+    model_used?: string;
+    response_preview?: string;
+  }): Promise<any> {
+    return this.request(`/api/v2/history/saved-prompts/${id}/use/`, {
+      method: 'POST',
+      body: JSON.stringify(data || {}),
+    });
+  }
+
+  async getSavedPromptStats(): Promise<any> {
+    return this.request('/api/v2/history/saved-prompts/stats/');
+  }
+
+  async searchSavedPrompts(query: string): Promise<any> {
+    return this.request(`/api/v2/history/saved-prompts/search/?q=${encodeURIComponent(query)}`);
+  }
+
+  async duplicateSavedPrompt(id: string): Promise<any> {
+    return this.request(`/api/v2/history/saved-prompts/${id}/duplicate/`, {
+      method: 'POST',
+    });
+  }
+
+  // ============================================
+  // Prompt Iterations (Version Control) Methods
+  // ============================================
+
+  async getPromptIterations(promptId: string): Promise<any[]> {
+    return this.request<any[]>(`/api/v2/history/saved-prompts/${promptId}/iterations/`);
+  }
+
+  async createPromptIteration(promptId: string, data: {
+    content: string;
+    change_description: string;
+    change_type: string;
+    performance_metrics?: Record<string, any>;
+  }): Promise<any> {
+    return this.request(`/api/v2/history/saved-prompts/${promptId}/iterations/`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getPromptIteration(promptId: string, iterationId: string): Promise<any> {
+    return this.request(`/api/v2/history/saved-prompts/${promptId}/iterations/${iterationId}/`);
+  }
+
+  async revertToIteration(promptId: string, iterationId: string): Promise<any> {
+    return this.request(`/api/v2/history/saved-prompts/${promptId}/iterations/${iterationId}/revert/`, {
+      method: 'POST',
+    });
+  }
+
+  async compareIterations(promptId: string, versionA: number, versionB: number): Promise<any> {
+    return this.request(
+      `/api/v2/history/saved-prompts/${promptId}/iterations/compare/?version_a=${versionA}&version_b=${versionB}`
+    );
+  }
+
+  async getPromptUsageHistory(promptId: string, params?: {
+    page?: number;
+    limit?: number;
+  }): Promise<PaginatedResponse<any>> {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) queryParams.append(key, String(value));
+      });
+    }
+    return this.request<PaginatedResponse<any>>(
+      `/api/v2/history/saved-prompts/${promptId}/usage-history/?${queryParams.toString()}`
+    );
+  }
 }
 
 // Export singleton instance

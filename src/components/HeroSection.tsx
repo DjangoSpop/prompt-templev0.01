@@ -28,6 +28,7 @@ export function HeroSection() {
           className="absolute top-20 right-20 w-32 h-32 bg-gradient-to-br from-royal-gold-400 to-royal-gold-600 rounded-full shadow-pyramid-lg"
         />
         
+        
         {/* Pyramids */}
         <motion.div 
           style={{ y: pyramidY }}
@@ -193,7 +194,7 @@ export function HeroSection() {
             <Star className="h-4 w-4 fill-royal-gold-500 text-royal-gold-500" />
           </div>
           
-          <Link href="/auth/signup">
+          <Link href="/auth/register">
             <Button 
               size="lg"
               className="bg-gradient-to-r from-lapis-blue-600 to-nile-teal-600 hover:from-lapis-blue-700 hover:to-nile-teal-700 text-white px-12 py-4 text-lg shadow-pyramid-lg transform hover:scale-105 transition-all duration-300"

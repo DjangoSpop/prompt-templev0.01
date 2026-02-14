@@ -15,8 +15,10 @@ import {
   ThumbsUp,
   ThumbsDown,
   RotateCcw,
-  Search
+  Search,
+  BookmarkPlus
 } from 'lucide-react';
+import { useSavedPromptsStore } from '@/store/saved-prompts';
 import type { 
   components
 } from '@/types/api';
@@ -271,6 +273,29 @@ const MessageBubble: React.FC<{
                     </Tooltip>
                   </TooltipProvider>
                 )}
+
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          const store = useSavedPromptsStore.getState();
+                          store.openSaveModal({
+                            mode: 'save-from-chat',
+                            initialContent: message.content,
+                            initialTitle: `Chat: ${message.content.slice(0, 50)}...`,
+                          });
+                        }}
+                        className="h-6 w-6 p-0"
+                      >
+                        <BookmarkPlus className="w-3 h-3" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Save to Library</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </>
             )}
           </div>
