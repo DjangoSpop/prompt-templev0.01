@@ -394,7 +394,7 @@ export default function StatusPage() {
                 </Button>
                 
                 <Button 
-                  onClick={() => window.open(`${systemStatus?.api_url || 'http://localhost:8000'}/admin/`, '_blank')} 
+                  onClick={() => window.open(`${systemStatus?.api_url || 'https://api.prompt-temple.com'}/admin/`, '_blank')} 
                   className="w-full justify-start"
                   variant="outline"
                 >
@@ -403,7 +403,7 @@ export default function StatusPage() {
                 </Button>
                 
                 <Button 
-                  onClick={() => window.open(`${systemStatus?.api_url || 'http://localhost:8000'}/api/v2/`, '_blank')} 
+                  onClick={() => window.open(`${systemStatus?.api_url || 'https://api.prompt-temple.com'}/api/v2/`, '_blank')} 
                   className="w-full justify-start"
                   variant="outline"
                 >
@@ -424,11 +424,11 @@ export default function StatusPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div>
                 <span className="text-gray-600">API Base URL:</span>
-                <div className="font-mono">{process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}</div>
+                <div className="font-mono">{process.env.NEXT_PUBLIC_API_URL || 'https://api.prompt-temple.com'}</div>
               </div>
               <div>
                 <span className="text-gray-600">WebSocket URL:</span>
-                <div className="font-mono">{process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000'}</div>
+                <div className="font-mono">{process.env.NEXT_PUBLIC_WS_URL || 'wss://api.prompt-temple.com'}</div>
               </div>
               <div>
                 <span className="text-gray-600">Environment:</span>

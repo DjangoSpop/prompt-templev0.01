@@ -36,7 +36,7 @@ interface SearchCache {
 export class EnhancedPromptService {
   private searchCache: SearchCache = {};
   private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-  private readonly API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+  private readonly API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.prompt-temple.com';
 
   constructor() {
     // Clean up cache periodically

@@ -374,7 +374,7 @@ export default function SettingsView() {
             <label className="block text-text-primary font-medium mb-2 text-sm sm:text-base">API Base URL</label>
             <input
               type="text"
-              value={process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8000'}
+              value={process.env.NEXT_PUBLIC_API_BASE || 'https://api.prompt-temple.com'}
               readOnly
               className="w-full p-3 bg-bg-tertiary border border-border rounded text-text-muted text-sm sm:text-base"
             />

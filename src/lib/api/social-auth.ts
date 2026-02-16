@@ -81,13 +81,15 @@ export class SocialAuthManager {
   constructor() {
     // baseUrl: where the app proxies API requests (client-side). If not provided,
     // default to the current origin + `/api/proxy` when running in the browser.
-    this.baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || (typeof window !== 'undefined' ? `${window.location.origin}/api/proxy` : '/api/proxy');
+    this.baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.prompt-temple.com';
 
     // backendUrl: MUST be direct backend URL for OAuth flows (not proxy).
     // For local dev: http://127.0.0.1:8000
     // For production: https://api.prompt-temple.com
     // CRITICAL: Never point this to /api/proxy - OAuth requires direct backend communication
-    this.backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || (typeof window !== 'undefined' ? 'https://api.prompt-temple.com' : 'https://api.prompt-temple.com)');
+    // Remove trailing slash to prevent double slashes when concatenating with endpoints
+    const rawBackendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || (typeof window !== 'undefined' ? 'https://api.prompt-temple.com' : 'https://api.prompt-temple.com');
+    this.backendUrl = rawBackendUrl.replace(/\/$/, ''); // Remove trailing slash if present
 
     // appUrl: optional explicit front-end URL to build redirect URIs (useful on Vercel).
     this.appUrl = process.env.NEXT_PUBLIC_APP_URL || (typeof window !== 'undefined' ? window.location.origin : undefined);
@@ -136,9 +138,18 @@ export class SocialAuthManager {
     }
   }
 
+  // Utility method to properly join URLs without creating double slashes
+  private buildUrl(baseUrl: string, endpoint: string): string {
+    // Remove trailing slash from baseUrl
+    const cleanBase = baseUrl.replace(/\/$/, '');
+    // Ensure endpoint starts with /
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    return `${cleanBase}${cleanEndpoint}`;
+  }
+
   // Custom fetch for direct backend calls (bypasses Next.js proxy)
   private async fetchDirect<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const url = `${this.backendUrl}${endpoint}`;
+    const url = this.buildUrl(this.backendUrl, endpoint);
     
     const response = await fetch(url, {
       ...options,

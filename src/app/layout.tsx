@@ -19,6 +19,10 @@ export const metadata: Metadata = {
   title: "Prompt Temple - The Ultimate AI Prompt Sanctuary",
   description: "Discover, craft, and master AI prompt templates in our sacred digital sanctuary. Experience the power of professional prompt engineering with advanced analytics, collaboration, and gamification.",
   keywords: ["prompt temple", "AI prompts", "prompt engineering", "templates", "prompt sanctuary", "AI tools", "prompt library", "analytics", "collaboration", "gamification"],
+  icons: {
+    icon: "/eye-of-horus.svg",
+    apple: "/eye-of-horus.svg",
+  },
 };
 
 export default function RootLayout({

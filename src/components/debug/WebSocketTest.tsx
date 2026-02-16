@@ -17,7 +17,7 @@ interface TestMessage {
 }
 
 export const WebSocketTest: React.FC<WebSocketTestProps> = ({
-  wsUrl = 'ws://127.0.0.1:8000',
+  wsUrl = 'wss://api.prompt-temple.com',
   authToken,
 }) => {
   const [ws, setWs] = useState<WebSocket | null>(null);

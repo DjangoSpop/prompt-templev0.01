@@ -9,7 +9,7 @@ const GRAPHQL_URL =
   process.env.NEXT_PUBLIC_GRAPHQL_URL ||
   (process.env.NEXT_PUBLIC_API_BASE_URL
     ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/graphql/`
-    : 'http://localhost:8000/graphql/');
+    : 'https://api.prompt-temple.com/graphql/');
 
 // ============================================
 // Lightweight GraphQL Fetch Client

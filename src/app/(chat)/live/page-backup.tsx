@@ -119,7 +119,7 @@ function PromptCraftChatInline() {
 
   // WebSocket connection with the new hook
   const wsConfig = useMemo(() => {
-    const base = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000';
+    const base = process.env.NEXT_PUBLIC_WS_URL || 'wss://api.prompt-temple.com';
     const token = getToken();
     return {
       url: token
@@ -332,7 +332,7 @@ function PromptCraftChatInline() {
     [inputMessage, handleSendMessage]
   );
 
-  const wsBase = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000';
+  const wsBase = process.env.NEXT_PUBLIC_WS_URL || 'wss://api.prompt-temple.com';
 
   return (
     <div className="flex flex-col h-[650px] bg-pharaoh-gradient border-2 border-sand-200 rounded-cartouche shadow-xl backdrop-blur-sm">
@@ -715,7 +715,7 @@ export default function IntegratedTestPage() {
             <div className="flex items-center justify-center gap-2 text-sm">
               <span className="text-amber-700 font-semibold">🔗 Temple Gateway:</span>
               <code className="bg-amber-100 text-amber-800 px-2 py-1 rounded font-mono text-xs">
-                {process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000'}
+                {process.env.NEXT_PUBLIC_WS_URL || 'wss://api.prompt-temple.com'}
               </code>
             </div>
           </div>

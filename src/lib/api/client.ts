@@ -27,7 +27,7 @@ export interface APIClientConfig {
 }
 
 const DEFAULT_CONFIG: Required<APIClientConfig> = {
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000/api/proxy',
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.prompt-temple.com',
   timeout: 30000,
   retryAttempts: 3,
   retryDelay: 1000,

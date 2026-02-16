@@ -116,7 +116,7 @@ export function NextGenChatInterface() {
     userId,
     sessionId,
     autoSave: true,
-    wsUrl: process.env.NEXT_PUBLIC_WS_URL || 'ws://127.0.0.1:8000',
+    wsUrl: process.env.NEXT_PUBLIC_WS_URL || 'wss://api.prompt-temple.com',
   });
 
   const conversation = useConversation({
@@ -359,7 +359,7 @@ export function NextGenChatInterface() {
                   <div className="text-sm font-semibold text-amber-800 mb-2">Connection Status</div>
                   <div className="text-xs text-amber-700 space-y-1">
                     <div>WebSocket: {streamingChat.isConnected ? '✅ Connected' : '❌ Disconnected'}</div>
-                    <div>Backend: {process.env.NEXT_PUBLIC_WS_URL || 'ws://127.0.0.1:8000'}</div>
+                    <div>Backend: {process.env.NEXT_PUBLIC_WS_URL || 'wss://api.prompt-temple.com'}</div>
                     <div>Session: {sessionId}</div>
                     {process.env.NODE_ENV === 'development' && (
                       <div className="mt-2">

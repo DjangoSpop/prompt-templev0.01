@@ -341,7 +341,7 @@ function EnhancedChatInterface() {
     [inputMessage, handleSendMessage]
   );
 
-  const wsBase = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000';
+  const wsBase = process.env.NEXT_PUBLIC_WS_URL || 'wss://api.prompt-temple.com';
 
   return (
     <div className="flex flex-col h-[650px] bg-pharaoh-gradient border-2 border-sand-200 rounded-cartouche shadow-xl backdrop-blur-sm">

@@ -134,7 +134,7 @@ export function useStreamingChat(options: UseChatOptions) {
 
   // WebSocket configuration
   const wsConfig = useMemo(() => {
-    const base = options.wsUrl || process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000';
+    const base = options.wsUrl || process.env.NEXT_PUBLIC_WS_URL || 'wss://api.prompt-temple.com';
     const token = getToken();
     return {
       url: token

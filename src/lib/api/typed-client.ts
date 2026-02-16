@@ -20,7 +20,7 @@ export type PaginatedResponse<T> = {
   results: T[];
 };
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000/api/proxy';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.prompt-temple.com';
 
 class ApiClient {
   private baseURL: string;

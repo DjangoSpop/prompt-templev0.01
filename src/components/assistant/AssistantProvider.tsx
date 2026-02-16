@@ -32,7 +32,7 @@ export function AssistantProvider({ children }: AssistantProviderProps) {
   const [sessionId] = useState(() => crypto.randomUUID());
   const [channels, setChannels] = useState<AssistantChannelMap>({});
 
-  const WS_BASE = process.env.NEXT_PUBLIC_WS_BASE || 'ws://127.0.0.1:8000';
+  const WS_BASE = process.env.NEXT_PUBLIC_WS_BASE || 'wss://api.prompt-temple.com';
 
   const openChannel = useCallback(async (assistantId: string): Promise<WebSocket> => {
     // Close existing channel if any

@@ -210,7 +210,7 @@ const useOptimizationStore = create<OptimizationStore>()(
 // ===== SSE CLIENT =====
 class ChatSSEClient {
   private abortController: AbortController | null = null;
-  private baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  private baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.prompt-temple.com';
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 3;
   
@@ -424,8 +424,8 @@ class PromptCraftWebSocket {
     return new Promise((resolve, reject) => {
       const token = this.getValidToken();
       const wsUrl = token
-        ? `ws://localhost:8000/ws/chat/${sessionId}/?token=${token}`
-        : `ws://localhost:8000/ws/chat/${sessionId}/`;
+        ? `wss://api.prompt-temple.com/ws/chat/${sessionId}/?token=${token}`
+        : `wss://api.prompt-temple.com/ws/chat/${sessionId}/`;
 
       try {
         this.socket = new WebSocket(wsUrl);

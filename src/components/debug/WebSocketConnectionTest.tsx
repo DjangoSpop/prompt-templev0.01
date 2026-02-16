@@ -17,7 +17,7 @@ export function WebSocketConnectionTest({ className = '' }: ConnectionTestProps)
 
   const [wsService] = useState(() => new NativeWebSocketChatService({
     sessionId: `test_${Date.now()}`,
-    apiUrl: process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000',
+    apiUrl: process.env.NEXT_PUBLIC_WS_URL || 'wss://api.prompt-temple.com',
   }));
 
   useEffect(() => {

@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
   experimental: {
     // Enable Server Actions
     serverActions: {
-      allowedOrigins: ['localhost:3000', '*.vercel.app', '127.0.0.1:3000', '192.168.56.1:3000', 'http://127.0.0.1:8000'],
+      allowedOrigins: ['localhost:3000', '*.vercel.app', '127.0.0.1:3000', '192.168.56.1:3000', 'prompt-temple.com', 'www.prompt-temple.com'],
     },
   },
 

@@ -90,7 +90,7 @@ const SSEAuthTestPage: React.FC = () => {
       
       try {
         // Test a known working endpoint first
-        const response = await fetch('http://localhost:8000/api/v2/auth/profile/', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.prompt-temple.com'}/api/v2/auth/profile/`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${currentToken}`,

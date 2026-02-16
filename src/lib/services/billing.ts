@@ -38,7 +38,7 @@ export interface UsageStats {
 }
 
 class BillingService {
-  private baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000/api/proxy';
+  private baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.prompt-temple.com';
 
   private async request<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
     const token = localStorage.getItem('auth_token');

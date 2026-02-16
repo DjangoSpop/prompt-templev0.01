@@ -87,11 +87,8 @@ interface AnalyticsEvent {
   timestamp?: string;
 }
 
-// Default base URL: prefer an explicit env var; in local development
-// route requests through the Next.js proxy which sets CORS headers
-// (see `src/app/api/proxy/[...path]/route.ts`). In production fall back
-// to the public API host.
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || (process.env.NODE_ENV === 'development' ? '/api/proxy' : 'https://api.prompt-temple.com');
+// Default base URL: prefer an explicit env var; fall back to the public API host.
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.prompt-temple.com';
 const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
 
 class ApiError extends Error {

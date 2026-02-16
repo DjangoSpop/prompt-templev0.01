@@ -1,0 +1,56 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="eyeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#FFA500;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF8C00;stop-opacity:1" />
+    </linearGradient>
+    <radialGradient id="pupilGradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#1F2937;stop-opacity:1" />
+      <stop offset="70%" style="stop-color:#000000;stop-opacity:1" />
+    </radialGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="128" cy="128" r="125" fill="url(#eyeGradient)" opacity="0.1"/>
+
+  <!-- Eye white/sclera -->
+  <ellipse cx="128" cy="128" rx="85" ry="95" fill="#FFFFFF" stroke="url(#eyeGradient)" stroke-width="3"/>
+
+  <!-- Upper eyelid -->
+  <path d="M 50 128 Q 50 80 128 65 Q 206 80 206 128" fill="url(#eyeGradient)" opacity="0.8"/>
+
+  <!-- Lower eyelid -->
+  <path d="M 50 128 Q 50 176 128 191 Q 206 176 206 128" fill="url(#eyeGradient)" opacity="0.6"/>
+
+  <!-- Iris -->
+  <circle cx="128" cy="128" r="50" fill="#1F2937" stroke="url(#eyeGradient)" stroke-width="2"/>
+
+  <!-- Iris gradient ring -->
+  <circle cx="128" cy="128" r="50" fill="none" stroke="#FFD700" stroke-width="1.5" opacity="0.6"/>
+
+  <!-- Pupil -->
+  <circle cx="128" cy="128" r="32" fill="url(#pupilGradient)" filter="url(#glow)"/>
+
+  <!-- Light reflection in pupil -->
+  <circle cx="122" cy="118" r="12" fill="#FFFFFF" opacity="0.7"/>
+  <circle cx="125" cy="120" r="8" fill="#FFFFFF" opacity="0.9"/>
+
+  <!-- Teardrop marks below eye -->
+  <path d="M 95 175 Q 92 195 95 210" stroke="url(#eyeGradient)" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M 161 175 Q 164 195 161 210" stroke="url(#eyeGradient)" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+  <!-- Top decorative marks (Egyptian style) -->
+  <path d="M 85 95 Q 80 85 85 75" stroke="url(#eyeGradient)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M 171 95 Q 176 85 171 75" stroke="url(#eyeGradient)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+  <!-- Center outer ring for depth -->
+  <circle cx="128" cy="128" r="100" fill="none" stroke="url(#eyeGradient)" stroke-width="1" opacity="0.3"/>
+</svg>

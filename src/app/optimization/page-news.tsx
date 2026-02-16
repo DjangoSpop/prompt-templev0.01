@@ -34,7 +34,7 @@ import { toast } from 'sonner';
 // Transport & client classes
 class ChatSSEClient {
   private abortController: AbortController | null = null;
-  private baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  private baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.prompt-temple.com';
   
   onStreamStart?: (data: any) => void;
   onStreamToken?: (data: any) => void;
@@ -171,8 +171,8 @@ class PromptCraftWebSocket {
     return new Promise((resolve, reject) => {
       const token = this.getValidToken();
       const wsUrl = token 
-        ? `ws://localhost:8000/ws/chat/${sessionId}/?token=${token}`
-        : `ws://localhost:8000/ws/chat/${sessionId}/`;
+        ? `wss://api.prompt-temple.com/ws/chat/${sessionId}/?token=${token}`
+        : `wss://api.prompt-temple.com/ws/chat/${sessionId}/`;
 
       try {
         this.socket = new WebSocket(wsUrl);

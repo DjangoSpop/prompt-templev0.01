@@ -21,7 +21,7 @@ interface UseWebSocketReturn {
   lastError?: string;
 }
 
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000';
+const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'wss://api.prompt-temple.com';
 
 export const useWebSocket = (options: UseWebSocketOptions = {}): UseWebSocketReturn => {
   const {

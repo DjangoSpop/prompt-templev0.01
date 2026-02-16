@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 
 // Get WebSocket URL from environment or use default
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000';
+const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'wss://api.prompt-temple.com';
 
 // Message types for WebSocket communication
 export interface WebSocketMessage {

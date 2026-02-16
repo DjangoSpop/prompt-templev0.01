@@ -120,7 +120,7 @@ export function useNativeStreamingChat(options: UseNativeChatOptions) {
   useEffect(() => {
     if (!wsServiceRef.current) {
       wsServiceRef.current = new NativeWebSocketChatService({
-        apiUrl: options.wsUrl || process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000',
+        apiUrl: options.wsUrl || process.env.NEXT_PUBLIC_WS_URL || 'wss://api.prompt-temple.com',
         sessionId: options.sessionId,
         enableOptimization: options.enableOptimization ?? true,
         maxRetries: options.maxReconnectAttempts || 5,

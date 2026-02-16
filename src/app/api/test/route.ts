@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(_request: NextRequest) {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.prompt-temple.com';
     
     // Test connection to Django backend
     const response = await fetch(`${apiUrl}/health/`, {
@@ -19,7 +19,7 @@ export async function GET(_request: NextRequest) {
       backend_status: response.ok ? 'connected' : 'error',
       backend_data: data,
       frontend_time: new Date().toISOString(),
-      websocket_url: process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000',
+      websocket_url: process.env.NEXT_PUBLIC_WS_URL || 'wss://api.prompt-temple.com',
       api_url: apiUrl,
     });
   } catch (error) {
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
 
 async function testBilling() {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.prompt-temple.com';
     
     // Test billing endpoints
     const responses = await Promise.all([
@@ -86,11 +86,11 @@ async function testBilling() {
 
 async function testWebSocket() {
   try {
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000';
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'wss://api.prompt-temple.com';
     
     // Since we can't directly test WebSocket from server-side,
     // we'll test the HTTP equivalent endpoints
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.prompt-temple.com';
     
     const response = await fetch(`${apiUrl}/api/v2/status/`);
     const data = response.ok ? await response.json() : null;
