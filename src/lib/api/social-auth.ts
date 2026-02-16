@@ -87,7 +87,7 @@ export class SocialAuthManager {
     // For local dev: http://127.0.0.1:8000
     // For production: https://api.prompt-temple.com
     // CRITICAL: Never point this to /api/proxy - OAuth requires direct backend communication
-    this.backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || (typeof window !== 'undefined' ? 'http://127.0.0.1:8000' : 'http://127.0.0.1:8000');
+    this.backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || (typeof window !== 'undefined' ? 'https://api.prompt-temple.com' : 'https://api.prompt-temple.com)');
 
     // appUrl: optional explicit front-end URL to build redirect URIs (useful on Vercel).
     this.appUrl = process.env.NEXT_PUBLIC_APP_URL || (typeof window !== 'undefined' ? window.location.origin : undefined);
