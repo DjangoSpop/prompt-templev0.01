@@ -14,6 +14,7 @@ const nextConfig: NextConfig = {
     },
   },
 
+  // Silence lockfile workspace-root warning
   outputFileTracingRoot: path.resolve(__dirname),
 
   // Note: i18n configuration is not supported in App Router
@@ -21,9 +22,6 @@ const nextConfig: NextConfig = {
 
   // Allow cross-origin requests from specific origins
   allowedDevOrigins: ['127.0.0.1', '192.168.56.1'],
-
-  // Output configuration for Docker
-  output: 'standalone',
 
   // Environment variables
   env: {

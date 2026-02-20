@@ -366,9 +366,9 @@ const InlineVariableEditor = ({
               tabIndex={0}
               aria-label={variable.label}
               autoComplete="off"
-              className={`variable-input-field text-sm transition-all duration-200 ${
-                isActive 
-                  ? 'border-pharaoh-gold focus:border-pharaoh-gold focus:ring-pharaoh-gold/30 focus:ring-2' 
+              className={`variable-input-field text-base sm:text-sm transition-all duration-200 ${
+                isActive
+                  ? 'border-pharaoh-gold focus:border-pharaoh-gold focus:ring-pharaoh-gold/30 focus:ring-2'
                   : 'border-muted hover:border-pharaoh-gold/50'
               } ${hasValue ? 'bg-green-50/30 dark:bg-green-900/10' : ''} resize-none`}
             />
@@ -380,9 +380,9 @@ const InlineVariableEditor = ({
               onFocus={() => !isActive && setActive()}
               tabIndex={0}
               aria-label={variable.label}
-              className={`variable-input-field w-full p-2 text-sm border rounded-lg bg-background transition-all duration-200 ${
-                isActive 
-                  ? 'border-pharaoh-gold focus:border-pharaoh-gold focus:ring-2 focus:ring-pharaoh-gold/30' 
+              className={`variable-input-field w-full p-2 text-base sm:text-sm border rounded-lg bg-background transition-all duration-200 ${
+                isActive
+                  ? 'border-pharaoh-gold focus:border-pharaoh-gold focus:ring-2 focus:ring-pharaoh-gold/30'
                   : 'border-muted hover:border-pharaoh-gold/50'
               }`}
             >
@@ -403,9 +403,9 @@ const InlineVariableEditor = ({
               tabIndex={0}
               aria-label={variable.label}
               autoComplete="off"
-              className={`variable-input-field text-sm transition-all duration-200 ${
-                isActive 
-                  ? 'border-pharaoh-gold focus:border-pharaoh-gold focus:ring-pharaoh-gold/30 focus:ring-2' 
+              className={`variable-input-field text-base sm:text-sm transition-all duration-200 ${
+                isActive
+                  ? 'border-pharaoh-gold focus:border-pharaoh-gold focus:ring-pharaoh-gold/30 focus:ring-2'
                   : 'border-muted hover:border-pharaoh-gold/50'
               } ${hasValue ? 'bg-green-50/30 dark:bg-green-900/10' : ''}`}
             />
@@ -772,6 +772,7 @@ export function EnhancedTemplateDetailModal({
   const [viewMode, setViewMode] = useState<'flow' | 'list'>('flow');
   const [showCelebration, setShowCelebration] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [mobileTab, setMobileTab] = useState<'fill' | 'preview'>('fill');
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Generate final prompt with ALL variables properly replaced - ROBUST version
@@ -952,10 +953,12 @@ export function EnhancedTemplateDetailModal({
     }
   }, [templateDetail, viewMode]); // Removed 'variables' dependency - this is the key fix!
 
-  // Reset initialization flag when modal closes
+  // Reset initialization flag when modal closes; reset mobile tab when it opens
   useEffect(() => {
     if (!isOpen) {
       hasInitializedRef.current = false;
+    } else {
+      setMobileTab('fill');
     }
   }, [isOpen]);
 
@@ -1214,7 +1217,7 @@ export function EnhancedTemplateDetailModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`${isFullscreen ? 'w-screen h-screen max-w-none rounded-none' : 'max-w-3xl max-h-[80vh]'} p-0 overflow-hidden flex flex-col`}>
+      <DialogContent className={`${isFullscreen ? 'w-screen h-screen max-w-none rounded-none' : 'w-full h-[100dvh] max-w-none rounded-none sm:max-w-3xl sm:h-auto sm:max-h-[85vh] sm:rounded-lg'} p-0 overflow-hidden flex flex-col`}>
         <DialogHeader className="sr-only">
           <DialogTitle>{templateDetail?.title || 'Template Details'}</DialogTitle>
           <DialogDescription>
@@ -1265,16 +1268,16 @@ export function EnhancedTemplateDetailModal({
           <div className="flex flex-col h-full">
             {/* Enhanced Header with Progress */}
             <div className="flex items-center justify-between p-4 border-b border-border bg-gradient-to-r from-pharaoh-gold/5 via-transparent to-nile-teal/5">
-              <div className="flex items-center gap-4">
-                <motion.div 
-                  className="w-12 h-12 bg-gradient-to-br from-pharaoh-gold to-nile-teal rounded-xl flex items-center justify-center shadow-pyramid"
+              <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+                <motion.div
+                  className="w-8 h-8 sm:w-12 sm:h-12 flex-shrink-0 bg-gradient-to-br from-pharaoh-gold to-nile-teal rounded-lg sm:rounded-xl flex items-center justify-center shadow-pyramid"
                   whileHover={{ scale: 1.05, rotate: 5 }}
                 >
-                  <Sparkles className="w-6 h-6 text-white" />
+                  <Sparkles className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                 </motion.div>
-                <div>
-                  <h2 className="text-lg font-bold text-foreground line-clamp-1">{templateDetail.title}</h2>
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
+                <div className="min-w-0">
+                  <h2 className="text-base sm:text-lg font-bold text-foreground line-clamp-1">{templateDetail.title}</h2>
+                  <div className="hidden sm:flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
                     <span className="flex items-center gap-1">
                       <Star className="w-3 h-3 text-pharaoh-gold fill-current" />
                       {templateDetail.average_rating.toFixed(1)}
@@ -1290,14 +1293,14 @@ export function EnhancedTemplateDetailModal({
                 </div>
               </div>
               
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
                 {/* Progress Ring */}
-                <ProgressRing progress={validation.progress} size={44} strokeWidth={3} />
-                
-                <Separator orientation="vertical" className="h-8" />
-                
-                {/* View Mode Toggle */}
-                <div className="flex items-center bg-muted/50 rounded-lg p-0.5">
+                <ProgressRing progress={validation.progress} size={40} strokeWidth={3} />
+
+                <Separator orientation="vertical" className="hidden sm:block h-8" />
+
+                {/* View Mode Toggle — desktop only */}
+                <div className="hidden sm:flex items-center bg-muted/50 rounded-lg p-0.5">
                   <Button
                     variant={viewMode === 'flow' ? 'default' : 'ghost'}
                     size="sm"
@@ -1317,9 +1320,9 @@ export function EnhancedTemplateDetailModal({
                     List
                   </Button>
                 </div>
-                
-                <Separator orientation="vertical" className="h-8" />
-                
+
+                <Separator orientation="vertical" className="hidden sm:block h-8" />
+
                 {/* Action Buttons */}
                 <div className="flex items-center gap-1">
                   <TooltipProvider>
@@ -1329,7 +1332,7 @@ export function EnhancedTemplateDetailModal({
                           variant="ghost"
                           size="sm"
                           onClick={handleResetAll}
-                          className="h-8 w-8 p-0"
+                          className="h-9 w-9 sm:h-8 sm:w-8 p-0"
                         >
                           <RefreshCw className="w-4 h-4" />
                         </Button>
@@ -1337,36 +1340,68 @@ export function EnhancedTemplateDetailModal({
                       <TooltipContent>Reset all fields</TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
-                  
+
+                  {/* Eye & Fullscreen — desktop only (mobile uses tab bar instead) */}
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setShowPreview(!showPreview)}
-                    className="h-8 w-8 p-0"
+                    className="hidden sm:inline-flex h-8 w-8 p-0"
                   >
                     {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </Button>
-                  
+
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setIsFullscreen(!isFullscreen)}
-                    className="h-8 w-8 p-0"
+                    className="hidden sm:inline-flex h-8 w-8 p-0"
                   >
                     <Maximize2 className="w-4 h-4" />
                   </Button>
-                  
-                  <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0">
+
+                  <Button variant="ghost" size="sm" onClick={onClose} className="h-9 w-9 sm:h-8 sm:w-8 p-0">
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
             </div>
 
+            {/* Mobile Tab Bar — hidden on sm+ (desktop uses side-by-side panels) */}
+            <div className="flex sm:hidden border-b border-border flex-shrink-0">
+              <button
+                onClick={() => setMobileTab('fill')}
+                className={`flex-1 py-3 text-sm font-medium transition-colors ${
+                  mobileTab === 'fill'
+                    ? 'text-pharaoh-gold border-b-2 border-pharaoh-gold'
+                    : 'text-muted-foreground'
+                }`}
+              >
+                Fill Variables
+              </button>
+              <button
+                onClick={() => setMobileTab('preview')}
+                className={`flex-1 py-3 text-sm font-medium transition-colors ${
+                  mobileTab === 'preview'
+                    ? 'text-pharaoh-gold border-b-2 border-pharaoh-gold'
+                    : 'text-muted-foreground'
+                }`}
+              >
+                Preview
+              </button>
+            </div>
+
             {/* Main Content */}
             <div className="flex-1 overflow-hidden flex">
               {/* Left Panel - Variable Input */}
-              <div className={`${showPreview ? 'w-2/5' : 'w-full'} border-r border-border overflow-y-auto`} ref={containerRef}>
+              <div
+                className={`
+                  w-full border-r border-border overflow-y-auto
+                  ${mobileTab === 'fill' ? 'block' : 'hidden'}
+                  sm:block ${showPreview ? 'sm:w-2/5' : 'sm:w-full'}
+                `}
+                ref={containerRef}
+              >
                 <div className="p-4">
                   {/* Quick Stats Bar - Shows progress prominently */}
                   <div className="flex items-center justify-between mb-4 p-3 bg-gradient-to-r from-pharaoh-gold/5 to-nile-teal/5 rounded-lg border border-pharaoh-gold/10">
@@ -1450,8 +1485,14 @@ export function EnhancedTemplateDetailModal({
               </div>
 
               {/* Right Panel - Preview */}
-              {showPreview && (
-                <div className="flex-1 overflow-y-auto bg-muted/10">
+              {(showPreview || mobileTab === 'preview') && (
+                <div
+                  className={`
+                    w-full overflow-y-auto bg-muted/10
+                    ${mobileTab === 'preview' ? 'block' : 'hidden'}
+                    ${showPreview ? 'sm:block sm:flex-1' : 'sm:hidden'}
+                  `}
+                >
                   <div className="p-4 space-y-4">
                     {/* Final Prompt Preview - What will be copied */}
                     <div>
@@ -1582,14 +1623,14 @@ export function EnhancedTemplateDetailModal({
                 </div>
                 
                 {/* Main Actions */}
-                <div className="flex items-center gap-2 ml-auto">
+                <div className="flex flex-wrap items-center gap-2 ml-auto">
                   <Button
                     variant={copySuccess ? "default" : "outline"}
                     onClick={handleCopy}
                     disabled={isCopying}
-                    className={`transition-all duration-300 ${
-                      copySuccess 
-                        ? 'bg-green-500 hover:bg-green-600 text-white border-green-500' 
+                    className={`min-h-[44px] sm:min-h-0 transition-all duration-300 ${
+                      copySuccess
+                        ? 'bg-green-500 hover:bg-green-600 text-white border-green-500'
                         : 'border-pharaoh-gold/30 hover:bg-pharaoh-gold/10 hover:border-pharaoh-gold'
                     }`}
                   >
@@ -1602,7 +1643,7 @@ export function EnhancedTemplateDetailModal({
                     )}
                     {copySuccess ? 'Copied!' : 'Copy Prompt'}
                   </Button>
-                  
+
                   {/* Copy & Close - Most common action after filling variables */}
                   {validation.isValid && (
                     <Button
@@ -1610,17 +1651,17 @@ export function EnhancedTemplateDetailModal({
                         await handleCopy();
                         setTimeout(() => onClose(), 500);
                       }}
-                      className="bg-green-600 hover:bg-green-700 text-white"
+                      className="min-h-[44px] sm:min-h-0 bg-green-600 hover:bg-green-700 text-white"
                     >
                       <Check className="w-4 h-4 mr-2" />
                       Copy & Done
                     </Button>
                   )}
-                  
+
                   <Button
                     onClick={handleUse}
                     disabled={!validation.isValid}
-                    className="bg-gradient-to-r from-pharaoh-gold to-nile-teal hover:opacity-90 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="min-h-[44px] sm:min-h-0 bg-gradient-to-r from-pharaoh-gold to-nile-teal hover:opacity-90 text-white disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Rocket className="w-4 h-4 mr-2" />
                     Use Template
