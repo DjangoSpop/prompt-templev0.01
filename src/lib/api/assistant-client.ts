@@ -7,21 +7,25 @@ import type {
   RunMessageResponse,
 } from '@/types/assistant';
 
-const API_BASE = process.env.NEXT_PUBLIC_AI_API_BASE || '/api/v2/ai';
+const API_ORIGIN = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.prompt-temple.com';
+const API_BASE = `${API_ORIGIN}/api/v2/ai`;
 
 export const assistantClient = axios.create({
   baseURL: API_BASE,
-  withCredentials: true,
+  withCredentials: false,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request interceptor for CSRF tokens
+// Request interceptor — inject JWT Bearer token
 assistantClient.interceptors.request.use((config) => {
-  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-  if (csrfToken) {
-    config.headers['X-CSRFToken'] = csrfToken;
+  const token =
+    (typeof window !== 'undefined' && localStorage.getItem('access_token')) ||
+    (typeof window !== 'undefined' && sessionStorage.getItem('access_token')) ||
+    null;
+  if (token && token !== 'undefined' && token !== 'null') {
+    config.headers['Authorization'] = `Bearer ${token}`;
   }
   return config;
 });

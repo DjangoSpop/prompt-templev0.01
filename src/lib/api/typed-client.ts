@@ -5,6 +5,13 @@
 
 import { components, operations } from '@/lib/types/api';
 import { useAuthStore } from '@/store/user';
+import type {
+  SavedPrompt,
+  PaginatedSavedPrompts,
+  SavedPromptStats,
+  PromptIteration,
+  PromptUsageLog,
+} from '@/types/saved-prompts';
 
 // Re-export types for convenience - using actual schema names from api.d.ts
 export type TemplateList = components['schemas']['TemplateList'];
@@ -61,8 +68,17 @@ class ApiClient {
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(error || `Request failed: ${response.status}`);
+      const raw = await response.text();
+      let message = `Request failed: ${response.status}`;
+      try {
+        const parsed = JSON.parse(raw);
+        message = parsed.error || parsed.detail || parsed.message || message;
+      } catch {
+        if (raw) message = raw;
+      }
+      const err = new Error(message) as Error & { status: number };
+      err.status = response.status;
+      throw err;
     }
 
     if (response.status === 204) {
@@ -362,8 +378,14 @@ class ApiClient {
   }
 
   // Agent Methods
-  async optimizeWithAgent(data: any): Promise<any> {
-    return this.request('/api/v2/ai/agent/optimize/', {
+  async optimizeWithAgent(data: {
+    session_id: string;
+    original: string;
+    mode?: 'fast' | 'deep';
+    context?: Record<string, unknown>;
+    budget?: { tokens_in?: number; tokens_out?: number; max_credits?: number };
+  }): Promise<AgentOptimizeResult> {
+    return this.request<AgentOptimizeResult>('/api/v2/ai/agent/optimize/', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -371,6 +393,59 @@ class ApiClient {
 
   async getAgentStats(): Promise<any> {
     return this.request('/api/v2/ai/agent/stats/');
+  }
+
+  // ============================================
+  // AskMe — Guided Prompt Builder
+  // ============================================
+
+  async askmeStart(data: { goal: string; context?: string }): Promise<AskMeSession> {
+    return this.request<AskMeSession>('/api/v2/ai/askme/start/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async askmeAnswer(data: {
+    session_id: string;
+    question_id: string;
+    answer: string;
+  }): Promise<AskMeAnswerResponse> {
+    return this.request<AskMeAnswerResponse>('/api/v2/ai/askme/answer/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async askmeFinalize(data: { session_id: string }): Promise<AskMeFinalResult> {
+    return this.request<AskMeFinalResult>('/api/v2/ai/askme/finalize/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getAskmeSessions(): Promise<AskMeSession[]> {
+    return this.request<AskMeSession[]>('/api/v2/ai/askme/sessions/');
+  }
+
+  async deleteAskmeSession(sessionId: string): Promise<void> {
+    await this.request(`/api/v2/ai/askme/sessions/${sessionId}/delete/`, {
+      method: 'DELETE',
+    });
+  }
+
+  // ============================================
+  // DeepSeek Direct Endpoints
+  // ============================================
+
+  async deepseekChat(
+    messages: Array<{ role: 'user' | 'assistant' | 'system'; content: string }>,
+    options?: { temperature?: number; max_tokens?: number }
+  ): Promise<{ content: string; model: string; usage?: { prompt_tokens: number; completion_tokens: number } }> {
+    return this.request('/api/v2/ai/deepseek/chat/', {
+      method: 'POST',
+      body: JSON.stringify({ messages, ...options }),
+    });
   }
 
   // Health Check
@@ -404,7 +479,7 @@ class ApiClient {
     ordering?: string;
     page?: number;
     limit?: number;
-  }): Promise<PaginatedResponse<any>> {
+  }): Promise<PaginatedSavedPrompts> {
     const queryParams = new URLSearchParams();
     if (params) {
       // Convert sort_by + sort_order to Django ordering param
@@ -423,13 +498,13 @@ class ApiClient {
         }
       });
     }
-    return this.request<PaginatedResponse<any>>(
+    return this.request<PaginatedSavedPrompts>(
       `/api/v2/history/saved-prompts/?${queryParams.toString()}`
     );
   }
 
-  async getSavedPrompt(id: string): Promise<any> {
-    return this.request(`/api/v2/history/saved-prompts/${id}/`);
+  async getSavedPrompt(id: string): Promise<SavedPrompt> {
+    return this.request<SavedPrompt>(`/api/v2/history/saved-prompts/${id}/`);
   }
 
   async createSavedPrompt(data: {
@@ -442,10 +517,10 @@ class ApiClient {
     is_public?: boolean;
     source?: string;
     source_template_id?: string;
-    variables_snapshot?: Record<string, any>;
-    metadata?: Record<string, any>;
-  }): Promise<any> {
-    return this.request('/api/v2/history/saved-prompts/', {
+    variables_snapshot?: Record<string, string | number | boolean>;
+    metadata?: Record<string, unknown>;
+  }): Promise<SavedPrompt> {
+    return this.request<SavedPrompt>('/api/v2/history/saved-prompts/', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -459,9 +534,9 @@ class ApiClient {
     tags?: string[];
     is_favorite?: boolean;
     is_public?: boolean;
-    metadata?: Record<string, any>;
-  }): Promise<any> {
-    return this.request(`/api/v2/history/saved-prompts/${id}/`, {
+    metadata?: Record<string, unknown>;
+  }): Promise<SavedPrompt> {
+    return this.request<SavedPrompt>(`/api/v2/history/saved-prompts/${id}/`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     });
@@ -473,8 +548,8 @@ class ApiClient {
     });
   }
 
-  async toggleFavoritePrompt(id: string): Promise<any> {
-    return this.request(`/api/v2/history/saved-prompts/${id}/toggle-favorite/`, {
+  async toggleFavoritePrompt(id: string): Promise<SavedPrompt> {
+    return this.request<SavedPrompt>(`/api/v2/history/saved-prompts/${id}/toggle-favorite/`, {
       method: 'POST',
     });
   }
@@ -483,23 +558,23 @@ class ApiClient {
     context?: string;
     model_used?: string;
     response_preview?: string;
-  }): Promise<any> {
-    return this.request(`/api/v2/history/saved-prompts/${id}/use/`, {
+  }): Promise<SavedPrompt> {
+    return this.request<SavedPrompt>(`/api/v2/history/saved-prompts/${id}/use/`, {
       method: 'POST',
       body: JSON.stringify(data || {}),
     });
   }
 
-  async getSavedPromptStats(): Promise<any> {
-    return this.request('/api/v2/history/saved-prompts/stats/');
+  async getSavedPromptStats(): Promise<SavedPromptStats> {
+    return this.request<SavedPromptStats>('/api/v2/history/saved-prompts/stats/');
   }
 
-  async searchSavedPrompts(query: string): Promise<any> {
-    return this.request(`/api/v2/history/saved-prompts/search/?q=${encodeURIComponent(query)}`);
+  async searchSavedPrompts(query: string): Promise<PaginatedSavedPrompts> {
+    return this.request<PaginatedSavedPrompts>(`/api/v2/history/saved-prompts/search/?q=${encodeURIComponent(query)}`);
   }
 
-  async duplicateSavedPrompt(id: string): Promise<any> {
-    return this.request(`/api/v2/history/saved-prompts/${id}/duplicate/`, {
+  async duplicateSavedPrompt(id: string): Promise<SavedPrompt> {
+    return this.request<SavedPrompt>(`/api/v2/history/saved-prompts/${id}/duplicate/`, {
       method: 'POST',
     });
   }
@@ -508,33 +583,33 @@ class ApiClient {
   // Prompt Iterations (Version Control) Methods
   // ============================================
 
-  async getPromptIterations(promptId: string): Promise<any[]> {
-    return this.request<any[]>(`/api/v2/history/saved-prompts/${promptId}/iterations/`);
+  async getPromptIterations(promptId: string): Promise<PromptIteration[]> {
+    return this.request<PromptIteration[]>(`/api/v2/history/saved-prompts/${promptId}/iterations/`);
   }
 
   async createPromptIteration(promptId: string, data: {
     content: string;
     change_description: string;
     change_type: string;
-    performance_metrics?: Record<string, any>;
-  }): Promise<any> {
-    return this.request(`/api/v2/history/saved-prompts/${promptId}/iterations/`, {
+    performance_metrics?: Record<string, unknown>;
+  }): Promise<PromptIteration> {
+    return this.request<PromptIteration>(`/api/v2/history/saved-prompts/${promptId}/iterations/`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async getPromptIteration(promptId: string, iterationId: string): Promise<any> {
-    return this.request(`/api/v2/history/saved-prompts/${promptId}/iterations/${iterationId}/`);
+  async getPromptIteration(promptId: string, iterationId: string): Promise<PromptIteration> {
+    return this.request<PromptIteration>(`/api/v2/history/saved-prompts/${promptId}/iterations/${iterationId}/`);
   }
 
-  async revertToIteration(promptId: string, iterationId: string): Promise<any> {
-    return this.request(`/api/v2/history/saved-prompts/${promptId}/iterations/${iterationId}/revert/`, {
+  async revertToIteration(promptId: string, iterationId: string): Promise<SavedPrompt> {
+    return this.request<SavedPrompt>(`/api/v2/history/saved-prompts/${promptId}/iterations/${iterationId}/revert/`, {
       method: 'POST',
     });
   }
 
-  async compareIterations(promptId: string, versionA: number, versionB: number): Promise<any> {
+  async compareIterations(promptId: string, versionA: number, versionB: number): Promise<{ version_a: PromptIteration; version_b: PromptIteration; diff: string }> {
     return this.request(
       `/api/v2/history/saved-prompts/${promptId}/iterations/compare/?version_a=${versionA}&version_b=${versionB}`
     );
@@ -547,7 +622,7 @@ class ApiClient {
   async getPromptUsageHistory(promptId: string, params?: {
     page?: number;
     limit?: number;
-  }): Promise<PaginatedResponse<any>> {
+  }): Promise<PaginatedResponse<PromptUsageLog>> {
     const queryParams = new URLSearchParams();
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -558,6 +633,98 @@ class ApiClient {
       `/api/v2/history/saved-prompts/${promptId}/usage-history/?${queryParams.toString()}`
     );
   }
+
+  // ============================================
+  // Chat Sessions (History) Methods
+  // ============================================
+
+  async getChatSessions(page: number = 1, limit: number = 50): Promise<{
+    sessions: ChatSession[];
+    pagination?: { page: number; limit: number; total: number; hasMore: boolean };
+  }> {
+    const queryParams = new URLSearchParams({
+      page: String(page),
+      limit: String(limit),
+    });
+    return this.request(`/api/v1/chat/sessions/?${queryParams.toString()}`);
+  }
+
+  async deleteSession(sessionId: string): Promise<void> {
+    await this.request(`/api/v1/chat/sessions/${sessionId}/`, {
+      method: 'DELETE',
+    });
+  }
+}
+
+// ============================================
+// Supporting Types
+// ============================================
+
+export interface ChatSession {
+  id: string;
+  title: string;
+  createdAt?: number;
+  created_at?: string;
+  updatedAt?: number;
+  updated_at?: string;
+  messageCount?: number;
+  message_count?: number;
+  starred?: boolean;
+  archived?: boolean;
+}
+
+// ============================================
+// Agent Optimize Type Definitions
+// ============================================
+
+export interface AgentOptimizeCitation {
+  id: string;
+  title: string;
+  source: string;
+  score: number;
+}
+
+export interface AgentOptimizeResult {
+  optimized: string;
+  citations: AgentOptimizeCitation[];
+  diff_summary: string;
+  usage: { tokens_in: number; tokens_out: number };
+  run_id: string;
+  processing_time_ms: number;
+}
+
+// ============================================
+// AskMe Type Definitions
+// ============================================
+
+export interface AskMeQuestion {
+  id: string;
+  question: string;
+  type?: string;
+}
+
+export interface AskMeSession {
+  session_id: string;
+  goal: string;
+  questions: AskMeQuestion[];
+  status: 'active' | 'complete' | 'finalized';
+  created_at: string;
+}
+
+export interface AskMeAnswerResponse {
+  session_id: string;
+  next_question?: AskMeQuestion;
+  is_complete: boolean;
+  answered_count?: number;
+  total_questions?: number;
+}
+
+export interface AskMeFinalResult {
+  session_id: string;
+  prompt: string;
+  explanation?: string;
+  title?: string;
+  category?: string;
 }
 
 // Export singleton instance

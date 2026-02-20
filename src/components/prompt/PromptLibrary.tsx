@@ -11,6 +11,8 @@
 
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ConfirmDeleteDialog } from '@/components/common/ConfirmDeleteDialog';
+import { AskMeModal } from '@/components/ai/AskMeModal';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -90,13 +92,21 @@ function PromptCard({
   const toggleFavorite = useToggleFavorite();
   const deleteMutation = useDeleteSavedPrompt();
   const duplicateMutation = useDuplicateSavedPrompt();
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(prompt.content);
   };
 
+  const handleDeleteRequest = () => setDeleteConfirmOpen(true);
+  const handleDeleteConfirm = () => {
+    deleteMutation.mutate(prompt.id);
+    setDeleteConfirmOpen(false);
+  };
+
   if (viewMode === 'list') {
     return (
+      <>
       <motion.div
         layout
         initial={{ opacity: 0, y: 8 }}
@@ -169,11 +179,21 @@ function PromptCard({
             prompt={prompt}
             onEdit={onEdit}
             onCopy={handleCopy}
-            onDelete={() => deleteMutation.mutate(prompt.id)}
+            onDelete={handleDeleteRequest}
             onDuplicate={() => duplicateMutation.mutate(prompt.id)}
           />
         </div>
       </motion.div>
+
+      <ConfirmDeleteDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        title="Delete prompt"
+        description={`Are you sure you want to delete "${prompt.title}"? This action cannot be undone.`}
+        onConfirm={handleDeleteConfirm}
+        isPending={deleteMutation.isPending}
+      />
+      </>
     );
   }
 
@@ -215,7 +235,7 @@ function PromptCard({
                 prompt={prompt}
                 onEdit={onEdit}
                 onCopy={handleCopy}
-                onDelete={() => deleteMutation.mutate(prompt.id)}
+                onDelete={handleDeleteRequest}
                 onDuplicate={() => duplicateMutation.mutate(prompt.id)}
               />
             </div>
@@ -283,6 +303,15 @@ function PromptCard({
           </div>
         </CardContent>
       </Card>
+
+      <ConfirmDeleteDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        title="Delete prompt"
+        description={`Are you sure you want to delete "${prompt.title}"? This action cannot be undone.`}
+        onConfirm={handleDeleteConfirm}
+        isPending={deleteMutation.isPending}
+      />
     </motion.div>
   );
 }
@@ -427,6 +456,8 @@ export function PromptLibrary() {
     // TODO: Optionally navigate to chat with prompt pre-filled
   };
 
+  const [askMeOpen, setAskMeOpen] = useState(false);
+
   const handleNewPrompt = () => {
     openSaveModal({ mode: 'create' });
   };
@@ -444,10 +475,20 @@ export function PromptLibrary() {
             Manage, iterate, and organize your prompt collection
           </p>
         </div>
-        <Button onClick={handleNewPrompt} className="pharaoh-button flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          New Prompt
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setAskMeOpen(true)}
+            className="flex items-center gap-2"
+          >
+            <Sparkles className="h-4 w-4" />
+            Create with AI
+          </Button>
+          <Button onClick={handleNewPrompt} className="pharaoh-button flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            New Prompt
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -594,6 +635,8 @@ export function PromptLibrary() {
           </Button>
         </div>
       )}
+
+      <AskMeModal open={askMeOpen} onOpenChange={setAskMeOpen} />
     </div>
   );
 }

@@ -173,6 +173,7 @@ function ThreadCard({
             {isEditing ? (
               <div className="space-y-2">
                 <input
+                title="Thread Title"
                   type="text"
                   value={editTitle}
                   onChange={(e) => onEditTitle(e.target.value)}

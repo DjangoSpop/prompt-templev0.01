@@ -24,7 +24,6 @@ import {
   Heart,
   Wand2,
   Eye,
-  EyeOff,
   Plus,
   Minus,
   RotateCcw,
@@ -40,13 +39,15 @@ import {
   Pin,
   Trash2,
   Edit3,
-  Download
+  Download,
+  Sparkles
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useOptimizeWithAgent } from '@/hooks/api/useAI';
 
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || 'http://api.prompt-temple.com';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || 'https://api.prompt-temple.com';
 const apiUrl = (path: string) => {
   if (path.startsWith('http://') || path.startsWith('https://')) return path;
   if (!path.startsWith('/')) path = `/${path}`;
@@ -132,7 +133,7 @@ interface OptimizationStore {
   setTransport: (transport: 'sse' | 'ws') => void;
   setConnectionStatus: (connected: boolean, error?: string) => void;
   setPrompt: (prompt: string) => void;
-  setStreamingOutput: (output: string) => void;
+  setStreamingOutput: (output: string | ((prev: string) => string)) => void;
   setIsStreaming: (streaming: boolean) => void;
   setSearchQuery: (query: string) => void;
   setSelectedCategory: (category: string) => void;
@@ -546,10 +547,12 @@ const PromptEditor: React.FC<{
   value: string;
   onChange: (value: string) => void;
   onOptimize: () => void;
+  onDeepOptimize?: () => void;
+  isDeepOptimizing?: boolean;
   isStreaming: boolean;
   modelConfig: ModelConfig;
   onModelConfigChange: (config: ModelConfig) => void;
-}> = ({ value, onChange, onOptimize, isStreaming, modelConfig, onModelConfigChange }) => {
+}> = ({ value, onChange, onOptimize, onDeepOptimize, isDeepOptimizing, isStreaming, modelConfig, onModelConfigChange }) => {
   const [variables, setVariables] = useState<Record<string, string>>({});
   const [showVariables, setShowVariables] = useState(false);
   
@@ -712,36 +715,46 @@ const PromptEditor: React.FC<{
           
           {/* Inline Suggestions */}
           <div className="space-y-2">
-            <p className="text-xs font-medium text-slate-600 dark:text-slate-400">Quick optimizations:</p>
-            <div className="flex flex-wrap gap-2">
-              {[
-                'Optimize for clarity and conciseness',
-                'Make it more persuasive and action-oriented',
-                'Add specific constraints and examples',
-                'Improve structure with clear sections',
-                'Enhance for technical accuracy'
-              ].map((suggestion, idx) => (
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Quick optimizations:</p>
+            <div className="flex flex-wrap gap-1.5">
+              {([
+                { label: 'Clarity & Conciseness', icon: Zap, color: 'blue' },
+                { label: 'Persuasive & Action', icon: TrendingUp, color: 'violet' },
+                { label: 'Constraints & Examples', icon: Code, color: 'orange' },
+                { label: 'Clear Structure', icon: Hash, color: 'green' },
+                { label: 'Technical Accuracy', icon: Database, color: 'rose' },
+              ] as const).map(({ label, icon: Icon, color }, idx) => (
                 <button
                   key={idx}
-                  onClick={() => onChange(`${value}\n\n${suggestion}`)}
-                  className="rounded-full border border-slate-200 dark:border-slate-600 px-3 py-1 text-xs hover:bg-slate-50 dark:hover:bg-slate-700"
+                  type="button"
+                  onClick={() => onChange(`${value}\n\n${label}`)}
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium transition-all hover:-translate-y-0.5",
+                    color === 'blue'   && "border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-800/60 dark:text-blue-300 dark:hover:bg-blue-900/20",
+                    color === 'violet' && "border-violet-200 text-violet-700 hover:bg-violet-50 dark:border-violet-800/60 dark:text-violet-300 dark:hover:bg-violet-900/20",
+                    color === 'orange' && "border-orange-200 text-orange-700 hover:bg-orange-50 dark:border-orange-800/60 dark:text-orange-300 dark:hover:bg-orange-900/20",
+                    color === 'green'  && "border-green-200 text-green-700 hover:bg-green-50 dark:border-green-800/60 dark:text-green-300 dark:hover:bg-green-900/20",
+                    color === 'rose'   && "border-rose-200 text-rose-700 hover:bg-rose-50 dark:border-rose-800/60 dark:text-rose-300 dark:hover:bg-rose-900/20",
+                  )}
                 >
-                  {suggestion}
+                  <Icon className="h-3 w-3" />
+                  {label}
                 </button>
               ))}
             </div>
           </div>
           
           {/* Action Buttons */}
-          <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="flex flex-col gap-2 sm:flex-row">
+            {/* Primary: Run Optimize */}
             <button
               onClick={onOptimize}
               disabled={isStreaming || !value.trim()}
               className={cn(
-                "flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 font-medium transition-colors",
-                isStreaming
-                  ? "bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-300 cursor-not-allowed"
-                  : "bg-blue-600 text-white hover:bg-blue-700"
+                "flex flex-1 items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-all duration-200",
+                isStreaming || !value.trim()
+                  ? "cursor-not-allowed bg-slate-100 text-slate-400 dark:bg-slate-700/60 dark:text-slate-500"
+                  : "bg-gradient-to-r from-blue-600 to-violet-600 text-white shadow-md shadow-blue-500/25 hover:-translate-y-0.5 hover:from-blue-700 hover:to-violet-700 hover:shadow-lg hover:shadow-blue-500/35 active:translate-y-0"
               )}
             >
               {isStreaming ? (
@@ -756,12 +769,49 @@ const PromptEditor: React.FC<{
                 </>
               )}
             </button>
+
+            {/* Secondary: Agent Optimize */}
+            {onDeepOptimize && (
+              <button
+                onClick={onDeepOptimize}
+                disabled={isDeepOptimizing || isStreaming || !value.trim()}
+                className={cn(
+                  "flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200",
+                  isDeepOptimizing || isStreaming || !value.trim()
+                    ? "cursor-not-allowed bg-slate-100 text-slate-400 dark:bg-slate-700/60 dark:text-slate-500"
+                    : "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/25 hover:-translate-y-0.5 hover:from-emerald-600 hover:to-teal-700 hover:shadow-lg hover:shadow-emerald-500/35 active:translate-y-0"
+                )}
+                title="RAG-backed AI agent for deep analysis and optimization"
+              >
+                {isDeepOptimizing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Analyzing...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4" />
+                    <span>Agent</span>
+                    <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-[10px] font-bold leading-none tracking-wide">RAG</span>
+                  </>
+                )}
+              </button>
+            )}
+
+            {/* Clear */}
             <button
               onClick={() => onChange('')}
-              className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-600 px-4 py-2.5 font-medium hover:bg-slate-50 dark:hover:bg-slate-700"
+              disabled={!value.trim()}
+              className={cn(
+                "flex items-center justify-center gap-1.5 rounded-xl border px-3 py-3 text-sm font-medium transition-all duration-200",
+                !value.trim()
+                  ? "cursor-not-allowed border-slate-200 text-slate-300 dark:border-slate-700 dark:text-slate-600"
+                  : "border-slate-200 text-slate-600 hover:border-red-200 hover:bg-red-50 hover:text-red-600 dark:border-slate-600 dark:text-slate-400 dark:hover:border-red-800 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+              )}
+              title="Clear prompt"
             >
               <RotateCcw className="h-4 w-4" />
-              <span>Clear</span>
+              <span className="hidden sm:inline">Clear</span>
             </button>
           </div>
         </div>
@@ -803,38 +853,79 @@ const StreamingPane: React.FC<{
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="border-b border-slate-200 dark:border-slate-700 p-4">
+      <div className="border-b border-slate-200 dark:border-slate-700 bg-white px-4 py-3 dark:bg-slate-900">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Optimized Output</h2>
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={() => setShowRaw(!showRaw)}
-              className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700"
-            >
-              {showRaw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              {showRaw ? 'Formatted' : 'Raw'}
-            </button>
-    {output && (
+          <div className="flex items-center gap-2">
+            <h2 className="text-base font-semibold text-slate-900 dark:text-white">Optimized Output</h2>
+            {isStreaming && (
+              <span className="flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-medium text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-blue-500" />
+                Live
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5">
+            {/* Formatted / Raw pill toggle */}
+            <div className="flex items-center rounded-lg border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-700 dark:bg-slate-800">
+              <button
+                type="button"
+                onClick={() => setShowRaw(false)}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-all",
+                  !showRaw
+                    ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white"
+                    : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+                )}
+              >
+                <Eye className="h-3 w-3" />
+                Formatted
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowRaw(true)}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-all",
+                  showRaw
+                    ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white"
+                    : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+                )}
+              >
+                <Code className="h-3 w-3" />
+                Raw
+              </button>
+            </div>
+
+            {output && (
               <>
+                {/* Copy */}
                 <button
-      onClick={handleCopy}
-      className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700"
+                  onClick={handleCopy}
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-all duration-200",
+                    copied
+                      ? "border-green-200 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-900/30 dark:text-green-300"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-blue-800 dark:hover:bg-blue-900/20 dark:hover:text-blue-300"
+                  )}
                 >
-                  <Copy className="h-4 w-4" />
-      <span className={cn(copied ? 'egyptian-button' : '')}>{copied ? 'Copied' : 'Copy'}</span>
+                  {copied ? <CheckCircle className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copied ? 'Copied' : 'Copy'}
                 </button>
+
+                {/* Save */}
                 <button
                   onClick={onSave}
-      className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700"
+                  className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition-all hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-violet-800 dark:hover:bg-violet-900/20 dark:hover:text-violet-300"
                 >
-                  <Save className="h-4 w-4" />
+                  <Save className="h-3.5 w-3.5" />
                   Save
                 </button>
+
+                {/* Fork */}
                 <button
                   onClick={onFork}
-      className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700"
+                  className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition-all hover:border-purple-200 hover:bg-purple-50 hover:text-purple-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-purple-800 dark:hover:bg-purple-900/20 dark:hover:text-purple-300"
                 >
-                  <GitBranch className="h-4 w-4" />
+                  <GitBranch className="h-3.5 w-3.5" />
                   Fork
                 </button>
               </>
@@ -1529,6 +1620,42 @@ export default function OptimizationPlayground() {
     }
   }, [store]);
 
+  // Agent-based deep optimization (RAG + DeepSeek pipeline)
+  const agentOptimizeMutation = useOptimizeWithAgent();
+
+  const runDeepOptimize = useCallback(async () => {
+    if (!store.prompt.trim()) {
+      toast.error('Please enter a prompt to optimize');
+      return;
+    }
+    const result = await agentOptimizeMutation.mutateAsync({
+      session_id: `agent_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      original: store.prompt,
+      mode: 'fast',
+      context: { model: store.modelConfig.model },
+      budget: { tokens_in: 2000, tokens_out: 800, max_credits: 5 },
+    });
+
+    if (result.optimized) {
+      store.setStreamingOutput(result.optimized);
+
+      // Surface diff summary as a suggestion if available
+      if (result.diff_summary) {
+        store.setSuggestions([result.diff_summary]);
+      }
+
+      const citationCount = result.citations?.length ?? 0;
+      const timeMs = result.processing_time_ms ?? 0;
+      toast.success(
+        citationCount > 0
+          ? `Agent optimized using ${citationCount} RAG citation${citationCount > 1 ? 's' : ''} (${timeMs}ms)`
+          : `Agent optimization complete (${timeMs}ms)`
+      );
+    } else {
+      toast.warning('Agent returned no optimized content');
+    }
+  }, [store, agentOptimizeMutation]);
+
   // Save as template
   const saveAsTemplate = useCallback(async () => {
     if (!store.streamingOutput) {
@@ -1625,6 +1752,8 @@ export default function OptimizationPlayground() {
           value={store.prompt}
           onChange={store.setPrompt}
           onOptimize={runOptimization}
+          onDeepOptimize={runDeepOptimize}
+          isDeepOptimizing={agentOptimizeMutation.isPending}
           isStreaming={store.isStreaming}
           modelConfig={store.modelConfig}
           onModelConfigChange={store.setModelConfig}

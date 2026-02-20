@@ -47,7 +47,6 @@ export function Composer({
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMessage(e.target.value);
     adjustTextareaHeight();
-    onComposingChange?.(e.target.value.length > 0);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -63,7 +62,7 @@ export function Composer({
     const messageContent = message.trim();
     setMessage('');
     setIsStreaming(true);
-    onComposingChange?.(false);
+    onComposingChange?.(true); // show TypingIndicator while AI responds
 
     // Reset textarea height
     if (textareaRef.current) {
@@ -107,6 +106,7 @@ export function Composer({
       setMessage(messageContent);
     } finally {
       setIsStreaming(false);
+      onComposingChange?.(false); // hide TypingIndicator when AI response arrives
     }
   };
 

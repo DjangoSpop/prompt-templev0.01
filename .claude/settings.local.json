@@ -10,7 +10,12 @@
       "Bash(git commit:*)",
       "Bash(echo:*)",
       "Bash(npx next build)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(heroku config:*)",
+      "Bash(heroku config:set:*)",
+      "Bash(git add:*)",
+      "Bash(heroku config:get:*)",
+      "Bash(git stash:*)"
     ],
     "deny": [],
     "ask": []

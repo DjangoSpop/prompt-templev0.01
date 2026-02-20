@@ -4,6 +4,7 @@
 
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/typed-client';
+import type { AgentOptimizeResult } from '@/lib/api/typed-client';
 import { toast } from 'sonner';
 
 // Query keys
@@ -131,10 +132,22 @@ export function useRAGAnswer() {
 
 // Agent Hooks
 export function useOptimizeWithAgent() {
-  return useMutation({
-    mutationFn: (data: any) => apiClient.optimizeWithAgent(data),
-    onError: (error: Error) => {
-      toast.error(error.message || 'Agent optimization failed');
+  return useMutation<
+    AgentOptimizeResult,
+    Error & { status?: number },
+    { session_id: string; original: string; mode?: 'fast' | 'deep'; context?: Record<string, unknown>; budget?: { tokens_in?: number; tokens_out?: number; max_credits?: number } }
+  >({
+    mutationFn: (data) => apiClient.optimizeWithAgent(data),
+    onError: (error) => {
+      if (error.status === 402) {
+        toast.error('Insufficient credits for agent optimization. Please upgrade your plan.');
+      } else if (error.status === 429) {
+        toast.error('Rate limit reached (20 requests/hour). Please try again later.');
+      } else if (error.status === 503) {
+        toast.error('Optimization service is temporarily unavailable. Try again shortly.');
+      } else {
+        toast.error(error.message || 'Agent optimization failed');
+      }
     },
   });
 }

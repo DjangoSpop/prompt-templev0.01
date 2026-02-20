@@ -13,7 +13,9 @@ import {
   ChevronRight,
   Crown,
   Download,
+  Globe,
   HelpCircle,
+  History,
   Home,
   Library,
   Menu,
@@ -84,6 +86,22 @@ const navigationItems: NavItem[] = [
     description: 'Performance insights',
     category: 'main',
   },
+  {
+    id: 'history',
+    label: 'History',
+    href: '/history',
+    icon: History,
+    description: 'Past chat sessions',
+    category: 'main',
+  },
+  {
+    id: 'discover',
+    label: 'Discover',
+    href: '/discover',
+    icon: Globe,
+    description: 'Community prompts',
+    category: 'main',
+  },
   // Tools
   {
     id: 'assistant',
@@ -101,6 +119,14 @@ const navigationItems: NavItem[] = [
     icon: Zap,
     description: 'AI prompt optimization',
     badge: 'Pro',
+    category: 'tools',
+  },
+  {
+    id: 'threads',
+    label: 'Conversations',
+    href: '/threads',
+    icon: MessageSquare,
+    description: 'Your AI conversation threads',
     category: 'tools',
   },
   {
