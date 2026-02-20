@@ -15,7 +15,8 @@
       "Bash(heroku config:set:*)",
       "Bash(git add:*)",
       "Bash(heroku config:get:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(npm audit:*)"
     ],
     "deny": [],
     "ask": []
