@@ -5,20 +5,14 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { useOnboarding } from '@/hooks/useOnboarding';
+import { steps } from '@/lib/stores/gameStore';
 
 interface OnboardingProgressProps {
   className?: string;
   variant?: 'compact' | 'detailed';
 }
 
-const onboardingSteps = [
-  { id: 'welcome', title: 'Welcome', badge: '🏛️' },
-  { id: 'library', title: 'Library', badge: '📚' },
-  { id: 'optimizer', title: 'Optimizer', badge: '⚡' },
-  { id: 'my-temple', title: 'My Temple', badge: '🏛️' },
-  { id: 'academy', title: 'Academy', badge: '🎓' },
-  { id: 'analytics', title: 'Analytics', badge: '📊' },
-];
+const onboardingSteps = steps.map((s) => ({ id: s.id, title: s.title, badge: s.badge }));
 
 export const OnboardingProgress: React.FC<OnboardingProgressProps> = ({ 
   className = '',

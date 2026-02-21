@@ -107,6 +107,28 @@ const pricingPlans: PricingPlan[] = [
     current: true
   },
   {
+    id: 'scribe',
+    name: 'Temple Scribe',
+    price: 3.99,
+    interval: 'monthly',
+    features: [
+      'Unlimited prompt enhancement credits',
+      'AI-powered walkthrough assistance',
+      '20 custom templates (vs 5 free)',
+      'Full Academy access — all 6 modules',
+      'AI services during onboarding walkthrough',
+      '5GB storage',
+      '5,000 API calls/month',
+      'Email support'
+    ],
+    limits: {
+      templates: 20,
+      teamMembers: 1,
+      apiCalls: 5000,
+      storage: '5GB'
+    },
+  },
+  {
     id: 'pro',
     name: 'Temple Guardian',
     price: 19,
@@ -471,7 +493,7 @@ export default function BillingPage() {
             </div>
 
             {/* Pricing Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {pricingPlans.map(plan => (
                 <motion.div
                   key={plan.id}
@@ -480,11 +502,19 @@ export default function BillingPage() {
                 >
                   <Card className={`glass-effect h-full ${
                     plan.popular ? 'border-primary/50 ring-2 ring-primary/20' : ''
+                  } ${plan.id === 'scribe' ? 'border-amber-400/50 ring-2 ring-amber-400/20' : ''
                   } ${plan.current ? 'bg-primary/5' : ''}`}>
                     {plan.popular && (
                       <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                         <Badge className="bg-primary text-primary-foreground">
                           Most Popular
+                        </Badge>
+                      </div>
+                    )}
+                    {plan.id === 'scribe' && (
+                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                        <Badge className="bg-amber-500 text-white">
+                          📜 Entry Step
                         </Badge>
                       </div>
                     )}

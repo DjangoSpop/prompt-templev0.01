@@ -1,10 +1,17 @@
 /**
- * AI hooks using React Query
+ * AI hooks using React Query and the aiService streaming client
  */
 
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { useCallback, useRef, useState } from 'react';
 import { apiClient } from '@/lib/api/typed-client';
 import type { AgentOptimizeResult } from '@/lib/api/typed-client';
+import {
+  aiService,
+  type OptimizeStreamRequest,
+  type OptimizeStreamResult,
+  type DeepSeekStreamRequest,
+} from '@/lib/api/ai';
 import { toast } from 'sonner';
 
 // Query keys
@@ -150,4 +157,140 @@ export function useOptimizeWithAgent() {
       }
     },
   });
+}
+
+// ============================================================
+// usePromptOptimization — SSE streaming hook
+// ============================================================
+
+export interface UsePromptOptimizationState {
+  isStreaming: boolean;
+  output: string;
+  progress: { step: string; message: string } | null;
+  result: OptimizeStreamResult | null;
+  error: string | null;
+}
+
+/**
+ * Hook that streams prompt optimisation via POST /api/v2/ai/optimization/stream/.
+ * Automatically handles auth, AbortController, and state updates.
+ *
+ * @example
+ * const { optimize, cancel, isStreaming, output, result, error } = usePromptOptimization();
+ *
+ * await optimize({ original: 'Write something about AI' });
+ */
+export function usePromptOptimization() {
+  const [state, setState] = useState<UsePromptOptimizationState>({
+    isStreaming: false,
+    output: '',
+    progress: null,
+    result: null,
+    error: null,
+  });
+
+  const abortRef = useRef<AbortController | null>(null);
+
+  const optimize = useCallback(async (request: OptimizeStreamRequest) => {
+    // Cancel any in-flight request
+    abortRef.current?.abort();
+    abortRef.current = new AbortController();
+
+    setState({ isStreaming: true, output: '', progress: null, result: null, error: null });
+
+    await aiService.optimizePromptStream(
+      request,
+      {
+        onProgress: (step, message) =>
+          setState(prev => ({ ...prev, progress: { step, message } })),
+
+        onToken: (content) =>
+          setState(prev => ({ ...prev, output: prev.output + content })),
+
+        onResult: (data) =>
+          setState(prev => ({
+            ...prev,
+            result: data,
+            // If the result contains the full optimised text, surface it
+            output: data.optimized || prev.output,
+          })),
+
+        onError: (err) => {
+          setState(prev => ({ ...prev, isStreaming: false, error: err }));
+          toast.error(err);
+        },
+
+        onComplete: () =>
+          setState(prev => ({ ...prev, isStreaming: false })),
+      },
+      abortRef.current.signal,
+    );
+  }, []);
+
+  const cancel = useCallback(() => {
+    abortRef.current?.abort();
+    setState(prev => ({ ...prev, isStreaming: false }));
+  }, []);
+
+  return { optimize, cancel, ...state };
+}
+
+// ============================================================
+// useDeepSeekStream — SSE streaming hook for chat
+// ============================================================
+
+export interface UseDeepSeekStreamState {
+  isStreaming: boolean;
+  output: string;
+  error: string | null;
+}
+
+/**
+ * Hook that streams a DeepSeek chat completion via POST /api/v2/chat/completions/.
+ * Direct replacement for any WebSocket-based chat integration.
+ *
+ * @example
+ * const { stream, cancel, isStreaming, output } = useDeepSeekStream();
+ *
+ * await stream({ messages: [{ role: 'user', content: 'Hello!' }] });
+ */
+export function useDeepSeekStream() {
+  const [state, setState] = useState<UseDeepSeekStreamState>({
+    isStreaming: false,
+    output: '',
+    error: null,
+  });
+
+  const abortRef = useRef<AbortController | null>(null);
+
+  const stream = useCallback(async (request: DeepSeekStreamRequest) => {
+    abortRef.current?.abort();
+    abortRef.current = new AbortController();
+
+    setState({ isStreaming: true, output: '', error: null });
+
+    await aiService.deepseekStream(
+      request,
+      {
+        onToken: (content) =>
+          setState(prev => ({ ...prev, output: prev.output + content })),
+
+        onStreamComplete: (fullContent) =>
+          setState({ isStreaming: false, output: fullContent, error: null }),
+
+        onError: (err) => {
+          setState(prev => ({ ...prev, isStreaming: false, error: err }));
+          toast.error(err);
+        },
+      },
+      abortRef.current.signal,
+    );
+  }, []);
+
+  const cancel = useCallback(() => {
+    abortRef.current?.abort();
+    setState(prev => ({ ...prev, isStreaming: false }));
+  }, []);
+
+  return { stream, cancel, ...state };
 }

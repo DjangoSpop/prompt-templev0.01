@@ -1,18 +1,15 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import type { ComponentType } from 'react';
+import type { UserOnboardingProps } from '../onboarding/UserOnboarding';
 
-/* ------------------------------------------------------------------ */
-/* 1.  Import the *type* only (zero runtime)                          */
-/* 2.  Lazy-load the actual component (no SSR)                        */
-/* ------------------------------------------------------------------ */
-const UserOnboarding = dynamic<ComponentType<UserOnboardingProps>>(
+/* Lazy-load the actual component (no SSR) */
+const UserOnboarding = dynamic<UserOnboardingProps>(
   () => import('../onboarding/UserOnboarding').then((mod) => mod.UserOnboarding),
-  { ssr: false, loading: () => null } // optional: skeleton here
+  { ssr: false, loading: () => null }
 );
 
 /* Re-export the props type for consumers */
-export type { UserOnboardingProps } from './UserOnboarding';
+export type { UserOnboardingProps } from '../onboarding/UserOnboarding';
 
 export default UserOnboarding;

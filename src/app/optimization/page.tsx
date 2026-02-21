@@ -44,7 +44,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { useOptimizeWithAgent } from '@/hooks/api/useAI';
+import { useOptimizeWithAgent, usePromptOptimization } from '@/hooks/api/useAI';
 
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || 'https://api.prompt-temple.com';
@@ -1294,79 +1294,95 @@ const TemplateCreateModal: React.FC<{
 // Main Component
 export default function OptimizationPlayground() {
   const store = useOptimizationStore();
-  const sseClient = useRef<ChatSSEClient | null>(null);
+  // Legacy clients kept for backward-compat UI references; streaming is now
+  // handled by aiService via usePromptOptimization
   const wsClient = useRef<PromptCraftWebSocket | null>(null);
 
-  // Initialize transport
+  // aiService-powered SSE streaming hook
+  const {
+    optimize: streamOptimize,
+    cancel: cancelStream,
+    isStreaming: hookIsStreaming,
+    output: hookOutput,
+    result: hookResult,
+  } = usePromptOptimization();
+
+  // Sync hook output → store so the existing StreamingPane renders correctly
+  useEffect(() => {
+    if (hookOutput) store.setStreamingOutput(hookOutput);
+  }, [hookOutput]);
+
+  // Sync hook result metadata → store (suggestions, template opportunity, history)
+  useEffect(() => {
+    if (!hookResult) return;
+    if (hookResult.suggestions?.length) store.setSuggestions(hookResult.suggestions);
+    if (hookResult.template_opportunity) {
+      store.setTemplateOpportunity(hookResult.template_opportunity as any);
+      toast.info('💡 Template opportunity detected!');
+    }
+    // Cast to page-local OptimizationResult shape for history
+    if (hookResult.optimized) {
+      store.addOptimizationResult({
+        id: hookResult.run_id || `result_${Date.now()}`,
+        original: '',
+        optimized: hookResult.optimized,
+        improvements: hookResult.improvements ? Object.values(hookResult.improvements).filter(Boolean).map(String) : [],
+        suggestions: hookResult.suggestions || [],
+        confidence: hookResult.improvements?.overall_score ? hookResult.improvements.overall_score / 100 : 0,
+        processingTime: hookResult.processing_time_ms || 0,
+        model: store.modelConfig.model,
+        cost: 0,
+        timestamp: new Date(),
+      } as any);
+    }
+  }, [hookResult]);
+
+  // Sync streaming state → store
+  useEffect(() => {
+    store.setIsStreaming(hookIsStreaming);
+    if (!hookIsStreaming) store.setConnectionStatus(true);
+  }, [hookIsStreaming]);
+
+  // Initialize transport — always SSE via aiService; WS kept as opt-in fallback
   useEffect(() => {
     const transportMode = (process.env.NEXT_PUBLIC_CHAT_TRANSPORT as 'sse' | 'ws') || 'sse';
     store.setTransport(transportMode);
-    
-    if (transportMode === 'sse') {
-      sseClient.current = new ChatSSEClient();
-      
-      sseClient.current.onStreamStart = (data) => {
-        console.log('🎯 Stream started:', data);
-        store.setIsStreaming(true);
-        store.setStreamingOutput('');
-      };
-      
-      sseClient.current.onStreamToken = (chunk) => {
-        store.setStreamingOutput(prev => prev + chunk.content);
-      };
-      
-      sseClient.current.onStreamComplete = (data) => {
-        console.log('✅ Stream complete:', data);
-        store.setIsStreaming(false);
-      };
-      
-      sseClient.current.onTemplateOpportunity = (data) => {
-        store.setTemplateOpportunity(data);
-        toast.info('💡 Template opportunity detected!');
-      };
-      
-      sseClient.current.onOptimizationResult = (result) => {
-        store.addOptimizationResult(result);
-        store.setSuggestions(result.suggestions || []);
-      };
-      
-      sseClient.current.onError = (error) => {
-        console.error('❌ SSE error:', error);
-        toast.error(error.message || 'Connection error');
-        store.setIsStreaming(false);
-        store.setConnectionStatus(false, error.message);
-      };
-    } else {
+
+    if (transportMode === 'ws') {
+      // Legacy WebSocket path (kept for environments that still need it)
       wsClient.current = new PromptCraftWebSocket();
       const sessionId = `optimize_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
+
       wsClient.current.connect(sessionId).then(() => {
         store.setConnectionStatus(true);
       }).catch((error) => {
         store.setConnectionStatus(false, error.message);
       });
-      
+
       wsClient.current.onOptimizationResult = (result) => {
         store.addOptimizationResult(result);
         store.setStreamingOutput(result.optimized);
         store.setSuggestions(result.suggestions || []);
       };
-      
+
       wsClient.current.onTemplateOpportunity = (data) => {
         store.setTemplateOpportunity(data);
       };
-      
+
       wsClient.current.onConnectionChange = (connected) => {
         store.setConnectionStatus(connected);
       };
-      
+
       wsClient.current.onError = (error) => {
         toast.error(error.message || 'WebSocket error');
       };
+    } else {
+      // SSE via aiService — always connected, no persistent socket needed
+      store.setConnectionStatus(true);
     }
-    
+
     return () => {
-      sseClient.current?.disconnect();
+      cancelStream();
       wsClient.current?.disconnect();
     };
   }, []);
@@ -1593,32 +1609,34 @@ export default function OptimizationPlayground() {
     return () => clearTimeout(handle);
   }, [fetchSearchSuggestions, searchQuery]);
 
-  // Run optimization
+  // Run optimization — SSE via aiService (default), legacy WS as fallback
   const runOptimization = useCallback(async () => {
     if (!store.prompt.trim()) {
       toast.error('Please enter a prompt to optimize');
       return;
     }
-    
-    if (store.transport === 'sse' && sseClient.current) {
-      await sseClient.current.sendMessage(
-        [{ role: 'user', content: `Optimize this prompt: ${store.prompt}` }],
-        {
-          model: store.modelConfig.model,
-          temperature: store.modelConfig.temperature,
-          max_tokens: store.modelConfig.maxTokens,
-          session_id: `optimize_${Date.now()}`,
-        }
-      );
-    } else if (wsClient.current) {
+
+    if (store.transport === 'ws' && wsClient.current) {
+      // Legacy WebSocket path
       wsClient.current.send({
         type: 'optimize_prompt',
         prompt: store.prompt,
         context: { mode: 'enhancement' },
         optimization_type: 'enhancement',
       });
+    } else {
+      // Default: SSE via aiService.optimizePromptStream()
+      store.setStreamingOutput('');
+      await streamOptimize({
+        original: store.prompt,
+        model: store.modelConfig.model,
+        temperature: store.modelConfig.temperature,
+        max_tokens: store.modelConfig.maxTokens,
+        session_id: `optimize_${Date.now()}`,
+        mode: 'fast',
+      });
     }
-  }, [store]);
+  }, [store, streamOptimize, wsClient]);
 
   // Agent-based deep optimization (RAG + DeepSeek pipeline)
   const agentOptimizeMutation = useOptimizeWithAgent();

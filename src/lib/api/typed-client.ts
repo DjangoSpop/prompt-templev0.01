@@ -400,10 +400,20 @@ class ApiClient {
   // ============================================
 
   async askmeStart(data: { goal: string; context?: string }): Promise<AskMeSession> {
-    return this.request<AskMeSession>('/api/v2/ai/askme/start/', {
+    // Use `any` to handle the raw server shape before normalisation
+    const raw = await this.request<any>('/api/v2/ai/askme/start/', {
       method: 'POST',
       body: JSON.stringify(data),
     });
+    // Server returns questions with 'qid' / 'title' / 'kind' — normalise to frontend types
+    const questions: AskMeQuestion[] = (raw.questions ?? []).map((q: any) => ({
+      id: q.qid ?? q.id ?? '',
+      question: q.title ?? q.question ?? '',
+      type: q.kind ?? q.type,
+      options: Array.isArray(q.options) && q.options.length ? q.options : undefined,
+      help_text: q.help_text,
+    }));
+    return { ...raw, questions } as AskMeSession;
   }
 
   async askmeAnswer(data: {
@@ -411,10 +421,27 @@ class ApiClient {
     question_id: string;
     answer: string;
   }): Promise<AskMeAnswerResponse> {
-    return this.request<AskMeAnswerResponse>('/api/v2/ai/askme/answer/', {
+    const raw = await this.request<any>('/api/v2/ai/askme/answer/', {
       method: 'POST',
-      body: JSON.stringify(data),
+      // Server expects 'qid', not 'question_id'
+      body: JSON.stringify({
+        session_id: data.session_id,
+        qid: data.question_id,
+        answer: data.answer,
+      }),
     });
+    // Normalise next_question if the server returns it with 'qid'/'title' shape
+    if (raw.next_question) {
+      const nq = raw.next_question;
+      raw.next_question = {
+        id: nq.qid ?? nq.id ?? '',
+        question: nq.title ?? nq.question ?? '',
+        type: nq.kind ?? nq.type,
+        options: Array.isArray(nq.options) && nq.options.length ? nq.options : undefined,
+        help_text: nq.help_text,
+      } satisfies AskMeQuestion;
+    }
+    return raw as AskMeAnswerResponse;
   }
 
   async askmeFinalize(data: { session_id: string }): Promise<AskMeFinalResult> {
@@ -698,9 +725,15 @@ export interface AgentOptimizeResult {
 // ============================================
 
 export interface AskMeQuestion {
+  /** Normalised from server field 'qid' */
   id: string;
+  /** Normalised from server field 'title' */
   question: string;
+  /** Normalised from server field 'kind' (e.g. 'long_text' | 'choice') */
   type?: string;
+  /** Available choices when type === 'choice' */
+  options?: string[];
+  help_text?: string;
 }
 
 export interface AskMeSession {

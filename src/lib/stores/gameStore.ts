@@ -54,13 +54,24 @@ export interface GameState {
     longestStreak: number;
     lastActivityDate: Date | null;
   };
-  
+
   // Onboarding
   onboarding: {
     isActive: boolean;
     currentStep: number;
     completedSteps: string[];
     isFirstLogin: boolean;
+  };
+
+  // Dynamic trigger tracking
+  triggers: {
+    lastTourShown: number | null;       // unix timestamp ms — controls 24h cooldown
+    lastFeatureActivity: number | null; // unix timestamp ms — reset on feature page visit
+    lastLoginDate: number | null;       // unix timestamp ms — set each login
+    returningUserShown: boolean;        // prevent repeat returning-user modal
+    inactivityShown: boolean;           // prevent repeat inactivity modal
+    limitHitShown: boolean;             // prevent repeat limit-hit modal
+    cooldownMs: number;                 // default 86400000 (24h)
   };
   
   // Achievements and Badges
@@ -146,7 +157,7 @@ const steps: Step[] = [
     id: 'academy',
     title: 'Visit the Prompt Academy',
     description: 'Learn prompt engineering through interactive courses and challenges',
-    targetPage: '/help',
+    targetPage: '/academy',
     points: 100,
     badge: '🎓',
     category: 'learning',
@@ -159,6 +170,35 @@ const steps: Step[] = [
     points: 75,
     badge: '📊',
     category: 'insights',
+  },
+  {
+    id: 'template-library',
+    title: 'Explore the Template Library',
+    description: 'Browse 750+ professional templates with advanced search and filtering',
+    targetPage: '/template-library',
+    points: 100,
+    badge: '🗂️',
+    category: 'exploration',
+    requirements: ['library'],
+  },
+  {
+    id: 'prompt-library',
+    title: 'Build Your Prompt Library',
+    description: 'Save, iterate, and version-control your own prompts',
+    targetPage: '/prompt-library',
+    points: 125,
+    badge: '✍️',
+    category: 'action',
+    requirements: ['template-library'],
+  },
+  {
+    id: 'upgrade-scribe',
+    title: 'Unlock Temple Scribe',
+    description: 'Unlimited credits and AI walkthrough for $3.99/month',
+    targetPage: '/billing',
+    points: 50,
+    badge: '📜',
+    category: 'monetization',
   },
 ];
 
@@ -188,6 +228,7 @@ interface GameActions {
   nextStep: () => void;
   skipOnboarding: () => void;
   resetOnboarding: () => void;
+  completeOnboarding: () => void;
   
   // Achievement actions
   unlockAchievement: (achievementId: string) => void;
@@ -206,6 +247,12 @@ interface GameActions {
   // Statistics
   updateStats: (stats: Partial<GameState['stats']>) => void;
   
+  // Trigger actions
+  recordActivity: () => void;
+  recordLogin: () => void;
+  markTriggerShown: (trigger: 'tour' | 'returning' | 'inactivity' | 'limit') => void;
+  shouldShowTrigger: (trigger: 'returning' | 'inactivity' | 'limit') => boolean;
+
   // Utility
   getCurrentLevel: () => UserLevel;
   getNextLevel: () => UserLevel | null;
@@ -230,6 +277,15 @@ const initialState: GameState = {
     currentStep: 0,
     completedSteps: [],
     isFirstLogin: true,
+  },
+  triggers: {
+    lastTourShown: null,
+    lastFeatureActivity: null,
+    lastLoginDate: null,
+    returningUserShown: false,
+    inactivityShown: false,
+    limitHitShown: false,
+    cooldownMs: 86400000, // 24 hours
   },
   achievements: [],
   unlockedAchievements: [],
@@ -398,8 +454,26 @@ export const useGameStore = create<GameState & GameActions>()(
           onboarding: {
             ...state.onboarding,
             isActive: false,
+            isFirstLogin: false,
           },
         })),
+
+      completeOnboarding: () =>
+        set((state) => {
+          get().addNotification({
+            type: 'achievement',
+            title: 'Tour Complete! 🏆',
+            description: "You've mastered the temple basics. Welcome aboard!",
+            icon: '🏆',
+          });
+          return {
+            onboarding: {
+              ...state.onboarding,
+              isActive: false,
+              isFirstLogin: false,
+            },
+          };
+        }),
 
       resetOnboarding: () =>
         set((state) => ({
@@ -560,6 +634,56 @@ export const useGameStore = create<GameState & GameActions>()(
         return Math.min(100, (progressXP / totalXPNeeded) * 100);
       },
 
+      recordActivity: () =>
+        set((state) => ({
+          triggers: { ...state.triggers, lastFeatureActivity: Date.now() },
+        })),
+
+      recordLogin: () =>
+        set((state) => ({
+          triggers: { ...state.triggers, lastLoginDate: Date.now() },
+        })),
+
+      markTriggerShown: (trigger) =>
+        set((state) => {
+          const now = Date.now();
+          switch (trigger) {
+            case 'tour':
+              return { triggers: { ...state.triggers, lastTourShown: now } };
+            case 'returning':
+              return { triggers: { ...state.triggers, lastTourShown: now, returningUserShown: true } };
+            case 'inactivity':
+              return { triggers: { ...state.triggers, lastTourShown: now, inactivityShown: true } };
+            case 'limit':
+              return { triggers: { ...state.triggers, lastTourShown: now, limitHitShown: true } };
+            default:
+              return state;
+          }
+        }),
+
+      shouldShowTrigger: (trigger) => {
+        const { triggers } = get();
+        const now = Date.now();
+        // Global cooldown: never show within 24h of last trigger
+        if (triggers.lastTourShown && now - triggers.lastTourShown < triggers.cooldownMs) {
+          return false;
+        }
+        switch (trigger) {
+          case 'returning':
+            if (triggers.returningUserShown) return false;
+            if (!triggers.lastLoginDate) return false;
+            return now - triggers.lastLoginDate > 7 * 24 * 60 * 60 * 1000;
+          case 'inactivity':
+            if (triggers.inactivityShown) return false;
+            if (!triggers.lastFeatureActivity) return false;
+            return now - triggers.lastFeatureActivity > 3 * 24 * 60 * 60 * 1000;
+          case 'limit':
+            return !triggers.limitHitShown;
+          default:
+            return false;
+        }
+      },
+
       saveToAPI: async () => {
         try {
           const state = get();
@@ -591,6 +715,7 @@ export const useGameStore = create<GameState & GameActions>()(
       partialize: (state) => ({
         user: state.user,
         onboarding: state.onboarding,
+        triggers: state.triggers,
         unlockedAchievements: state.unlockedAchievements,
         unlockedBadges: state.unlockedBadges,
         stats: state.stats,

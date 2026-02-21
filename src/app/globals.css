@@ -892,4 +892,40 @@ select:focus-visible {
   }
 }
 
+/* ── Onboarding tour components ─────────────────────────────
+   Static CSS properties are declared here.
+   Only runtime-computed values (top/left/width/height from
+   getBoundingClientRect) remain as necessary inline styles.
+─────────────────────────────────────────────────────────── */
+
+/* Spotlight ring: box-shadow creates the darkened backdrop.
+   Position/size are driven by CSS custom properties set from
+   getBoundingClientRect() via the style prop (CSS vars only,
+   no actual CSS property values in the inline style). */
+.tour-spotlight-ring {
+  position: fixed;
+  pointer-events: none;
+  left: var(--spr-left, 0px);
+  top: var(--spr-top, 0px);
+  width: var(--spr-width, 0px);
+  height: var(--spr-height, 0px);
+  border: 3px solid var(--pharaoh-gold, #c9a227);
+  border-radius: 8px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.72);
+  z-index: 9998;
+}
+
+/* Tooltip panel: position/coordinates driven by CSS custom
+   properties; static dimensions declared here. */
+.tour-tooltip-panel {
+  position: var(--ttp-position, fixed);
+  top: var(--ttp-top, auto);
+  left: var(--ttp-left, auto);
+  bottom: var(--ttp-bottom, auto);
+  width: 380px;
+  z-index: 9999;
+  max-height: 80vh;
+  overflow: hidden;
+}
+
 

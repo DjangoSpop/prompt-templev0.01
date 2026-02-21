@@ -264,6 +264,8 @@ export function AskMeModal({ open, onOpenChange }: AskMeModalProps) {
     const current = session.questions[currentQuestionIndex];
     if (!current) return null;
 
+    const isChoice = current.type === 'choice' && Array.isArray(current.options) && current.options.length > 0;
+
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -281,21 +283,45 @@ export function AskMeModal({ open, onOpenChange }: AskMeModalProps) {
 
         <div className="rounded-lg border bg-muted/30 p-4">
           <p className="text-sm font-medium leading-relaxed">{current.question}</p>
+          {current.help_text && (
+            <p className="text-xs text-muted-foreground mt-1">{current.help_text}</p>
+          )}
         </div>
 
         <div>
-          <textarea
-            value={currentAnswer}
-            onChange={(e) => setCurrentAnswer(e.target.value)}
-            placeholder="Your answer…"
-            rows={3}
-            className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
-            autoFocus
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleAnswer();
-            }}
-          />
-          <p className="text-xs text-muted-foreground mt-1">⌘/Ctrl + Enter to continue</p>
+          {isChoice ? (
+            <div className="flex flex-col gap-2">
+              {current.options!.map((opt) => (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => setCurrentAnswer(opt)}
+                  className={`w-full text-left px-3 py-2.5 rounded-lg border text-sm transition-colors ${
+                    currentAnswer === opt
+                      ? 'border-primary bg-primary/10 text-foreground font-medium'
+                      : 'border-border bg-background hover:bg-muted text-foreground'
+                  }`}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <>
+              <textarea
+                value={currentAnswer}
+                onChange={(e) => setCurrentAnswer(e.target.value)}
+                placeholder="Your answer…"
+                rows={3}
+                className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleAnswer();
+                }}
+              />
+              <p className="text-xs text-muted-foreground mt-1">⌘/Ctrl + Enter to continue</p>
+            </>
+          )}
         </div>
 
         <div className="flex gap-2">
