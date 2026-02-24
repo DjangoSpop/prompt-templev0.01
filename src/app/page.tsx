@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/providers/AuthProvider';
 import { useEventTracker } from '@/providers/AnalyticsProvider';
 import { useDashboard } from '@/lib/hooks';
@@ -10,7 +10,6 @@ import {
   Zap,
   Star,
   ArrowRight,
-  Play,
   BookOpen,
   BarChart3,
   Crown,
@@ -23,29 +22,22 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
-import { PharaohHero } from '@/components/hero/PharaohHero';
-import { NefertitiBackground } from '@/components/pharaonic/NefertitiIcon';
-import { PyramidGrid } from '@/components/pharaonic/PyramidGrid';
-import { HeroSection } from '@/components/HeroSection';
-import { AssistantBadge } from '@/components/assistant';
 import { ScrollifyContainer } from '@/components/animations/ScrollifyContainer';
 import { EnhancedFloatingParticles } from '@/components/animations/EnhancedFloatingParticles';
 import { RevealOnScroll } from '@/components/animations/RevealOnScroll';
 import { ProgressIndicator } from '@/components/animations/ProgressIndicator';
 import { PromptIQTestModal } from '@/components/academy/PromptIQTestModal';
 import { useAcademyStore } from '@/lib/stores/academyStore';
-// Viral landing components
-import { HeroTransformer } from '@/components/HeroTransformer';
-import { SocialProofTicker } from '@/components/SocialProofTicker';
-import { HowItWorks } from '@/components/HowItWorks';
-import { PricingSection } from '@/components/PricingSection';
+
+// New landing page components
+import { TempleOpening } from '@/components/animations/TempleOpening';
+import { LandingHeroSection } from '@/components/landing/HeroSection';
+import { TransformationShowcase } from '@/components/landing/TransformationShowcase';
+import { TemplatePreviewSection } from '@/components/landing/TemplatePreviewSection';
+import { HowItWorksLanding } from '@/components/landing/HowItWorksLanding';
+import { StatsSection } from '@/components/landing/StatsSection';
 import { TestimonialsCarousel } from '@/components/TestimonialsCarousel';
 import { ViralCTAFooter } from '@/components/ViralCTAFooter';
-import { PaywallModal } from '@/components/PaywallModal';
-
-const TempleGateHero = dynamic(() => import('@/components/temple/TempleGateHero').then(m => m.TempleGateHero), { ssr: false });
-import { TryMeButton } from '@/components/try-me/TryMeButton';
 
 export default function DashboardPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -54,6 +46,10 @@ export default function DashboardPage() {
   const [iqTestOpen, setIqTestOpen] = useState(false);
   const promptIQScore = useAcademyStore((s) => s.promptIQScore);
   const promptIQCompleted = useAcademyStore((s) => s.promptIQCompleted);
+
+  // Temple Opening state
+  const [templeReady, setTempleReady] = useState(false);
+  const handleTempleComplete = useCallback(() => setTempleReady(true), []);
 
   useEffect(() => {
     trackPageView('dashboard');
@@ -70,11 +66,11 @@ export default function DashboardPage() {
   if (!isAuthenticated) {
     return (
       <>
+        {/* Cinematic Temple Opening — plays once per session */}
+        {!templeReady && <TempleOpening onComplete={handleTempleComplete} />}
+
         <ProgressIndicator color="#F5C518" height={3} className="z-50" />
 
-        {/* ═══════════════════════════════════════════════
-            VIRAL LANDING PAGE — Full Sections
-            ═══════════════════════════════════════════════ */}
         <div
           className="min-h-screen relative"
           style={{ background: 'linear-gradient(180deg, #0D0D0D 0%, #0A0A18 50%, #0D0D0D 100%)' }}
@@ -89,49 +85,44 @@ export default function DashboardPage() {
             }}
           />
 
-          {/* 1. HERO — Animated before/after transformer */}
-          <HeroTransformer />
-
-          {/* 2. SOCIAL PROOF TICKER */}
-          <div className="py-4 px-4">
-            <SocialProofTicker />
-          </div>
+          {/* 1. HERO — Animated prompt transformer demo */}
+          <LandingHeroSection />
 
           {/* Divider */}
           <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #F5C518, transparent)' }} />
 
-          {/* 3. HOW IT WORKS */}
-          <HowItWorks />
+          {/* 2. TRANSFORMATION SHOWCASE — Before/After horizontal scroll */}
+          <TransformationShowcase />
 
-          {/* Divider */}
-          <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #A78BFA, transparent)' }} />
-
-         
-          <HeroSection/>
-            <EnhancedFloatingParticles/>
-          {/* Divider */}
-          <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #60A5FA, transparent)' }} />
-          <TempleGateHero/>
-          <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #60A5FA, transparent)' }} />
-            <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #60A5FA, transparent)' }} />
-          
-          {/* 5. PRICING TIERS */}
-          <PricingSection />
-         <PharaohHero/>
           {/* Divider */}
           <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #F5C518, transparent)' }} />
-        
+
+          {/* 3. TEMPLATE PREVIEW — Featured template cards */}
+          <TemplatePreviewSection />
+
+          {/* Divider */}
+          <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #F5C518, transparent)' }} />
+
+          {/* 4. HOW IT WORKS — 3-step pillar animation */}
+          <HowItWorksLanding />
+
+          {/* Divider */}
+          <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #F5C518, transparent)' }} />
+
+          {/* 5. STATS — Counting numbers */}
+          <StatsSection />
+
+          {/* Divider */}
+          <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #F5C518, transparent)' }} />
+
           {/* 6. TESTIMONIALS */}
           <TestimonialsCarousel />
-            
+
           {/* Divider */}
           <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #10B981, transparent)' }} />
 
           {/* 7. VIRAL CTA FOOTER */}
           <ViralCTAFooter />
-
-          {/* Paywall Modal (global) */}
-          <PaywallModal />
         </div>
       </>
     );
@@ -242,7 +233,7 @@ export default function DashboardPage() {
             </div>
             <div className="text-sm text-muted-foreground font-medium">Sacred Templates Used</div>
           </Card>
-          
+
           <Card className="temple-card p-6 text-center pyramid-elevation pharaoh-glow">
             <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto mb-3">
               <Zap className="h-6 w-6 text-white" />
@@ -252,7 +243,7 @@ export default function DashboardPage() {
             </div>
             <div className="text-sm text-muted-foreground font-medium">Prompts Forged</div>
           </Card>
-          
+
           <Card className="temple-card p-6 text-center pyramid-elevation pharaoh-glow">
             <div className="w-12 h-12 pharaoh-badge rounded-full flex items-center justify-center mx-auto mb-3">
               <Crown className="h-6 w-6 text-white" />
@@ -262,7 +253,7 @@ export default function DashboardPage() {
             </div>
             <div className="text-sm text-muted-foreground font-medium">Temple Rank</div>
           </Card>
-          
+
           <Card className="temple-card p-6 text-center pyramid-elevation pharaoh-glow">
             <div className="w-12 h-12 bg-destructive rounded-full flex items-center justify-center mx-auto mb-3">
               <Star className="h-6 w-6 text-white" />
@@ -301,21 +292,21 @@ export default function DashboardPage() {
               <span className="text-xs md:text-sm font-medium">The Scroll Vault</span>
             </Button>
           </Link>
-          
+
           <Link href="/templates/create" className="group">
             <Button variant="outline" className="w-full h-14 md:h-16 flex flex-col items-center justify-center space-y-1 md:space-y-2 border-2 hover:border-primary hover:bg-primary/10 transition-all duration-300 group-hover:scale-105">
               <Zap className="h-5 w-5 text-primary" />
               <span className="text-xs md:text-sm font-medium">The Forge</span>
             </Button>
           </Link>
-          
+
           <Link href="/history" className="group">
             <Button variant="outline" className="w-full h-14 md:h-16 flex flex-col items-center justify-center space-y-1 md:space-y-2 border-2 hover:border-pharaoh hover:bg-pharaoh/10 transition-all duration-300 group-hover:scale-105">
               <TrendingUp className="h-5 w-5 text-pharaoh" />
               <span className="text-xs md:text-sm font-medium">The Chronicle</span>
             </Button>
           </Link>
-          
+
           <Link href="/analysis" className="group">
             <Button variant="outline" className="w-full h-14 md:h-16 flex flex-col items-center justify-center space-y-1 md:space-y-2 border-2 hover:border-destructive hover:bg-destructive/10 transition-all duration-300 group-hover:scale-105">
               <BarChart3 className="h-5 w-5 text-destructive" />

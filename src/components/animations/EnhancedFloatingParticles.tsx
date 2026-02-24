@@ -27,12 +27,20 @@ export function EnhancedFloatingParticles({
   useEffect(() => {
     if (!containerRef.current) return;
 
+    // ── Respect prefers-reduced-motion ─────────────────────────
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) return;
+
+    // ── Responsive: fewer particles on mobile ─────────────────
+    const mobile = window.innerWidth < 768;
+    const effectiveCount = mobile ? Math.min(count, 10) : count;
+
     const container = containerRef.current;
     particlesRef.current = [];
     animationsRef.current = [];
 
     // Create particles
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < effectiveCount; i++) {
       const particle = document.createElement('div');
       const particleSize = gsap.utils.random(size.min, size.max);
       const color = colors[Math.floor(Math.random() * colors.length)];
@@ -108,15 +116,16 @@ export function EnhancedFloatingParticles({
       animationsRef.current.push(tl);
     }
 
-    // Mouse interaction effect
+    // Mouse interaction effect — pointer-capable devices only
     let mouseX = 0;
     let mouseY = 0;
+    const hasHover = window.matchMedia('(hover: hover)').matches;
 
     const handleMouseMove = (e: MouseEvent) => {
       mouseX = e.clientX;
       mouseY = e.clientY;
 
-      if (interactive) {
+      if (interactive && hasHover) {
         particlesRef.current.forEach((particle, index) => {
           const rect = particle.getBoundingClientRect();
           const particleX = rect.left + rect.width / 2;
@@ -165,25 +174,30 @@ export function EnhancedFloatingParticles({
       });
     };
 
-    // Add parallax effect on scroll
+    // Parallax on scroll — desktop only (avoids jank on mobile)
+    let ticking = false;
     const handleScroll = () => {
-      const scrollY = window.scrollY;
-      particlesRef.current.forEach((particle, index) => {
-        const speed = (index % 3 + 1) * 0.1;
-        gsap.to(particle, {
-          y: `+=${scrollY * speed}`,
-          duration: 0.1,
-          ease: 'none',
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const scrollY = window.scrollY;
+        particlesRef.current.forEach((particle, index) => {
+          const s = (index % 3 + 1) * 0.05;
+          gsap.to(particle, { y: `+=${scrollY * s}`, duration: 0.1, ease: 'none' });
         });
+        ticking = false;
       });
     };
 
-    if (interactive) {
+    if (interactive && hasHover) {
       window.addEventListener('mousemove', handleMouseMove);
     }
 
     const boundaryInterval = setInterval(checkBoundaries, 5000);
-    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    if (!mobile) {
+      window.addEventListener('scroll', handleScroll, { passive: true });
+    }
 
     // Resize handler
     const handleResize = () => {
@@ -199,10 +213,12 @@ export function EnhancedFloatingParticles({
 
     // Cleanup
     return () => {
-      if (interactive) {
+      if (interactive && hasHover) {
         window.removeEventListener('mousemove', handleMouseMove);
       }
-      window.removeEventListener('scroll', handleScroll);
+      if (!mobile) {
+        window.removeEventListener('scroll', handleScroll);
+      }
       window.removeEventListener('resize', handleResize);
       clearInterval(boundaryInterval);
 

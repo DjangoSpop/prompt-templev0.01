@@ -20,115 +20,114 @@ export function ScrollifyContainer({ children, className = '' }: ScrollifyContai
   useEffect(() => {
     if (!containerRef.current) return;
 
+    // ── Respect prefers-reduced-motion ──────────────────────────
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) return; // sections stay fully visible – no animations
+
     const container = containerRef.current;
     const sections = container.querySelectorAll('.scrollify-section');
 
-    // Add a master timeline for coordinated animations
-    const masterTimeline = gsap.timeline();
+    // ── Responsive breakpoints ─────────────────────────────────
+    const isMobile  = window.innerWidth < 768;
+    const isTablet  = window.innerWidth >= 768 && window.innerWidth < 1024;
+
+    // Use softer values on smaller screens
+    const sectionY        = isMobile ? 40 : 60;
+    const sectionScale    = isMobile ? 0.97 : 0.95;
+    const sectionRotX     = isMobile ? 0 : 8;
+    const sectionDuration = isMobile ? 0.8 : 1.1;
+    const triggerStart    = isMobile ? 'top 92%' : isTablet ? 'top 88%' : 'top 85%';
+
+    const cleanups: (() => void)[] = [];
 
     // Create smooth scrolling animations for each section
-    sections.forEach((section, index) => {
-      // Enhanced fade in from bottom animation with better easing
+    sections.forEach((section) => {
+      // Gentle fade-in from below
       gsap.fromTo(
         section,
         {
           opacity: 0,
-          y: 80,
-          scale: 0.92,
-          rotationX: 15,
+          y: sectionY,
+          scale: sectionScale,
+          rotationX: sectionRotX,
         },
         {
           opacity: 1,
           y: 0,
           scale: 1,
           rotationX: 0,
-          duration: 1.4,
-          ease: 'power4.out',
+          duration: sectionDuration,
+          ease: 'power3.out',
           scrollTrigger: {
             trigger: section,
-            start: 'top 90%',
-            end: 'bottom 15%',
+            start: triggerStart,
+            end: 'bottom 20%',
             toggleActions: 'play none none reverse',
-            markers: false,
             fastScrollEnd: true,
             preventOverlaps: true,
+            invalidateOnRefresh: true,
           },
         }
       );
 
-      // Enhanced parallax effect for background elements
-      const parallaxElements = section.querySelectorAll('.parallax-element');
-      parallaxElements.forEach((element, i) => {
-        gsap.to(element, {
-          yPercent: -30 - (i * 10), // Vary the parallax effect
-          xPercent: Math.sin(i) * 5, // Add subtle horizontal movement
-          rotation: Math.sin(i) * 2, // Add subtle rotation
-          ease: 'none',
-          scrollTrigger: {
-            trigger: section,
-            start: 'top bottom',
-            end: 'bottom top',
-            scrub: 1.5,
-            invalidateOnRefresh: true,
-          },
+      // Parallax — desktop only
+      if (!isMobile) {
+        const parallaxElements = section.querySelectorAll('.parallax-element');
+        parallaxElements.forEach((element, i) => {
+          gsap.to(element, {
+            yPercent: -20 - (i * 8),
+            ease: 'none',
+            scrollTrigger: {
+              trigger: section,
+              start: 'top bottom',
+              end: 'bottom top',
+              scrub: 1.5,
+              invalidateOnRefresh: true,
+            },
+          });
         });
-      });
+      }
 
-      // Enhanced stagger animation for child elements
+      // Stagger children
       const staggerElements = section.querySelectorAll('.stagger-element');
       if (staggerElements.length > 0) {
         gsap.fromTo(
           staggerElements,
-          {
-            opacity: 0,
-            y: 40,
-            scale: 0.95,
-            rotationY: 15,
-          },
+          { opacity: 0, y: isMobile ? 20 : 30, scale: 0.97 },
           {
             opacity: 1,
             y: 0,
             scale: 1,
-            rotationY: 0,
-            duration: 1,
-            stagger: {
-              amount: 0.5,
-              from: 'start',
-              ease: 'power2.out',
-            },
-            ease: 'back.out(1.7)',
+            duration: isMobile ? 0.6 : 0.8,
+            stagger: { amount: 0.4, from: 'start', ease: 'power2.out' },
+            ease: 'power3.out',
             scrollTrigger: {
               trigger: section,
-              start: 'top 85%',
+              start: triggerStart,
               end: 'bottom 25%',
               toggleActions: 'play none none reverse',
               fastScrollEnd: true,
+              invalidateOnRefresh: true,
             },
           }
         );
       }
 
-      // Enhanced scale effect for cards/elements on scroll
+      // Scale elements (cards)
       const scaleElements = section.querySelectorAll('.scale-element');
       scaleElements.forEach((element, i) => {
         gsap.fromTo(
           element,
-          {
-            scale: 0.7,
-            opacity: 0,
-            y: 60,
-            rotationZ: -5 + (i % 2) * 10, // Alternate rotation
-          },
+          { scale: 0.85, opacity: 0, y: isMobile ? 30 : 50 },
           {
             scale: 1,
             opacity: 1,
             y: 0,
-            rotationZ: 0,
-            duration: 1.5,
-            ease: 'elastic.out(1, 0.6)',
+            duration: isMobile ? 0.7 : 1,
+            ease: 'power3.out',
             scrollTrigger: {
               trigger: element,
-              start: 'top 95%',
+              start: 'top 93%',
               end: 'bottom 15%',
               toggleActions: 'play none none reverse',
               invalidateOnRefresh: true,
@@ -136,83 +135,61 @@ export function ScrollifyContainer({ children, className = '' }: ScrollifyContai
           }
         );
 
-        // Add hover enhancement
-        element.addEventListener('mouseenter', () => {
-          gsap.to(element, {
-            scale: 1.05,
-            rotationY: 5,
-            duration: 0.3,
-            ease: 'power2.out',
+        // Only apply hover effects on devices that support hover
+        if (!isMobile && window.matchMedia('(hover: hover)').matches) {
+          const onEnter = () => gsap.to(element, { scale: 1.03, duration: 0.25, ease: 'power2.out' });
+          const onLeave = () => gsap.to(element, { scale: 1, duration: 0.25, ease: 'power2.out' });
+          element.addEventListener('mouseenter', onEnter);
+          element.addEventListener('mouseleave', onLeave);
+          cleanups.push(() => {
+            element.removeEventListener('mouseenter', onEnter);
+            element.removeEventListener('mouseleave', onLeave);
           });
-        });
-
-        element.addEventListener('mouseleave', () => {
-          gsap.to(element, {
-            scale: 1,
-            rotationY: 0,
-            duration: 0.3,
-            ease: 'power2.out',
-          });
-        });
+        }
       });
 
-      // Add magnetic effect for interactive elements
-      const magneticElements = section.querySelectorAll('button, a, .magnetic-element');
-      magneticElements.forEach((element) => {
-        element.addEventListener('mousemove', (e) => {
-          const rect = element.getBoundingClientRect();
-          const x = e.clientX - rect.left - rect.width / 2;
-          const y = e.clientY - rect.top - rect.height / 2;
-
-          gsap.to(element, {
-            x: x * 0.15,
-            y: y * 0.15,
-            duration: 0.3,
-            ease: 'power2.out',
+      // Magnetic button effect — pointer devices only
+      if (!isMobile && window.matchMedia('(hover: hover)').matches) {
+        const magneticElements = section.querySelectorAll('button, a, .magnetic-element');
+        magneticElements.forEach((element) => {
+          const onMove = (e: Event) => {
+            const me = e as MouseEvent;
+            const rect = element.getBoundingClientRect();
+            const x = me.clientX - rect.left - rect.width / 2;
+            const y = me.clientY - rect.top  - rect.height / 2;
+            gsap.to(element, { x: x * 0.12, y: y * 0.12, duration: 0.3, ease: 'power2.out' });
+          };
+          const onLeave = () => gsap.to(element, { x: 0, y: 0, duration: 0.4, ease: 'elastic.out(1,0.4)' });
+          element.addEventListener('mousemove', onMove);
+          element.addEventListener('mouseleave', onLeave);
+          cleanups.push(() => {
+            element.removeEventListener('mousemove', onMove);
+            element.removeEventListener('mouseleave', onLeave);
           });
         });
+      }
+    });
 
-        element.addEventListener('mouseleave', () => {
-          gsap.to(element, {
-            x: 0,
-            y: 0,
-            duration: 0.5,
-            ease: 'elastic.out(1, 0.3)',
-          });
-        });
+    // Scroll progress bar
+    const progressEl = document.querySelector('.scroll-progress');
+    if (progressEl) {
+      gsap.to(progressEl, {
+        scaleX: 1,
+        transformOrigin: 'left center',
+        ease: 'none',
+        scrollTrigger: { trigger: container, start: 'top top', end: 'bottom bottom', scrub: 0.3 },
       });
-    });
+    }
 
-    // Enhanced smooth scroll behavior
-    gsap.set(container, {
-      scrollBehavior: 'smooth',
-    });
-
-    // Add scroll progress indicator
-    gsap.to('.scroll-progress', {
-      scaleX: 1,
-      transformOrigin: 'left center',
-      ease: 'none',
-      scrollTrigger: {
-        trigger: container,
-        start: 'top top',
-        end: 'bottom bottom',
-        scrub: 0.3,
-      },
-    });
-
-    // Refresh ScrollTrigger on window resize
-    const handleResize = () => {
-      ScrollTrigger.refresh();
-    };
-
+    // Refresh on resize
+    const handleResize = () => ScrollTrigger.refresh();
     window.addEventListener('resize', handleResize);
 
-    // Cleanup function
+    // Cleanup
     return () => {
       window.removeEventListener('resize', handleResize);
-      masterTimeline.kill();
-      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+      cleanups.forEach((fn) => fn());
+      ScrollTrigger.getAll().forEach((t) => t.kill());
     };
   }, []);
 
@@ -220,10 +197,7 @@ export function ScrollifyContainer({ children, className = '' }: ScrollifyContai
     <div
       ref={containerRef}
       className={`scrollify-container ${className}`}
-      style={{
-        scrollBehavior: 'smooth',
-        overscrollBehavior: 'none',
-      }}
+      style={{ overscrollBehavior: 'none' }}
     >
       {children}
     </div>

@@ -38,8 +38,22 @@ export function RevealOnScroll({
   useEffect(() => {
     if (!elementRef.current) return;
 
+    // ── Respect prefers-reduced-motion ─────────────────────────
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) {
+      // Make content visible immediately, no animation
+      gsap.set(elementRef.current, { opacity: 1 });
+      if (stagger > 0) gsap.set(elementRef.current.children, { opacity: 1 });
+      return;
+    }
+
     const element = elementRef.current;
     const targets = stagger > 0 ? element.children : element;
+
+    // ── Responsive adjustments ─────────────────────────────────
+    const isMobile = window.innerWidth < 768;
+    const effectiveDistance = isMobile ? distance * 0.5 : distance;
+    const effectiveDuration = isMobile ? duration * 0.7 : duration;
 
     // Enhanced initial state with more sophisticated properties
     let fromVars: any = {
@@ -49,63 +63,56 @@ export function RevealOnScroll({
     };
     let toVars: any = {
       opacity: 1,
-      duration,
+      duration: effectiveDuration,
       delay,
-      ease: 'power4.out',
+      ease: 'power3.out',
       clearProps: 'willChange',
     };
 
     switch (direction) {
       case 'up':
-        fromVars.y = distance;
-        fromVars.rotationX = 10;
-        fromVars.scale = 0.95;
+        fromVars.y = effectiveDistance;
+        fromVars.rotationX = isMobile ? 0 : 6;
+        fromVars.scale = 0.97;
         toVars.y = 0;
         toVars.rotationX = 0;
         toVars.scale = 1;
-        toVars.ease = 'back.out(1.7)';
         break;
       case 'down':
-        fromVars.y = -distance;
-        fromVars.rotationX = -10;
-        fromVars.scale = 0.95;
+        fromVars.y = -effectiveDistance;
+        fromVars.rotationX = isMobile ? 0 : -6;
+        fromVars.scale = 0.97;
         toVars.y = 0;
         toVars.rotationX = 0;
         toVars.scale = 1;
-        toVars.ease = 'back.out(1.7)';
         break;
       case 'left':
-        fromVars.x = distance;
-        fromVars.rotationY = 15;
-        fromVars.scale = 0.9;
+        fromVars.x = effectiveDistance;
+        fromVars.rotationY = isMobile ? 0 : 8;
+        fromVars.scale = 0.95;
         toVars.x = 0;
         toVars.rotationY = 0;
         toVars.scale = 1;
-        toVars.ease = 'power3.out';
         break;
       case 'right':
-        fromVars.x = -distance;
-        fromVars.rotationY = -15;
-        fromVars.scale = 0.9;
+        fromVars.x = -effectiveDistance;
+        fromVars.rotationY = isMobile ? 0 : -8;
+        fromVars.scale = 0.95;
         toVars.x = 0;
         toVars.rotationY = 0;
         toVars.scale = 1;
-        toVars.ease = 'power3.out';
         break;
       case 'scale':
-        fromVars.scale = 0.6;
-        fromVars.rotationZ = -10;
-        fromVars.y = distance * 0.5;
+        fromVars.scale = 0.75;
+        fromVars.y = effectiveDistance * 0.4;
         toVars.scale = 1;
-        toVars.rotationZ = 0;
         toVars.y = 0;
-        toVars.ease = 'elastic.out(1, 0.6)';
-        toVars.duration = duration * 1.2;
+        toVars.ease = 'power3.out';
+        toVars.duration = effectiveDuration * 1.1;
         break;
       case 'fade':
-        // Enhanced fade with subtle movement
-        fromVars.y = distance * 0.3;
-        fromVars.scale = 0.98;
+        fromVars.y = effectiveDistance * 0.25;
+        fromVars.scale = 0.99;
         toVars.y = 0;
         toVars.scale = 1;
         toVars.ease = 'power2.out';
@@ -128,22 +135,12 @@ export function RevealOnScroll({
       refreshPriority: -90,
     };
 
-    // Enhanced stagger with more sophisticated options
+    // Enhanced stagger
     if (stagger > 0 && element.children.length > 0) {
       toVars.stagger = {
         amount: stagger,
         from: 'start',
         ease: 'power2.out',
-        onComplete: function() {
-          // Add a subtle bounce effect after all elements are revealed
-          gsap.to(this.targets(), {
-            scale: 1.02,
-            duration: 0.2,
-            ease: 'power2.out',
-            yoyo: true,
-            repeat: 1,
-          });
-        }
       };
     }
 
