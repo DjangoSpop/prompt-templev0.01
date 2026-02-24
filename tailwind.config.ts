@@ -19,6 +19,10 @@ const config: Config = {
       },
     },
     extend: {
+      // Add xs breakpoint; keep all Tailwind defaults (sm=640, md=768, lg=1024…)
+      screens: {
+        xs: '360px',
+      },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
         arabic: ["Cairo", "Arial", "sans-serif"],
@@ -238,6 +242,17 @@ const config: Config = {
   },
   plugins: [
     tailwindcssAnimate,
+    // Safe-area inset utilities (iOS notch / home indicator)
+    function({ addUtilities }: any) {
+      addUtilities({
+        '.pb-safe': { paddingBottom: 'env(safe-area-inset-bottom, 0px)' },
+        '.pt-safe': { paddingTop:    'env(safe-area-inset-top, 0px)'    },
+        '.pl-safe': { paddingLeft:   'env(safe-area-inset-left, 0px)'   },
+        '.pr-safe': { paddingRight:  'env(safe-area-inset-right, 0px)'  },
+        '.mb-safe': { marginBottom:  'env(safe-area-inset-bottom, 0px)' },
+        '.mt-safe': { marginTop:     'env(safe-area-inset-top, 0px)'    },
+      });
+    },
     // Custom scrollbar utilities
     function({ addUtilities }: any) {
       const newUtilities = {

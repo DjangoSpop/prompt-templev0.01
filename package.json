@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
-    "generate-types": "openapi-typescript http://localhost:8000/api/schema/ --output ./lib/types/api.d.ts --exportSchemas",
+    "generate-types": "openapi-typescript http://api.prompt-temple.com/api/schema/ --output ./lib/types/api.d.ts --exportSchemas",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest",

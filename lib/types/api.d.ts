@@ -4,15 +4,15 @@
  */
 
 export interface paths {
-    "/health/": {
+    "/health/redis/": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** @description Return comprehensive health status */
-        get: operations["health_retrieve"];
+        /** @description Health check for Redis cache and channels */
+        get: operations["health_redis_retrieve"];
         put?: never;
         post?: never;
         delete?: never;
@@ -417,6 +417,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v2/templates/{template_id}/validate/stream/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Server-Sent Events endpoint for real-time AI template validation */
+        get: operations["v2_templates_validate_stream_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v2/status/": {
         parameters: {
             query?: never;
@@ -447,6 +464,25 @@ export interface paths {
          *
          *     Creates new user account and returns JWT tokens */
         post: operations["v2_auth_register_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/auth/registration/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description User registration endpoint
+         *
+         *     Creates new user account and returns JWT tokens */
+        post: operations["v2_auth_registration_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -512,13 +548,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Check if username is available for registration
-         *
-         *     Query params:
-         *     - username: The username to check
-         *
-         *     Returns:
-         *     - available: Boolean indicating if username is available */
+        /** @description Check if username is available for registration */
         get: operations["v2_auth_check_username_retrieve"];
         put?: never;
         post?: never;
@@ -528,23 +558,109 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v2/auth/auth/check-email/": {
+    "/api/v2/auth/check-email/": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** @description Check if email is available for registration
-         *
-         *     Query params:
-         *     - email: The email to check
-         *
-         *     Returns:
-         *     - available: Boolean indicating if email is available */
-        get: operations["v2_auth_auth_check_email_retrieve"];
+        /** @description Check if email is available for registration */
+        get: operations["v2_auth_check_email_retrieve"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/auth/social/providers/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Get provider information */
+        get: operations["v2_auth_social_providers_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/auth/social/{provider}/initiate/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Get OAuth authorization URL
+         *
+         *     Query Parameters:
+         *     - provider: 'google' or 'github'
+         *     - redirect_uri: (optional) Custom redirect URI for extension/webapp
+         *     - client_type: (optional) 'extension' or 'web' to help with URI resolution */
+        get: operations["v2_auth_social_initiate_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/auth/social/callback/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Handle OAuth callback */
+        post: operations["v2_auth_social_callback_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/auth/social/unlink/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Unlink social account from user */
+        post: operations["v2_auth_social_unlink_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/auth/social/link/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Link social account to existing user
+         *
+         *     This endpoint allows users to link additional social providers to their account */
+        post: operations["v2_auth_social_link_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -630,7 +746,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description List available AI providers including DeepSeek */
+        /** @description List available AI providers including DeepSeek and OpenRouter */
         get: operations["v2_ai_providers_retrieve"];
         put?: never;
         post?: never;
@@ -647,7 +763,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description List available AI models including DeepSeek models */
+        /** @description List available AI models including DeepSeek and OpenRouter models */
         get: operations["v2_ai_models_retrieve"];
         put?: never;
         post?: never;
@@ -666,7 +782,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description AI generation endpoint with DeepSeek integration */
+        /** @description AI generation endpoint with DeepSeek and OpenRouter integration */
         post: operations["v2_ai_generate_create"];
         delete?: never;
         options?: never;
@@ -681,7 +797,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Placeholder AI usage view */
+        /** @description Real AI usage from AIUsageQuota model. */
         get: operations["v2_ai_usage_retrieve"];
         put?: never;
         post?: never;
@@ -698,7 +814,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Placeholder AI quota view */
+        /** @description Real AI quota limits from AIUsageQuota model. */
         get: operations["v2_ai_quotas_retrieve"];
         put?: never;
         post?: never;
@@ -773,6 +889,186 @@ export interface paths {
          *     This view re-uses the SSE proxy pattern from apps.chat.views.ChatCompletionsProxyView
          *     but keeps the implementation local to ai_services so frontend can call `/api/.../deepseek/stream/`. */
         post: operations["v2_ai_deepseek_stream_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/ai/assistant/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Expose registered assistants to the frontend. */
+        get: operations["v2_ai_assistant_retrieve_2"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/ai/assistant": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Expose registered assistants to the frontend. */
+        get: operations["v2_ai_assistant_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/ai/assistant/run/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Run an assistant synchronously via standard Django view. */
+        post: operations["v2_ai_assistant_run_create_2"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/ai/assistant/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Run an assistant synchronously via standard Django view. */
+        post: operations["v2_ai_assistant_run_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/ai/assistant/threads/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Return threads created by the current user. */
+        get: operations["v2_ai_assistant_threads_retrieve_2"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/ai/assistant/threads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Return threads created by the current user. */
+        get: operations["v2_ai_assistant_threads_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/ai/assistant/threads/{thread_id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Return a thread with its messages. */
+        get: operations["v2_ai_assistant_threads_retrieve_4"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/ai/assistant/threads/{thread_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Return a thread with its messages. */
+        get: operations["v2_ai_assistant_threads_retrieve_3"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/ai/optimization/stream/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description SSE streaming endpoint for prompt optimization.
+         *
+         *     Replaces the defunct /ws/optimization/ WebSocket route.
+         *     Works with Gunicorn (WSGI) on Heroku – no ASGI or Channels required.
+         *
+         *     Frontend should use:
+         *         POST /api/v2/ai/optimization/stream/
+         *         Accept: text/event-stream */
+        post: operations["v2_ai_optimization_stream_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/ai/optimization/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Non-streaming prompt optimization (JSON response).
+         *
+         *     Convenient fallback when SSE is not wanted.
+         *     POST /api/v2/ai/optimization/ */
+        post: operations["v2_ai_optimization_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -861,6 +1157,143 @@ export interface paths {
          * @description Run retrieval and generate an answer (non-streaming).
          */
         post: operations["v2_ai_rag_answer_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/ai/askme/start/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description DRF API view for starting AskMe session */
+        post: operations["v2_ai_askme_start_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/ai/askme/answer/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description DRF API view for answering questions */
+        post: operations["v2_ai_askme_answer_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/ai/askme/finalize/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description DRF API view for finalizing session */
+        post: operations["v2_ai_askme_finalize_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/ai/askme/stream/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description DRF API view for streaming updates */
+        get: operations["v2_ai_askme_stream_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/ai/askme/sessions/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description List user's AskMe sessions (all sessions during development) */
+        get: operations["v2_ai_askme_sessions_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/ai/askme/sessions/{session_id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Get session details */
+        get: operations["v2_ai_askme_sessions_retrieve_2"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/ai/askme/sessions/{session_id}/delete/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** @description Delete a session (no user check during development) */
+        delete: operations["v2_ai_askme_sessions_delete_destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/ai/askme/debug/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Debug endpoint to test if authentication is working */
+        get: operations["v2_ai_askme_debug_retrieve"];
+        put?: never;
+        /** @description Debug endpoint to test if authentication is working */
+        post: operations["v2_ai_askme_debug_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1049,7 +1482,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get user's badges */
+        /** @description List user badges — derived from unlocked achievements (rarity: rare/epic/legendary). */
         get: operations["v2_gamification_badges_retrieve"];
         put?: never;
         post?: never;
@@ -1066,7 +1499,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get leaderboard data */
+        /** @description Leaderboard — top users by experience points from the User model. */
         get: operations["v2_gamification_leaderboard_retrieve"];
         put?: never;
         post?: never;
@@ -1100,7 +1533,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get user level information */
+        /** @description User level and experience — resolves against the UserLevel table.
+         *     Falls back to 100-XP-per-level formula when the table is empty. */
         get: operations["v2_gamification_user_level_retrieve"];
         put?: never;
         post?: never;
@@ -1134,7 +1568,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Return dashboard analytics */
+        /** @description Analytics dashboard — real DB aggregations from User, PromptHistory, and Gamification models. */
         get: operations["v2_analytics_dashboard_retrieve"];
         put?: never;
         post?: never;
@@ -1151,7 +1585,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Return user insights */
+        /** @description User-specific insights — aggregated from real DB data. */
         get: operations["v2_analytics_user_insights_retrieve"];
         put?: never;
         post?: never;
@@ -1168,7 +1602,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Return template analytics */
+        /** @description Template usage analytics — aggregated from real data. */
         get: operations["v2_analytics_template_analytics_retrieve"];
         put?: never;
         post?: never;
@@ -1185,7 +1619,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Return A/B test results */
+        /** @description A/B testing — placeholder (no active tests configured). */
         get: operations["v2_analytics_ab_tests_retrieve"];
         put?: never;
         post?: never;
@@ -1202,7 +1636,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Return personalized recommendations */
+        /** @description Personalized recommendations — returns public templates sorted by usage. */
         get: operations["v2_analytics_recommendations_retrieve"];
         put?: never;
         post?: never;
@@ -1221,7 +1655,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Track an analytics event */
+        /** @description Track user analytics events — persists to DB via AnalyticsEvent model. */
         post: operations["v2_analytics_track_create"];
         delete?: never;
         options?: never;
@@ -1236,7 +1670,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Return comprehensive health status */
+        /** @description Return comprehensive health status with all service checks */
         get: operations["v2_core_health_detailed_retrieve"];
         put?: never;
         post?: never;
@@ -1253,7 +1687,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Public app configuration endpoint - no auth, no session, no DB */
+        /** @description Get public app configuration */
         get: operations["v2_core_config_retrieve"];
         put?: never;
         post?: never;
@@ -1287,7 +1721,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description RAG service status endpoint - no auth required */
+        /** @description Get RAG service status */
         get: operations["v2_core_rag_status_retrieve"];
         put?: never;
         post?: never;
@@ -1315,6 +1749,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v2/core/api/v2/status/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Get system status and configuration */
+        get: operations["v2_core_api_v2_status_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/core/api/v2/cors-test/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Test CORS configuration */
+        get: operations["v2_core_api_v2_cors_test_retrieve"];
+        put?: never;
+        /** @description Test CORS configuration */
+        post: operations["v2_core_api_v2_cors_test_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v2/billing/plans/": {
         parameters: {
             query?: never;
@@ -1322,7 +1791,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description List all available billing plans */
+        /** @description List all active billing plans. */
         get: operations["v2_billing_plans_retrieve"];
         put?: never;
         post?: never;
@@ -1339,7 +1808,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get details of a specific billing plan */
+        /** @description Get details of a specific billing plan. */
         get: operations["v2_billing_plans_retrieve_2"];
         put?: never;
         post?: never;
@@ -1356,7 +1825,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get user's current subscription */
+        /** @description Get the authenticated user's current subscription. */
         get: operations["v2_billing_me_subscription_retrieve"];
         put?: never;
         post?: never;
@@ -1373,7 +1842,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get user's entitlements based on their subscription */
+        /** @description Return the user's entitlements based on their subscription plan. */
         get: operations["v2_billing_me_entitlements_retrieve"];
         put?: never;
         post?: never;
@@ -1390,7 +1859,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get user's usage statistics */
+        /** @description Get the user's current AI usage against their quota. */
         get: operations["v2_billing_me_usage_retrieve"];
         put?: never;
         post?: never;
@@ -1409,7 +1878,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Create a Stripe checkout session */
+        /** @description Create a Stripe checkout session (Stripe integration pending). */
         post: operations["v2_billing_checkout_create"];
         delete?: never;
         options?: never;
@@ -1426,7 +1895,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Create a Stripe customer portal session */
+        /** @description Create a Stripe customer portal session (Stripe integration pending). */
         post: operations["v2_billing_portal_create"];
         delete?: never;
         options?: never;
@@ -1443,7 +1912,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Handle Stripe webhooks */
+        /** @description Handle Stripe webhooks. */
         post: operations["v2_billing_webhooks_stripe_create"];
         delete?: never;
         options?: never;
@@ -1460,7 +1929,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Detect user intent from prompt */
+        /** @description Detect user intent from a prompt using DeepSeek AI. */
         post: operations["v2_orchestrator_intent_create"];
         delete?: never;
         options?: never;
@@ -1477,7 +1946,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Assess prompt quality and provide suggestions */
+        /** @description Assess prompt quality using DeepSeek AI. */
         post: operations["v2_orchestrator_assess_create"];
         delete?: never;
         options?: never;
@@ -1494,7 +1963,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Render a template with provided variables */
+        /** @description Render a template by substituting {{variable}} placeholders. */
         post: operations["v2_orchestrator_render_create"];
         delete?: never;
         options?: never;
@@ -1509,7 +1978,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Search for templates in the library */
+        /** @description Search for templates in the library. */
         get: operations["v2_orchestrator_search_retrieve"];
         put?: never;
         post?: never;
@@ -1526,7 +1995,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get a specific template by ID or name */
+        /** @description Get a specific template by ID or name. */
         get: operations["v2_orchestrator_template_retrieve_2"];
         put?: never;
         post?: never;
@@ -1543,7 +2012,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Get a specific template by ID or name */
+        /** @description Get a specific template by ID or name. */
         get: operations["v2_orchestrator_template_retrieve"];
         put?: never;
         post?: never;
@@ -1553,172 +2022,39 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/templates/": {
+    "/api/v2/history/history/": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** @description Complete CRUD ViewSet for templates
-         *
-         *     Features:
-         *     - List, create, retrieve, update, delete templates
-         *     - Advanced filtering and search
-         *     - Custom actions for usage tracking
-         *     - AI integration
-         *     - Analytics and ratings */
-        get: operations["v1_templates_list"];
+        get: operations["v2_history_history_list"];
         put?: never;
-        /** @description Complete CRUD ViewSet for templates
-         *
-         *     Features:
-         *     - List, create, retrieve, update, delete templates
-         *     - Advanced filtering and search
-         *     - Custom actions for usage tracking
-         *     - AI integration
-         *     - Analytics and ratings */
-        post: operations["v1_templates_create"];
+        post: operations["v2_history_history_create"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/templates/featured/": {
+    "/api/v2/history/history/{id}/": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** @description Get featured templates */
-        get: operations["v1_templates_featured_retrieve"];
-        put?: never;
+        get: operations["v2_history_history_retrieve"];
+        put: operations["v2_history_history_update"];
         post?: never;
-        delete?: never;
+        delete: operations["v2_history_history_destroy"];
         options?: never;
         head?: never;
-        patch?: never;
+        patch: operations["v2_history_history_partial_update"];
         trace?: never;
     };
-    "/api/v1/templates/my_templates/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Get current user's templates */
-        get: operations["v1_templates_my_templates_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/templates/search_suggestions/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Get search suggestions based on popular templates and tags */
-        get: operations["v1_templates_search_suggestions_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/templates/trending/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Get trending templates based on recent activity */
-        get: operations["v1_templates_trending_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/templates/{id}/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Complete CRUD ViewSet for templates
-         *
-         *     Features:
-         *     - List, create, retrieve, update, delete templates
-         *     - Advanced filtering and search
-         *     - Custom actions for usage tracking
-         *     - AI integration
-         *     - Analytics and ratings */
-        get: operations["v1_templates_retrieve"];
-        /** @description Complete CRUD ViewSet for templates
-         *
-         *     Features:
-         *     - List, create, retrieve, update, delete templates
-         *     - Advanced filtering and search
-         *     - Custom actions for usage tracking
-         *     - AI integration
-         *     - Analytics and ratings */
-        put: operations["v1_templates_update"];
-        post?: never;
-        /** @description Complete CRUD ViewSet for templates
-         *
-         *     Features:
-         *     - List, create, retrieve, update, delete templates
-         *     - Advanced filtering and search
-         *     - Custom actions for usage tracking
-         *     - AI integration
-         *     - Analytics and ratings */
-        delete: operations["v1_templates_destroy"];
-        options?: never;
-        head?: never;
-        /** @description Complete CRUD ViewSet for templates
-         *
-         *     Features:
-         *     - List, create, retrieve, update, delete templates
-         *     - Advanced filtering and search
-         *     - Custom actions for usage tracking
-         *     - AI integration
-         *     - Analytics and ratings */
-        patch: operations["v1_templates_partial_update"];
-        trace?: never;
-    };
-    "/api/v1/templates/{id}/analytics/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Get detailed analytics for a template (author only) */
-        get: operations["v1_templates_analytics_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/templates/{id}/analyze_with_ai/": {
+    "/api/v2/history/history/{id}/enhance/": {
         parameters: {
             query?: never;
             header?: never;
@@ -1727,96 +2063,50 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Analyze template with AI for optimization suggestions */
-        post: operations["v1_templates_analyze_with_ai_create"];
+        /** @description Run optimization pipeline, debit credits, update optimized_prompt */
+        post: operations["v2_history_history_enhance_create"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/templates/{id}/complete_usage/": {
+    "/api/v2/history/saved-prompts/": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * List saved prompts
+         * @description Get all saved prompts for the authenticated user with optional filtering.
+         */
+        get: operations["v2_history_saved_prompts_list"];
         put?: never;
-        /** @description Complete template usage and award rewards */
-        post: operations["v1_templates_complete_usage_create"];
+        /**
+         * Create saved prompt
+         * @description Save a new plain prompt for future reuse.
+         */
+        post: operations["v2_history_saved_prompts_create"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/templates/{id}/duplicate/": {
+    "/api/v2/history/saved-prompts/favorites/": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
-        put?: never;
-        /** @description Create a copy of an existing template */
-        post: operations["v1_templates_duplicate_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/templates/{id}/rate_template/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** @description Rate and review a template */
-        post: operations["v1_templates_rate_template_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/templates/{id}/start_usage/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** @description Start using a template - creates usage tracking record */
-        post: operations["v1_templates_start_usage_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/template-categories/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description ViewSet for template categories
-         *
-         *     Provides:
-         *     - List all categories
-         *     - Retrieve single category
-         *     - Category statistics */
-        get: operations["v1_template_categories_list"];
+        /**
+         * Get favorite prompts
+         * @description Get all prompts marked as favorite.
+         */
+        get: operations["v2_history_saved_prompts_favorites_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1825,20 +2115,18 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/template-categories/{id}/": {
+    "/api/v2/history/saved-prompts/public/": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** @description ViewSet for template categories
-         *
-         *     Provides:
-         *     - List all categories
-         *     - Retrieve single category
-         *     - Category statistics */
-        get: operations["v1_template_categories_retrieve"];
+        /**
+         * Get public prompts
+         * @description Get prompts shared publicly by all users.
+         */
+        get: operations["v2_history_saved_prompts_public_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1847,15 +2135,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/template-categories/{id}/templates/": {
+    "/api/v2/history/saved-prompts/stats/": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** @description Get templates in this category */
-        get: operations["v1_template_categories_templates_retrieve"];
+        /** @description Get summary statistics for the user's saved prompts */
+        get: operations["v2_history_saved_prompts_stats_retrieve"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1864,454 +2152,39 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/search/prompts/": {
+    "/api/v2/history/saved-prompts/{id}/": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
-        put?: never;
-        /** @description High-performance prompt search endpoint optimized for sub-50ms response times */
-        post: operations["v1_search_prompts_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/intent/process/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** @description Process user intent for WebSocket chat optimization */
-        post: operations["v1_intent_process_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/prompts/featured/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Get featured prompts from the 100K prompt library */
-        get: operations["v1_prompts_featured_retrieve"];
-        put?: never;
+        /**
+         * Get saved prompt
+         * @description Retrieve a specific saved prompt by ID.
+         */
+        get: operations["v2_history_saved_prompts_retrieve"];
+        /**
+         * Update saved prompt
+         * @description Update an existing saved prompt.
+         */
+        put: operations["v2_history_saved_prompts_update"];
         post?: never;
-        delete?: never;
+        /**
+         * Delete saved prompt
+         * @description Soft-delete a saved prompt (can be recovered).
+         */
+        delete: operations["v2_history_saved_prompts_destroy"];
         options?: never;
         head?: never;
-        patch?: never;
+        /**
+         * Partial update saved prompt
+         * @description Partially update an existing saved prompt.
+         */
+        patch: operations["v2_history_saved_prompts_partial_update"];
         trace?: never;
     };
-    "/api/v1/prompts/{prompt_id}/similar/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Get similar prompts from the library */
-        get: operations["v1_prompts_similar_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/metrics/performance/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Get system performance metrics for admin monitoring */
-        get: operations["v1_metrics_performance_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/status/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Show current system status and available features */
-        get: operations["v1_status_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/register/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** @description User registration endpoint
-         *
-         *     Creates new user account and returns JWT tokens */
-        post: operations["v1_auth_register_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/login/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** @description Handle user login */
-        post: operations["v1_auth_login_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/logout/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** @description Logout user endpoint */
-        post: operations["v1_auth_logout_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/refresh/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** @description Takes a refresh type JSON web token and returns an access type JSON web
-         *     token if the refresh token is valid. */
-        post: operations["v1_auth_refresh_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/check-username/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Check if username is available for registration
-         *
-         *     Query params:
-         *     - username: The username to check
-         *
-         *     Returns:
-         *     - available: Boolean indicating if username is available */
-        get: operations["v1_auth_check_username_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/auth/check-email/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Check if email is available for registration
-         *
-         *     Query params:
-         *     - email: The email to check
-         *
-         *     Returns:
-         *     - available: Boolean indicating if email is available */
-        get: operations["v1_auth_auth_check_email_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/profile/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description User profile view for retrieving and updating profile */
-        get: operations["v1_auth_profile_retrieve"];
-        /** @description User profile view for retrieving and updating profile */
-        put: operations["v1_auth_profile_update"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** @description User profile view for retrieving and updating profile */
-        patch: operations["v1_auth_profile_partial_update"];
-        trace?: never;
-    };
-    "/api/v1/auth/profile/update/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Update user profile endpoint */
-        get: operations["v1_auth_profile_update_retrieve"];
-        /** @description Update user profile endpoint */
-        put: operations["v1_auth_profile_update_update"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** @description Update user profile endpoint */
-        patch: operations["v1_auth_profile_update_partial_update"];
-        trace?: never;
-    };
-    "/api/v1/auth/change-password/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** @description Handle password change */
-        post: operations["v1_auth_change_password_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/stats/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Get user statistics and gamification data */
-        get: operations["v1_auth_stats_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/ai/providers/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description List available AI providers including DeepSeek */
-        get: operations["v1_ai_providers_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/ai/models/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description List available AI models including DeepSeek models */
-        get: operations["v1_ai_models_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/ai/generate/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** @description AI generation endpoint with DeepSeek integration */
-        post: operations["v1_ai_generate_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/ai/usage/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Placeholder AI usage view */
-        get: operations["v1_ai_usage_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/ai/quotas/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Placeholder AI quota view */
-        get: operations["v1_ai_quotas_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/ai/suggestions/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description AI-powered suggestions endpoint for autocomplete functionality */
-        get: operations["v1_ai_suggestions_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/ai/deepseek/chat/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** @description DeepSeek-specific chat endpoint for real-time AI conversations */
-        post: operations["v1_ai_deepseek_chat_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/ai/deepseek/test/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Test DeepSeek connectivity and configuration */
-        get: operations["v1_ai_deepseek_test_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/ai/deepseek/stream/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** @description Server-side streaming proxy for DeepSeek (SSE-like StreamingHttpResponse)
-         *
-         *     This view re-uses the SSE proxy pattern from apps.chat.views.ChatCompletionsProxyView
-         *     but keeps the implementation local to ai_services so frontend can call `/api/.../deepseek/stream/`. */
-        post: operations["v1_ai_deepseek_stream_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/ai/agent/optimize/": {
+    "/api/v2/history/saved-prompts/{id}/duplicate/": {
         parameters: {
             query?: never;
             header?: never;
@@ -2321,45 +2194,49 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Optimize prompt using RAG agent
-         * @description
-         *         Optimize a prompt using Retrieval-Augmented Generation with internal knowledge base.
+         * Duplicate a prompt
+         * @description Create a copy of an existing saved prompt.
+         */
+        post: operations["v2_history_saved_prompts_duplicate_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/history/saved-prompts/{id}/iterations/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description List or create prompt iterations for a specific saved prompt.
          *
-         *         Features:
-         *         - Retrieves relevant context from templates, docs, and usage history
-         *         - Budget-aware optimization with token/credit limits
-         *         - Idempotent requests based on session_id + content hash
-         *         - Trial user limitations and subscription enforcement
+         *     GET  /saved-prompts/{id}/iterations/  → list all iterations
+         *     POST /saved-prompts/{id}/iterations/  → create a new iteration
          *
-         */
-        post: operations["v1_ai_agent_optimize_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/ai/agent/stats/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get RAG agent statistics
-         * @description Get usage statistics and performance metrics for the RAG agent
-         */
-        get: operations["v1_ai_agent_stats_retrieve"];
+         *     Bridges SavedPrompt → PromptHistory → PromptIteration by
+         *     auto-creating a PromptHistory entry the first time and caching its
+         *     id in saved_prompt.metadata['history_id']. */
+        get: operations["v2_history_saved_prompts_iterations_retrieve"];
         put?: never;
-        post?: never;
+        /** @description List or create prompt iterations for a specific saved prompt.
+         *
+         *     GET  /saved-prompts/{id}/iterations/  → list all iterations
+         *     POST /saved-prompts/{id}/iterations/  → create a new iteration
+         *
+         *     Bridges SavedPrompt → PromptHistory → PromptIteration by
+         *     auto-creating a PromptHistory entry the first time and caching its
+         *     id in saved_prompt.metadata['history_id']. */
+        post: operations["v2_history_saved_prompts_iterations_create"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/ai/rag/retrieve/": {
+    "/api/v2/history/saved-prompts/{id}/toggle-favorite/": {
         parameters: {
             query?: never;
             header?: never;
@@ -2369,17 +2246,17 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Retrieve documents for a query
-         * @description Return top-k retrieved documents from the RAG index
+         * Toggle favorite status
+         * @description Add or remove a prompt from favorites.
          */
-        post: operations["v1_ai_rag_retrieve_create"];
+        post: operations["v2_history_saved_prompts_toggle_favorite_create"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/ai/rag/answer/": {
+    "/api/v2/history/saved-prompts/{id}/use/": {
         parameters: {
             query?: never;
             header?: never;
@@ -2389,25 +2266,52 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * RAG answer endpoint
-         * @description Run retrieval and generate an answer (non-streaming).
+         * Mark prompt as used
+         * @description Record that a prompt was used (increments use count).
          */
-        post: operations["v1_ai_rag_answer_create"];
+        post: operations["v2_history_saved_prompts_use_create"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/gamification/achievements/": {
+    "/api/v2/history/iterations/": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** @description Get all achievements with user progress */
-        get: operations["v1_gamification_achievements_retrieve"];
+        /**
+         * List prompt iterations
+         * @description Get all prompt iterations for the authenticated user.
+         */
+        get: operations["v2_history_iterations_list"];
+        put?: never;
+        /**
+         * Create prompt iteration
+         * @description Create a new iteration for a prompt.
+         */
+        post: operations["v2_history_iterations_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/history/iterations/bookmarked/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get bookmarked iterations
+         * @description Get all bookmarked iterations.
+         */
+        get: operations["v2_history_iterations_bookmarked_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2416,177 +2320,39 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/gamification/badges/": {
+    "/api/v2/history/iterations/{id}/": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** @description Get user's badges */
-        get: operations["v1_gamification_badges_retrieve"];
-        put?: never;
+        /**
+         * Get prompt iteration
+         * @description Retrieve a specific prompt iteration by ID.
+         */
+        get: operations["v2_history_iterations_retrieve"];
+        /**
+         * Update prompt iteration
+         * @description Update an existing prompt iteration.
+         */
+        put: operations["v2_history_iterations_update"];
         post?: never;
-        delete?: never;
+        /**
+         * Delete prompt iteration
+         * @description Soft-delete a prompt iteration.
+         */
+        delete: operations["v2_history_iterations_destroy"];
         options?: never;
         head?: never;
-        patch?: never;
+        /**
+         * Partial update prompt iteration
+         * @description Partially update an existing prompt iteration.
+         */
+        patch: operations["v2_history_iterations_partial_update"];
         trace?: never;
     };
-    "/api/v1/gamification/leaderboard/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Get leaderboard data */
-        get: operations["v1_gamification_leaderboard_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/gamification/daily-challenges/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Get today's challenges */
-        get: operations["v1_gamification_daily_challenges_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/gamification/user-level/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Get user level information */
-        get: operations["v1_gamification_user_level_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/gamification/streak/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Get user streak data */
-        get: operations["v1_gamification_streak_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/analytics/dashboard/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Return dashboard analytics */
-        get: operations["v1_analytics_dashboard_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/analytics/user-insights/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Return user insights */
-        get: operations["v1_analytics_user_insights_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/analytics/template-analytics/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Return template analytics */
-        get: operations["v1_analytics_template_analytics_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/analytics/ab-tests/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Return A/B test results */
-        get: operations["v1_analytics_ab_tests_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/analytics/recommendations/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Return personalized recommendations */
-        get: operations["v1_analytics_recommendations_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/analytics/track/": {
+    "/api/v2/history/iterations/{id}/set-active/": {
         parameters: {
             query?: never;
             header?: never;
@@ -2595,23 +2361,122 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Track an analytics event */
-        post: operations["v1_analytics_track_create"];
+        /**
+         * Set as active iteration
+         * @description Mark this iteration as the active version.
+         */
+        post: operations["v2_history_iterations_set_active_create"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/core/health/detailed/": {
+    "/api/v2/history/iterations/{id}/toggle-bookmark/": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** @description Return comprehensive health status */
-        get: operations["v1_core_health_detailed_retrieve"];
+        get?: never;
+        put?: never;
+        /**
+         * Toggle bookmark
+         * @description Toggle bookmark status of an iteration.
+         */
+        post: operations["v2_history_iterations_toggle_bookmark_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/history/threads/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List conversation threads
+         * @description Get all conversation threads for the authenticated user.
+         */
+        get: operations["v2_history_threads_list"];
+        put?: never;
+        /**
+         * Create conversation thread
+         * @description Create a new conversation thread.
+         */
+        post: operations["v2_history_threads_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/history/threads/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get conversation thread
+         * @description Retrieve a specific conversation thread by ID.
+         */
+        get: operations["v2_history_threads_retrieve"];
+        /**
+         * Update conversation thread
+         * @description Update an existing conversation thread.
+         */
+        put: operations["v2_history_threads_update"];
+        post?: never;
+        /**
+         * Delete conversation thread
+         * @description Soft-delete a conversation thread.
+         */
+        delete: operations["v2_history_threads_destroy"];
+        options?: never;
+        head?: never;
+        /**
+         * Partial update conversation thread
+         * @description Partially update an existing conversation thread.
+         */
+        patch: operations["v2_history_threads_partial_update"];
+        trace?: never;
+    };
+    "/api/v2/history/threads/{id}/add-iteration/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add iteration to thread
+         * @description Add an existing iteration to a conversation thread.
+         */
+        post: operations["v2_history_threads_add_iteration_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/health/detailed/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Return comprehensive health status with all service checks */
+        get: operations["health_detailed_retrieve"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2620,15 +2485,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/core/config/": {
+    "/config/": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** @description Public app configuration endpoint - no auth, no session, no DB */
-        get: operations["v1_core_config_retrieve"];
+        /** @description Get public app configuration */
+        get: operations["config_retrieve"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2637,7 +2502,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/core/configuration/": {
+    "/configuration/": {
         parameters: {
             query?: never;
             header?: never;
@@ -2645,7 +2510,7 @@ export interface paths {
             cookie?: never;
         };
         /** @description Return app configuration */
-        get: operations["v1_core_configuration_retrieve"];
+        get: operations["configuration_retrieve"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2654,15 +2519,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/core/rag/status/": {
+    "/rag/status/": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** @description RAG service status endpoint - no auth required */
-        get: operations["v1_core_rag_status_retrieve"];
+        /** @description Get RAG service status */
+        get: operations["rag_status_retrieve"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2671,7 +2536,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/core/notifications/": {
+    "/notifications/": {
         parameters: {
             query?: never;
             header?: never;
@@ -2679,248 +2544,28 @@ export interface paths {
             cookie?: never;
         };
         /** @description Get user notifications */
-        get: operations["v1_core_notifications_retrieve"];
+        get: operations["notifications_retrieve"];
         put?: never;
         /** @description Mark notification as read */
-        post: operations["v1_core_notifications_create"];
+        post: operations["notifications_create"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/billing/plans/": {
+    "/api/v2/cors-test/": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** @description List all available billing plans */
-        get: operations["v1_billing_plans_retrieve"];
+        /** @description Test CORS configuration */
+        get: operations["v2_cors_test_retrieve"];
         put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/billing/plans/{id}/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Get details of a specific billing plan */
-        get: operations["v1_billing_plans_retrieve_2"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/billing/me/subscription/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Get user's current subscription */
-        get: operations["v1_billing_me_subscription_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/billing/me/entitlements/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Get user's entitlements based on their subscription */
-        get: operations["v1_billing_me_entitlements_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/billing/me/usage/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Get user's usage statistics */
-        get: operations["v1_billing_me_usage_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/billing/checkout/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** @description Create a Stripe checkout session */
-        post: operations["v1_billing_checkout_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/billing/portal/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** @description Create a Stripe customer portal session */
-        post: operations["v1_billing_portal_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/billing/webhooks/stripe/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** @description Handle Stripe webhooks */
-        post: operations["v1_billing_webhooks_stripe_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/orchestrator/intent/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** @description Detect user intent from prompt */
-        post: operations["v1_orchestrator_intent_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/orchestrator/assess/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** @description Assess prompt quality and provide suggestions */
-        post: operations["v1_orchestrator_assess_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/orchestrator/render/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** @description Render a template with provided variables */
-        post: operations["v1_orchestrator_render_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/orchestrator/search/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Search for templates in the library */
-        get: operations["v1_orchestrator_search_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/orchestrator/template/{template_id}/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Get a specific template by ID or name */
-        get: operations["v1_orchestrator_template_retrieve_2"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/orchestrator/template/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Get a specific template by ID or name */
-        get: operations["v1_orchestrator_template_retrieve"];
-        put?: never;
-        post?: never;
+        /** @description Test CORS configuration */
+        post: operations["v2_cors_test_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2931,6 +2576,59 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @description Full serializer for ConversationThread model */
+        ConversationThread: {
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: uuid */
+            readonly user: string;
+            /** @description Conversation title/summary */
+            title?: string;
+            /** @description Detailed description of conversation purpose */
+            description?: string;
+            /** @description Total number of iterations in this thread */
+            readonly total_iterations: number;
+            /** @description Total tokens consumed in this thread */
+            readonly total_tokens: number;
+            /** @description Total credits spent on this thread */
+            readonly total_credits: number;
+            status?: components["schemas"]["StatusEnum"];
+            /** @description Whether this thread is shared with others */
+            is_shared?: boolean;
+            readonly is_deleted: boolean;
+            /** Format: date-time */
+            readonly created_at: string;
+            /** Format: date-time */
+            readonly updated_at: string;
+            /** Format: date-time */
+            readonly last_activity_at: string;
+        };
+        /** @description Serializer for creating a new ConversationThread */
+        ConversationThreadCreate: {
+            /** @description Conversation title/summary */
+            title?: string;
+            /** @description Detailed description of conversation purpose */
+            description?: string;
+            status?: components["schemas"]["StatusEnum"];
+        };
+        /** @description Serializer for creating a new ConversationThread */
+        ConversationThreadCreateRequest: {
+            /** @description Conversation title/summary */
+            title?: string;
+            /** @description Detailed description of conversation purpose */
+            description?: string;
+            status?: components["schemas"]["StatusEnum"];
+        };
+        /** @description Full serializer for ConversationThread model */
+        ConversationThreadRequest: {
+            /** @description Conversation title/summary */
+            title?: string;
+            /** @description Detailed description of conversation purpose */
+            description?: string;
+            status?: components["schemas"]["StatusEnum"];
+            /** @description Whether this thread is shared with others */
+            is_shared?: boolean;
+        };
         /**
          * @description * `text` - Text Input
          *     * `textarea` - Text Area
@@ -2941,6 +2639,76 @@ export interface components {
          * @enum {string}
          */
         FieldTypeEnum: "text" | "textarea" | "dropdown" | "checkbox" | "radio" | "number";
+        /**
+         * @description * `manual` - Manual Edit
+         *     * `optimization` - AI Optimization
+         *     * `refinement` - User Refinement
+         *     * `extension` - Extension/Add-on
+         *     * `correction` - Error Correction
+         *     * `experiment` - Experimental Variation
+         * @enum {string}
+         */
+        InteractionTypeEnum: "manual" | "optimization" | "refinement" | "extension" | "correction" | "experiment";
+        PaginatedConversationThreadList: {
+            /** @example 123 */
+            count?: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results?: components["schemas"]["ConversationThread"][];
+        };
+        PaginatedPromptHistoryList: {
+            /** @example 123 */
+            count?: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results?: components["schemas"]["PromptHistory"][];
+        };
+        PaginatedPromptIterationList: {
+            /** @example 123 */
+            count?: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results?: components["schemas"]["PromptIteration"][];
+        };
+        PaginatedSavedPromptListList: {
+            /** @example 123 */
+            count?: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results?: components["schemas"]["SavedPromptList"][];
+        };
         PaginatedTemplateCategoryList: {
             /** @example 123 */
             count?: number;
@@ -2970,6 +2738,97 @@ export interface components {
              */
             previous?: string | null;
             results?: components["schemas"]["TemplateList"][];
+        };
+        /** @description Full serializer for ConversationThread model */
+        PatchedConversationThreadRequest: {
+            /** @description Conversation title/summary */
+            title?: string;
+            /** @description Detailed description of conversation purpose */
+            description?: string;
+            status?: components["schemas"]["StatusEnum"];
+            /** @description Whether this thread is shared with others */
+            is_shared?: boolean;
+        };
+        PatchedPromptHistoryUpdateRequest: {
+            optimized_prompt?: string;
+            model_used?: string;
+            tokens_input?: number;
+            tokens_output?: number;
+            credits_spent?: number;
+            tags?: unknown;
+            meta?: unknown;
+        };
+        /** @description Full serializer for PromptIteration model */
+        PatchedPromptIterationRequest: {
+            /**
+             * Format: uuid
+             * @description The original prompt this iteration is based on
+             */
+            parent_prompt?: string;
+            /**
+             * Format: uuid
+             * @description The previous version in the iteration chain
+             */
+            previous_iteration?: string | null;
+            /** @description Optional semantic version tag (e.g., 'v1.0', 'draft-2') */
+            version_tag?: string;
+            /** @description The current iteration of the prompt */
+            prompt_text?: string;
+            /** @description Optional system message for this iteration */
+            system_message?: string;
+            /** @description AI generated response for this iteration */
+            ai_response?: string;
+            /** @description AI model used for this response */
+            response_model?: string;
+            /** @description Type of iteration/modification
+             *
+             *     * `manual` - Manual Edit
+             *     * `optimization` - AI Optimization
+             *     * `refinement` - User Refinement
+             *     * `extension` - Extension/Add-on
+             *     * `correction` - Error Correction
+             *     * `experiment` - Experimental Variation */
+            interaction_type?: components["schemas"]["InteractionTypeEnum"];
+            tokens_input?: number;
+            tokens_output?: number;
+            /** @description Response time in milliseconds */
+            response_time_ms?: number;
+            credits_spent?: number;
+            /** @description User rating (1-5) for this iteration */
+            user_rating?: number | null;
+            /** @description User notes about this iteration */
+            feedback_notes?: string;
+            /** @description Summary of changes from previous iteration */
+            changes_summary?: string;
+            /** @description Model parameters used (temperature, max_tokens, etc.) */
+            parameters?: unknown;
+            /** @description Tags for categorization and search */
+            tags?: unknown;
+            /** @description Additional flexible metadata */
+            metadata?: unknown;
+            /** @description Whether this is the active/current iteration */
+            is_active?: boolean;
+            /** @description User bookmark for important iterations */
+            is_bookmarked?: boolean;
+        };
+        /** @description Serializer for updating an existing SavedPrompt */
+        PatchedSavedPromptUpdateRequest: {
+            /** @description Display title for the saved prompt */
+            title?: string;
+            /** @description The actual prompt text content */
+            content?: string;
+            /** @description Optional description or notes about this prompt */
+            description?: string;
+            /** @description Category for organizing prompts (e.g., 'coding', 'writing', 'analysis') */
+            category?: string;
+            /** @description Tags for searchability and filtering */
+            tags?: unknown;
+            /** @description Whether this prompt is marked as favorite */
+            is_favorite?: boolean;
+            /** @description Whether this prompt is publicly visible to other users */
+            is_public?: boolean;
+            /** @description Additional flexible metadata (variables, settings, etc.) */
+            metadata?: unknown;
         };
         /** @description Serializer for creating and updating templates
          *
@@ -3079,6 +2938,451 @@ export interface components {
             /** @description Display order within template */
             order?: number;
         };
+        PromptHistory: {
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: uuid */
+            readonly user: string;
+            source?: string;
+            original_prompt: string;
+            optimized_prompt?: string;
+            model_used?: string;
+            readonly tokens_input: number;
+            readonly tokens_output: number;
+            readonly credits_spent: number;
+            intent_category?: string;
+            tags?: unknown;
+            meta?: unknown;
+            is_deleted?: boolean;
+            /** Format: date-time */
+            readonly created_at: string;
+            /** Format: date-time */
+            readonly updated_at: string;
+        };
+        PromptHistoryCreate: {
+            source?: string;
+            original_prompt: string;
+            intent_category?: string;
+            tags?: unknown;
+            meta?: unknown;
+        };
+        PromptHistoryCreateRequest: {
+            source?: string;
+            original_prompt: string;
+            intent_category?: string;
+            tags?: unknown;
+            meta?: unknown;
+        };
+        PromptHistoryRequest: {
+            source?: string;
+            original_prompt: string;
+            optimized_prompt?: string;
+            model_used?: string;
+            intent_category?: string;
+            tags?: unknown;
+            meta?: unknown;
+            is_deleted?: boolean;
+        };
+        PromptHistoryUpdate: {
+            optimized_prompt?: string;
+            model_used?: string;
+            tokens_input?: number;
+            tokens_output?: number;
+            credits_spent?: number;
+            tags?: unknown;
+            meta?: unknown;
+        };
+        PromptHistoryUpdateRequest: {
+            optimized_prompt?: string;
+            model_used?: string;
+            tokens_input?: number;
+            tokens_output?: number;
+            credits_spent?: number;
+            tags?: unknown;
+            meta?: unknown;
+        };
+        /** @description Full serializer for PromptIteration model */
+        PromptIteration: {
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: uuid */
+            readonly user: string;
+            /**
+             * Format: uuid
+             * @description The original prompt this iteration is based on
+             */
+            parent_prompt: string;
+            /**
+             * Format: uuid
+             * @description The previous version in the iteration chain
+             */
+            previous_iteration?: string | null;
+            /**
+             * @description Sequential iteration number for this prompt chain
+             * @default 1
+             */
+            readonly iteration_number: number;
+            /** @description Optional semantic version tag (e.g., 'v1.0', 'draft-2') */
+            version_tag?: string;
+            /** @description The current iteration of the prompt */
+            prompt_text: string;
+            /** @description Optional system message for this iteration */
+            system_message?: string;
+            /** @description AI generated response for this iteration */
+            ai_response?: string;
+            /** @description AI model used for this response */
+            response_model?: string;
+            /** @description Type of iteration/modification
+             *
+             *     * `manual` - Manual Edit
+             *     * `optimization` - AI Optimization
+             *     * `refinement` - User Refinement
+             *     * `extension` - Extension/Add-on
+             *     * `correction` - Error Correction
+             *     * `experiment` - Experimental Variation */
+            interaction_type?: components["schemas"]["InteractionTypeEnum"];
+            tokens_input?: number;
+            tokens_output?: number;
+            /** @description Response time in milliseconds */
+            response_time_ms?: number;
+            credits_spent?: number;
+            /** @description User rating (1-5) for this iteration */
+            user_rating?: number | null;
+            /** @description User notes about this iteration */
+            feedback_notes?: string;
+            /** @description Summary of changes from previous iteration */
+            changes_summary?: string;
+            /** @description Character difference from previous iteration */
+            readonly diff_size: number;
+            /** @description Model parameters used (temperature, max_tokens, etc.) */
+            parameters?: unknown;
+            /** @description Tags for categorization and search */
+            tags?: unknown;
+            /** @description Additional flexible metadata */
+            metadata?: unknown;
+            /** @description Whether this is the active/current iteration */
+            is_active?: boolean;
+            /** @description User bookmark for important iterations */
+            is_bookmarked?: boolean;
+            readonly is_deleted: boolean;
+            /** Format: date-time */
+            readonly created_at: string;
+            /** Format: date-time */
+            readonly updated_at: string;
+            readonly iteration_chain_length: number;
+            readonly has_next_iteration: boolean;
+        };
+        /** @description Serializer for creating a new PromptIteration */
+        PromptIterationCreate: {
+            /**
+             * Format: uuid
+             * @description The original prompt this iteration is based on
+             */
+            parent_prompt: string;
+            /**
+             * Format: uuid
+             * @description The previous version in the iteration chain
+             */
+            previous_iteration?: string | null;
+            /** @description The current iteration of the prompt */
+            prompt_text: string;
+            /** @description Optional system message for this iteration */
+            system_message?: string;
+            /** @description AI generated response for this iteration */
+            ai_response?: string;
+            /** @description AI model used for this response */
+            response_model?: string;
+            /** @description Type of iteration/modification
+             *
+             *     * `manual` - Manual Edit
+             *     * `optimization` - AI Optimization
+             *     * `refinement` - User Refinement
+             *     * `extension` - Extension/Add-on
+             *     * `correction` - Error Correction
+             *     * `experiment` - Experimental Variation */
+            interaction_type?: components["schemas"]["InteractionTypeEnum"];
+            tokens_input?: number;
+            tokens_output?: number;
+            /** @description Response time in milliseconds */
+            response_time_ms?: number;
+            credits_spent?: number;
+            /** @description User rating (1-5) for this iteration */
+            user_rating?: number | null;
+            /** @description User notes about this iteration */
+            feedback_notes?: string;
+            /** @description Summary of changes from previous iteration */
+            changes_summary?: string;
+            /** @description Model parameters used (temperature, max_tokens, etc.) */
+            parameters?: unknown;
+            /** @description Tags for categorization and search */
+            tags?: unknown;
+            /** @description Additional flexible metadata */
+            metadata?: unknown;
+            /** @description Optional semantic version tag (e.g., 'v1.0', 'draft-2') */
+            version_tag?: string;
+        };
+        /** @description Serializer for creating a new PromptIteration */
+        PromptIterationCreateRequest: {
+            /**
+             * Format: uuid
+             * @description The original prompt this iteration is based on
+             */
+            parent_prompt: string;
+            /**
+             * Format: uuid
+             * @description The previous version in the iteration chain
+             */
+            previous_iteration?: string | null;
+            /** @description The current iteration of the prompt */
+            prompt_text: string;
+            /** @description Optional system message for this iteration */
+            system_message?: string;
+            /** @description AI generated response for this iteration */
+            ai_response?: string;
+            /** @description AI model used for this response */
+            response_model?: string;
+            /** @description Type of iteration/modification
+             *
+             *     * `manual` - Manual Edit
+             *     * `optimization` - AI Optimization
+             *     * `refinement` - User Refinement
+             *     * `extension` - Extension/Add-on
+             *     * `correction` - Error Correction
+             *     * `experiment` - Experimental Variation */
+            interaction_type?: components["schemas"]["InteractionTypeEnum"];
+            tokens_input?: number;
+            tokens_output?: number;
+            /** @description Response time in milliseconds */
+            response_time_ms?: number;
+            credits_spent?: number;
+            /** @description User rating (1-5) for this iteration */
+            user_rating?: number | null;
+            /** @description User notes about this iteration */
+            feedback_notes?: string;
+            /** @description Summary of changes from previous iteration */
+            changes_summary?: string;
+            /** @description Model parameters used (temperature, max_tokens, etc.) */
+            parameters?: unknown;
+            /** @description Tags for categorization and search */
+            tags?: unknown;
+            /** @description Additional flexible metadata */
+            metadata?: unknown;
+            /** @description Optional semantic version tag (e.g., 'v1.0', 'draft-2') */
+            version_tag?: string;
+        };
+        /** @description Full serializer for PromptIteration model */
+        PromptIterationRequest: {
+            /**
+             * Format: uuid
+             * @description The original prompt this iteration is based on
+             */
+            parent_prompt: string;
+            /**
+             * Format: uuid
+             * @description The previous version in the iteration chain
+             */
+            previous_iteration?: string | null;
+            /** @description Optional semantic version tag (e.g., 'v1.0', 'draft-2') */
+            version_tag?: string;
+            /** @description The current iteration of the prompt */
+            prompt_text: string;
+            /** @description Optional system message for this iteration */
+            system_message?: string;
+            /** @description AI generated response for this iteration */
+            ai_response?: string;
+            /** @description AI model used for this response */
+            response_model?: string;
+            /** @description Type of iteration/modification
+             *
+             *     * `manual` - Manual Edit
+             *     * `optimization` - AI Optimization
+             *     * `refinement` - User Refinement
+             *     * `extension` - Extension/Add-on
+             *     * `correction` - Error Correction
+             *     * `experiment` - Experimental Variation */
+            interaction_type?: components["schemas"]["InteractionTypeEnum"];
+            tokens_input?: number;
+            tokens_output?: number;
+            /** @description Response time in milliseconds */
+            response_time_ms?: number;
+            credits_spent?: number;
+            /** @description User rating (1-5) for this iteration */
+            user_rating?: number | null;
+            /** @description User notes about this iteration */
+            feedback_notes?: string;
+            /** @description Summary of changes from previous iteration */
+            changes_summary?: string;
+            /** @description Model parameters used (temperature, max_tokens, etc.) */
+            parameters?: unknown;
+            /** @description Tags for categorization and search */
+            tags?: unknown;
+            /** @description Additional flexible metadata */
+            metadata?: unknown;
+            /** @description Whether this is the active/current iteration */
+            is_active?: boolean;
+            /** @description User bookmark for important iterations */
+            is_bookmarked?: boolean;
+        };
+        /** @description Full serializer for SavedPrompt model */
+        SavedPrompt: {
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: uuid */
+            readonly user: string;
+            /** @description Display title for the saved prompt */
+            title: string;
+            /** @description The actual prompt text content */
+            content: string;
+            /** @description Optional description or notes about this prompt */
+            description?: string;
+            /** @description Category for organizing prompts (e.g., 'coding', 'writing', 'analysis') */
+            category?: string;
+            /** @description Tags for searchability and filtering */
+            tags?: unknown;
+            /** @description Number of times this prompt has been used */
+            readonly use_count: number;
+            /**
+             * Format: date-time
+             * @description Last time this prompt was used
+             */
+            readonly last_used_at: string | null;
+            /** @description Whether this prompt is marked as favorite */
+            is_favorite?: boolean;
+            /** @description Whether this prompt is publicly visible to other users */
+            is_public?: boolean;
+            /** @description Additional flexible metadata (variables, settings, etc.) */
+            metadata?: unknown;
+            readonly is_deleted: boolean;
+            /** Format: date-time */
+            readonly created_at: string;
+            /** Format: date-time */
+            readonly updated_at: string;
+        };
+        /** @description Serializer for creating a new SavedPrompt */
+        SavedPromptCreate: {
+            /** @description Display title for the saved prompt */
+            title: string;
+            /** @description The actual prompt text content */
+            content: string;
+            /** @description Optional description or notes about this prompt */
+            description?: string;
+            /** @description Category for organizing prompts (e.g., 'coding', 'writing', 'analysis') */
+            category?: string;
+            /** @description Tags for searchability and filtering */
+            tags?: unknown;
+            /** @description Whether this prompt is marked as favorite */
+            is_favorite?: boolean;
+            /** @description Whether this prompt is publicly visible to other users */
+            is_public?: boolean;
+            /** @description Additional flexible metadata (variables, settings, etc.) */
+            metadata?: unknown;
+        };
+        /** @description Serializer for creating a new SavedPrompt */
+        SavedPromptCreateRequest: {
+            /** @description Display title for the saved prompt */
+            title: string;
+            /** @description The actual prompt text content */
+            content: string;
+            /** @description Optional description or notes about this prompt */
+            description?: string;
+            /** @description Category for organizing prompts (e.g., 'coding', 'writing', 'analysis') */
+            category?: string;
+            /** @description Tags for searchability and filtering */
+            tags?: unknown;
+            /** @description Whether this prompt is marked as favorite */
+            is_favorite?: boolean;
+            /** @description Whether this prompt is publicly visible to other users */
+            is_public?: boolean;
+            /** @description Additional flexible metadata (variables, settings, etc.) */
+            metadata?: unknown;
+        };
+        /** @description Lightweight serializer for listing SavedPrompts */
+        SavedPromptList: {
+            /** Format: uuid */
+            readonly id: string;
+            /** @description Display title for the saved prompt */
+            title: string;
+            /** @description The actual prompt text content */
+            content: string;
+            /** @description Optional description or notes about this prompt */
+            description?: string;
+            /** @description Category for organizing prompts (e.g., 'coding', 'writing', 'analysis') */
+            category?: string;
+            /** @description Tags for searchability and filtering */
+            tags?: unknown;
+            /** @description Number of times this prompt has been used */
+            readonly use_count: number;
+            /** @description Whether this prompt is marked as favorite */
+            is_favorite?: boolean;
+            /** Format: date-time */
+            readonly created_at: string;
+            /** Format: date-time */
+            readonly updated_at: string;
+        };
+        /** @description Full serializer for SavedPrompt model */
+        SavedPromptRequest: {
+            /** @description Display title for the saved prompt */
+            title: string;
+            /** @description The actual prompt text content */
+            content: string;
+            /** @description Optional description or notes about this prompt */
+            description?: string;
+            /** @description Category for organizing prompts (e.g., 'coding', 'writing', 'analysis') */
+            category?: string;
+            /** @description Tags for searchability and filtering */
+            tags?: unknown;
+            /** @description Whether this prompt is marked as favorite */
+            is_favorite?: boolean;
+            /** @description Whether this prompt is publicly visible to other users */
+            is_public?: boolean;
+            /** @description Additional flexible metadata (variables, settings, etc.) */
+            metadata?: unknown;
+        };
+        /** @description Serializer for updating an existing SavedPrompt */
+        SavedPromptUpdate: {
+            /** @description Display title for the saved prompt */
+            title: string;
+            /** @description The actual prompt text content */
+            content: string;
+            /** @description Optional description or notes about this prompt */
+            description?: string;
+            /** @description Category for organizing prompts (e.g., 'coding', 'writing', 'analysis') */
+            category?: string;
+            /** @description Tags for searchability and filtering */
+            tags?: unknown;
+            /** @description Whether this prompt is marked as favorite */
+            is_favorite?: boolean;
+            /** @description Whether this prompt is publicly visible to other users */
+            is_public?: boolean;
+            /** @description Additional flexible metadata (variables, settings, etc.) */
+            metadata?: unknown;
+        };
+        /** @description Serializer for updating an existing SavedPrompt */
+        SavedPromptUpdateRequest: {
+            /** @description Display title for the saved prompt */
+            title: string;
+            /** @description The actual prompt text content */
+            content: string;
+            /** @description Optional description or notes about this prompt */
+            description?: string;
+            /** @description Category for organizing prompts (e.g., 'coding', 'writing', 'analysis') */
+            category?: string;
+            /** @description Tags for searchability and filtering */
+            tags?: unknown;
+            /** @description Whether this prompt is marked as favorite */
+            is_favorite?: boolean;
+            /** @description Whether this prompt is publicly visible to other users */
+            is_public?: boolean;
+            /** @description Additional flexible metadata (variables, settings, etc.) */
+            metadata?: unknown;
+        };
+        /**
+         * @description * `active` - Active
+         *     * `archived` - Archived
+         *     * `completed` - Completed
+         * @enum {string}
+         */
+        StatusEnum: "active" | "archived" | "completed";
         /** @description Serializer for template categories */
         TemplateCategory: {
             readonly id: number;
@@ -3512,7 +3816,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    health_retrieve: {
+    health_redis_retrieve: {
         parameters: {
             query?: never;
             header?: never;
@@ -3521,12 +3825,25 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
             };
         };
     };
@@ -4084,6 +4401,49 @@ export interface operations {
             };
         };
     };
+    v2_templates_validate_stream_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                template_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
     v2_status_retrieve: {
         parameters: {
             query?: never;
@@ -4103,6 +4463,31 @@ export interface operations {
         };
     };
     v2_auth_register_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UserRegistrationRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["UserRegistrationRequest"];
+                "multipart/form-data": components["schemas"]["UserRegistrationRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserRegistration"];
+                };
+            };
+        };
+    };
+    v2_auth_registration_create: {
         parameters: {
             query?: never;
             header?: never;
@@ -4190,6 +4575,52 @@ export interface operations {
     };
     v2_auth_check_username_retrieve: {
         parameters: {
+            query: {
+                username: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    v2_auth_check_email_retrieve: {
+        parameters: {
+            query: {
+                email: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    v2_auth_social_providers_retrieve: {
+        parameters: {
             query?: never;
             header?: never;
             path?: never;
@@ -4206,7 +4637,63 @@ export interface operations {
             };
         };
     };
-    v2_auth_auth_check_email_retrieve: {
+    v2_auth_social_initiate_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v2_auth_social_callback_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v2_auth_social_unlink_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v2_auth_social_link_create: {
         parameters: {
             query?: never;
             header?: never;
@@ -4560,6 +5047,190 @@ export interface operations {
             };
         };
     };
+    v2_ai_assistant_retrieve_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v2_ai_assistant_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v2_ai_assistant_run_create_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v2_ai_assistant_run_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v2_ai_assistant_threads_retrieve_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v2_ai_assistant_threads_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v2_ai_assistant_threads_retrieve_4: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                thread_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v2_ai_assistant_threads_retrieve_3: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                thread_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v2_ai_optimization_stream_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v2_ai_optimization_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     v2_ai_agent_optimize_create: {
         parameters: {
             query?: never;
@@ -4690,6 +5361,172 @@ export interface operations {
                         [key: string]: unknown;
                     };
                 };
+            };
+        };
+    };
+    v2_ai_askme_start_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v2_ai_askme_answer_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v2_ai_askme_finalize_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v2_ai_askme_stream_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v2_ai_askme_sessions_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v2_ai_askme_sessions_retrieve_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v2_ai_askme_sessions_delete_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v2_ai_askme_debug_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v2_ai_askme_debug_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -5138,12 +5975,15 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
             };
         };
     };
@@ -5174,12 +6014,15 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
             };
         };
     };
@@ -5216,6 +6059,69 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    v2_core_api_v2_status_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    v2_core_api_v2_cors_test_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    v2_core_api_v2_cors_test_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
             };
         };
     };
@@ -5475,12 +6381,247 @@ export interface operations {
             };
         };
     };
-    v1_templates_list: {
+    v2_history_history_list: {
         parameters: {
             query?: {
-                author?: string;
-                category?: number;
-                is_featured?: boolean;
+                intent_category?: string;
+                /** @description Which field to use when ordering the results. */
+                ordering?: string;
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description A search term. */
+                search?: string;
+                source?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedPromptHistoryList"];
+                };
+            };
+        };
+    };
+    v2_history_history_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PromptHistoryCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PromptHistoryCreateRequest"];
+                "multipart/form-data": components["schemas"]["PromptHistoryCreateRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromptHistoryCreate"];
+                };
+            };
+        };
+    };
+    v2_history_history_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this prompt history. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromptHistory"];
+                };
+            };
+        };
+    };
+    v2_history_history_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this prompt history. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PromptHistoryUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PromptHistoryUpdateRequest"];
+                "multipart/form-data": components["schemas"]["PromptHistoryUpdateRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromptHistoryUpdate"];
+                };
+            };
+        };
+    };
+    v2_history_history_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this prompt history. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v2_history_history_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this prompt history. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedPromptHistoryUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedPromptHistoryUpdateRequest"];
+                "multipart/form-data": components["schemas"]["PatchedPromptHistoryUpdateRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromptHistoryUpdate"];
+                };
+            };
+        };
+    };
+    v2_history_history_enhance_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this prompt history. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PromptHistoryRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PromptHistoryRequest"];
+                "multipart/form-data": components["schemas"]["PromptHistoryRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromptHistory"];
+                };
+            };
+        };
+    };
+    v2_history_saved_prompts_list: {
+        parameters: {
+            query?: {
+                /** @description Filter by category */
+                category?: string;
+                /** @description Filter by favorite status */
+                is_favorite?: boolean;
+                is_public?: boolean;
+                /** @description Which field to use when ordering the results. */
+                ordering?: string;
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description Search in title, content, description */
+                search?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedSavedPromptListList"];
+                };
+            };
+        };
+    };
+    v2_history_saved_prompts_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SavedPromptCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["SavedPromptCreateRequest"];
+                "multipart/form-data": components["schemas"]["SavedPromptCreateRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedPromptCreate"];
+                };
+            };
+        };
+    };
+    v2_history_saved_prompts_favorites_list: {
+        parameters: {
+            query?: {
+                category?: string;
+                is_favorite?: boolean;
                 is_public?: boolean;
                 /** @description Which field to use when ordering the results. */
                 ordering?: string;
@@ -5500,376 +6641,18 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedTemplateListList"];
+                    "application/json": components["schemas"]["PaginatedSavedPromptListList"];
                 };
             };
         };
     };
-    v1_templates_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TemplateCreateUpdateRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["TemplateCreateUpdateRequest"];
-                "multipart/form-data": components["schemas"]["TemplateCreateUpdateRequest"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TemplateCreateUpdate"];
-                };
-            };
-        };
-    };
-    v1_templates_featured_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TemplateDetail"];
-                };
-            };
-        };
-    };
-    v1_templates_my_templates_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TemplateDetail"];
-                };
-            };
-        };
-    };
-    v1_templates_search_suggestions_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TemplateDetail"];
-                };
-            };
-        };
-    };
-    v1_templates_trending_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TemplateDetail"];
-                };
-            };
-        };
-    };
-    v1_templates_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A UUID string identifying this template. */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TemplateDetail"];
-                };
-            };
-        };
-    };
-    v1_templates_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A UUID string identifying this template. */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TemplateCreateUpdateRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["TemplateCreateUpdateRequest"];
-                "multipart/form-data": components["schemas"]["TemplateCreateUpdateRequest"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TemplateCreateUpdate"];
-                };
-            };
-        };
-    };
-    v1_templates_destroy: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A UUID string identifying this template. */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_templates_partial_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A UUID string identifying this template. */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["PatchedTemplateCreateUpdateRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedTemplateCreateUpdateRequest"];
-                "multipart/form-data": components["schemas"]["PatchedTemplateCreateUpdateRequest"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TemplateCreateUpdate"];
-                };
-            };
-        };
-    };
-    v1_templates_analytics_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A UUID string identifying this template. */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TemplateDetail"];
-                };
-            };
-        };
-    };
-    v1_templates_analyze_with_ai_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A UUID string identifying this template. */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TemplateDetailRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["TemplateDetailRequest"];
-                "multipart/form-data": components["schemas"]["TemplateDetailRequest"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TemplateDetail"];
-                };
-            };
-        };
-    };
-    v1_templates_complete_usage_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A UUID string identifying this template. */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TemplateDetailRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["TemplateDetailRequest"];
-                "multipart/form-data": components["schemas"]["TemplateDetailRequest"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TemplateDetail"];
-                };
-            };
-        };
-    };
-    v1_templates_duplicate_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A UUID string identifying this template. */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TemplateDetailRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["TemplateDetailRequest"];
-                "multipart/form-data": components["schemas"]["TemplateDetailRequest"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TemplateDetail"];
-                };
-            };
-        };
-    };
-    v1_templates_rate_template_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A UUID string identifying this template. */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TemplateDetailRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["TemplateDetailRequest"];
-                "multipart/form-data": components["schemas"]["TemplateDetailRequest"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TemplateDetail"];
-                };
-            };
-        };
-    };
-    v1_templates_start_usage_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A UUID string identifying this template. */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TemplateDetailRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["TemplateDetailRequest"];
-                "multipart/form-data": components["schemas"]["TemplateDetailRequest"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TemplateDetail"];
-                };
-            };
-        };
-    };
-    v1_template_categories_list: {
+    v2_history_saved_prompts_public_list: {
         parameters: {
             query?: {
+                /** @description Filter by category */
+                category?: string;
+                is_favorite?: boolean;
+                is_public?: boolean;
                 /** @description Which field to use when ordering the results. */
                 ordering?: string;
                 /** @description A page number within the paginated result set. */
@@ -5888,18 +6671,37 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaginatedTemplateCategoryList"];
+                    "application/json": components["schemas"]["PaginatedSavedPromptListList"];
                 };
             };
         };
     };
-    v1_template_categories_retrieve: {
+    v2_history_saved_prompts_stats_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedPrompt"];
+                };
+            };
+        };
+    };
+    v2_history_saved_prompts_retrieve: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                /** @description A unique integer value identifying this template category. */
-                id: number;
+                /** @description A UUID string identifying this saved prompt. */
+                id: string;
             };
             cookie?: never;
         };
@@ -5910,155 +6712,103 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TemplateCategory"];
+                    "application/json": components["schemas"]["SavedPrompt"];
                 };
             };
         };
     };
-    v1_template_categories_templates_retrieve: {
+    v2_history_saved_prompts_update: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                /** @description A unique integer value identifying this template category. */
-                id: number;
+                /** @description A UUID string identifying this saved prompt. */
+                id: string;
             };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TemplateCategory"];
-                };
-            };
-        };
-    };
-    v1_search_prompts_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_intent_process_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_prompts_featured_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_prompts_similar_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                prompt_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_metrics_performance_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_status_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_auth_register_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UserRegistrationRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["UserRegistrationRequest"];
-                "multipart/form-data": components["schemas"]["UserRegistrationRequest"];
+                "application/json": components["schemas"]["SavedPromptUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["SavedPromptUpdateRequest"];
+                "multipart/form-data": components["schemas"]["SavedPromptUpdateRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedPromptUpdate"];
+                };
+            };
+        };
+    };
+    v2_history_saved_prompts_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this saved prompt. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v2_history_saved_prompts_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this saved prompt. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedSavedPromptUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedSavedPromptUpdateRequest"];
+                "multipart/form-data": components["schemas"]["PatchedSavedPromptUpdateRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedPromptUpdate"];
+                };
+            };
+        };
+    };
+    v2_history_saved_prompts_duplicate_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this saved prompt. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SavedPromptRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["SavedPromptRequest"];
+                "multipart/form-data": components["schemas"]["SavedPromptRequest"];
             };
         };
         responses: {
@@ -6067,48 +6817,156 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserRegistration"];
+                    "application/json": components["schemas"]["SavedPrompt"];
                 };
             };
         };
     };
-    v1_auth_login_create: {
+    v2_history_saved_prompts_iterations_retrieve: {
         parameters: {
             query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this saved prompt. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedPrompt"];
+                };
+            };
+        };
+    };
+    v2_history_saved_prompts_iterations_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this saved prompt. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SavedPromptRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["SavedPromptRequest"];
+                "multipart/form-data": components["schemas"]["SavedPromptRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedPrompt"];
+                };
+            };
+        };
+    };
+    v2_history_saved_prompts_toggle_favorite_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this saved prompt. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SavedPromptRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["SavedPromptRequest"];
+                "multipart/form-data": components["schemas"]["SavedPromptRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedPrompt"];
+                };
+            };
+        };
+    };
+    v2_history_saved_prompts_use_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this saved prompt. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SavedPromptRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["SavedPromptRequest"];
+                "multipart/form-data": components["schemas"]["SavedPromptRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedPrompt"];
+                };
+            };
+        };
+    };
+    v2_history_iterations_list: {
+        parameters: {
+            query?: {
+                /** @description Type of iteration/modification
+                 *
+                 *     * `manual` - Manual Edit
+                 *     * `optimization` - AI Optimization
+                 *     * `refinement` - User Refinement
+                 *     * `extension` - Extension/Add-on
+                 *     * `correction` - Error Correction
+                 *     * `experiment` - Experimental Variation */
+                interaction_type?: "correction" | "experiment" | "extension" | "manual" | "optimization" | "refinement";
+                is_active?: boolean;
+                is_bookmarked?: boolean;
+                /** @description Which field to use when ordering the results. */
+                ordering?: string;
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                parent_prompt?: string;
+                /** @description A search term. */
+                search?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
-            };
-        };
-    };
-    v1_auth_logout_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
+                content: {
+                    "application/json": components["schemas"]["PaginatedPromptIterationList"];
                 };
-                content?: never;
             };
         };
     };
-    v1_auth_refresh_create: {
+    v2_history_iterations_create: {
         parameters: {
             query?: never;
             header?: never;
@@ -6117,61 +6975,44 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["TokenRefreshRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["TokenRefreshRequest"];
-                "multipart/form-data": components["schemas"]["TokenRefreshRequest"];
+                "application/json": components["schemas"]["PromptIterationCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PromptIterationCreateRequest"];
+                "multipart/form-data": components["schemas"]["PromptIterationCreateRequest"];
             };
         };
         responses: {
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TokenRefresh"];
+                    "application/json": components["schemas"]["PromptIterationCreate"];
                 };
             };
         };
     };
-    v1_auth_check_username_retrieve: {
+    v2_history_iterations_bookmarked_list: {
         parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
+            query?: {
+                /** @description Type of iteration/modification
+                 *
+                 *     * `manual` - Manual Edit
+                 *     * `optimization` - AI Optimization
+                 *     * `refinement` - User Refinement
+                 *     * `extension` - Extension/Add-on
+                 *     * `correction` - Error Correction
+                 *     * `experiment` - Experimental Variation */
+                interaction_type?: "correction" | "experiment" | "extension" | "manual" | "optimization" | "refinement";
+                is_active?: boolean;
+                is_bookmarked?: boolean;
+                /** @description Which field to use when ordering the results. */
+                ordering?: string;
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                parent_prompt?: string;
+                /** @description A search term. */
+                search?: string;
             };
-        };
-    };
-    v1_auth_auth_check_email_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_auth_profile_retrieve: {
-        parameters: {
-            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
@@ -6183,12 +7024,196 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserProfile"];
+                    "application/json": components["schemas"]["PaginatedPromptIterationList"];
                 };
             };
         };
     };
-    v1_auth_profile_update: {
+    v2_history_iterations_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this prompt iteration. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromptIteration"];
+                };
+            };
+        };
+    };
+    v2_history_iterations_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this prompt iteration. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PromptIterationRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PromptIterationRequest"];
+                "multipart/form-data": components["schemas"]["PromptIterationRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromptIteration"];
+                };
+            };
+        };
+    };
+    v2_history_iterations_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this prompt iteration. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    v2_history_iterations_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this prompt iteration. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedPromptIterationRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedPromptIterationRequest"];
+                "multipart/form-data": components["schemas"]["PatchedPromptIterationRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromptIteration"];
+                };
+            };
+        };
+    };
+    v2_history_iterations_set_active_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this prompt iteration. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PromptIterationRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PromptIterationRequest"];
+                "multipart/form-data": components["schemas"]["PromptIterationRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromptIteration"];
+                };
+            };
+        };
+    };
+    v2_history_iterations_toggle_bookmark_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this prompt iteration. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PromptIterationRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PromptIterationRequest"];
+                "multipart/form-data": components["schemas"]["PromptIterationRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromptIteration"];
+                };
+            };
+        };
+    };
+    v2_history_threads_list: {
+        parameters: {
+            query?: {
+                is_shared?: boolean;
+                /** @description Which field to use when ordering the results. */
+                ordering?: string;
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description * `active` - Active
+                 *     * `archived` - Archived
+                 *     * `completed` - Completed */
+                status?: "active" | "archived" | "completed";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedConversationThreadList"];
+                };
+            };
+        };
+    };
+    v2_history_threads_create: {
         parameters: {
             query?: never;
             header?: never;
@@ -6197,34 +7222,59 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["UserUpdateRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["UserUpdateRequest"];
-                "multipart/form-data": components["schemas"]["UserUpdateRequest"];
+                "application/json": components["schemas"]["ConversationThreadCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ConversationThreadCreateRequest"];
+                "multipart/form-data": components["schemas"]["ConversationThreadCreateRequest"];
             };
         };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationThreadCreate"];
+                };
+            };
+        };
+    };
+    v2_history_threads_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this conversation thread. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserUpdate"];
+                    "application/json": components["schemas"]["ConversationThread"];
                 };
             };
         };
     };
-    v1_auth_profile_partial_update: {
+    v2_history_threads_update: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description A UUID string identifying this conversation thread. */
+                id: string;
+            };
             cookie?: never;
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedUserUpdateRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedUserUpdateRequest"];
-                "multipart/form-data": components["schemas"]["PatchedUserUpdateRequest"];
+                "application/json": components["schemas"]["ConversationThreadRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ConversationThreadRequest"];
+                "multipart/form-data": components["schemas"]["ConversationThreadRequest"];
             };
         };
         responses: {
@@ -6233,42 +7283,47 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserUpdate"];
+                    "application/json": components["schemas"]["ConversationThread"];
                 };
             };
         };
     };
-    v1_auth_profile_update_retrieve: {
+    v2_history_threads_destroy: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description A UUID string identifying this conversation thread. */
+                id: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            200: {
+            /** @description No response body */
+            204: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": components["schemas"]["UserUpdate"];
-                };
+                content?: never;
             };
         };
     };
-    v1_auth_profile_update_update: {
+    v2_history_threads_partial_update: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description A UUID string identifying this conversation thread. */
+                id: string;
+            };
             cookie?: never;
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["UserUpdateRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["UserUpdateRequest"];
-                "multipart/form-data": components["schemas"]["UserUpdateRequest"];
+                "application/json": components["schemas"]["PatchedConversationThreadRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedConversationThreadRequest"];
+                "multipart/form-data": components["schemas"]["PatchedConversationThreadRequest"];
             };
         };
         responses: {
@@ -6277,268 +7332,26 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserUpdate"];
+                    "application/json": components["schemas"]["ConversationThread"];
                 };
             };
         };
     };
-    v1_auth_profile_update_partial_update: {
+    v2_history_threads_add_iteration_create: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["PatchedUserUpdateRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedUserUpdateRequest"];
-                "multipart/form-data": components["schemas"]["PatchedUserUpdateRequest"];
+            path: {
+                /** @description A UUID string identifying this conversation thread. */
+                id: string;
             };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UserUpdate"];
-                };
-            };
-        };
-    };
-    v1_auth_change_password_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_auth_stats_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_ai_providers_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_ai_models_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_ai_generate_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_ai_usage_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_ai_quotas_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_ai_suggestions_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_ai_deepseek_chat_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_ai_deepseek_test_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_ai_deepseek_stream_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_ai_agent_optimize_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
             cookie?: never;
         };
         requestBody?: {
             content: {
                 "application/json": {
-                    /** @description Unique session identifier */
-                    session_id: string;
-                    /** @description Original prompt to optimize */
-                    original: string;
-                    /**
-                     * @description Optimization mode
-                     * @default fast
-                     * @enum {string}
-                     */
-                    mode?: "fast" | "deep";
-                    context?: {
-                        /** @description Intended use case */
-                        intent?: string;
-                        /** @description Domain context */
-                        domain?: string;
-                    };
-                    budget?: {
-                        /** @default 2000 */
-                        tokens_in?: number;
-                        /** @default 800 */
-                        tokens_out?: number;
-                        /** @default 5 */
-                        max_credits?: number;
-                    };
+                    /** Format: uuid */
+                    iteration_id?: string;
                 };
             };
         };
@@ -6548,36 +7361,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
-                };
-            };
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            402: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["ConversationThread"];
                 };
             };
         };
     };
-    v1_ai_agent_stats_retrieve: {
+    health_detailed_retrieve: {
         parameters: {
             query?: never;
             header?: never;
@@ -6586,17 +7375,16 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": unknown;
-                };
+                content?: never;
             };
         };
     };
-    v1_ai_rag_retrieve_create: {
+    config_retrieve: {
         parameters: {
             query?: never;
             header?: never;
@@ -6617,7 +7405,25 @@ export interface operations {
             };
         };
     };
-    v1_ai_rag_answer_create: {
+    configuration_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    rag_status_retrieve: {
         parameters: {
             query?: never;
             header?: never;
@@ -6638,7 +7444,7 @@ export interface operations {
             };
         };
     };
-    v1_gamification_achievements_retrieve: {
+    notifications_retrieve: {
         parameters: {
             query?: never;
             header?: never;
@@ -6656,7 +7462,7 @@ export interface operations {
             };
         };
     };
-    v1_gamification_badges_retrieve: {
+    notifications_create: {
         parameters: {
             query?: never;
             header?: never;
@@ -6674,7 +7480,7 @@ export interface operations {
             };
         };
     };
-    v1_gamification_leaderboard_retrieve: {
+    v2_cors_test_retrieve: {
         parameters: {
             query?: never;
             header?: never;
@@ -6683,16 +7489,19 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
             };
         };
     };
-    v1_gamification_daily_challenges_retrieve: {
+    v2_cors_test_create: {
         parameters: {
             query?: never;
             header?: never;
@@ -6701,520 +7510,15 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
-            };
-        };
-    };
-    v1_gamification_user_level_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
-                content?: never;
-            };
-        };
-    };
-    v1_gamification_streak_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_analytics_dashboard_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_analytics_user_insights_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_analytics_template_analytics_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_analytics_ab_tests_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_analytics_recommendations_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_analytics_track_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_core_health_detailed_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_core_config_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_core_configuration_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_core_rag_status_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_core_notifications_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_core_notifications_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_billing_plans_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_billing_plans_retrieve_2: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_billing_me_subscription_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_billing_me_entitlements_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_billing_me_usage_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_billing_checkout_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_billing_portal_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_billing_webhooks_stripe_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_orchestrator_intent_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_orchestrator_assess_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_orchestrator_render_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_orchestrator_search_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_orchestrator_template_retrieve_2: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                template_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    v1_orchestrator_template_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
         };
     };

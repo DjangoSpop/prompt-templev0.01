@@ -70,6 +70,15 @@ const SIZE_CLASSES = {
   full: 'max-w-7xl',
 };
 
+// sm+ (desktop) size classes — static strings so Tailwind JIT detects them
+const SM_SIZE_CLASSES: Record<keyof typeof SIZE_CLASSES, string> = {
+  sm:   'sm:max-w-md',
+  md:   'sm:max-w-lg',
+  lg:   'sm:max-w-2xl',
+  xl:   'sm:max-w-4xl',
+  full: 'sm:max-w-7xl',
+};
+
 // ============================================
 // Modal Component
 // ============================================
@@ -174,8 +183,9 @@ export function Modal({
   const modalContent = (
     <div
       className={cn(
-        'fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6',
-        'animate-in fade-in-0 duration-200',
+        'fixed inset-0 z-50 flex animate-in fade-in-0 duration-200',
+        // Mobile: anchor to bottom; sm+: center
+        'items-end sm:items-center sm:justify-center sm:p-6',
         className
       )}
       onClick={handleBackdropClick}
@@ -199,15 +209,23 @@ export function Modal({
         ref={modalRef}
         tabIndex={-1}
         className={cn(
-          'relative z-10 w-full bg-background rounded-lg shadow-2xl',
+          'relative z-10 w-full bg-background shadow-2xl',
           'border border-border',
-          'animate-in zoom-in-95 slide-in-from-bottom-4 duration-200',
-          'max-h-[90vh] flex flex-col',
-          SIZE_CLASSES[size],
+          'flex flex-col',
+          // Mobile: full-width bottom sheet
+          'rounded-t-2xl max-h-[90dvh]',
+          'animate-in slide-in-from-bottom duration-300',
+          // sm+: centered dialog with rounded corners
+          'sm:rounded-2xl sm:max-h-[90vh]',
+          SM_SIZE_CLASSES[size],
           contentClassName
         )}
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Drag handle (mobile visual cue) */}
+        <div className="flex shrink-0 justify-center pt-2 pb-1 sm:hidden" aria-hidden="true">
+          <div className="h-1 w-10 rounded-full bg-border" />
+        </div>
         {/* Header */}
         {(title || description || showCloseButton) && (
           <ModalHeader
@@ -294,6 +312,7 @@ export function ModalHeader({
         {actions}
         {showCloseButton && onClose && (
           <button
+            type="button"
             onClick={onClose}
             className={cn(
               'p-2 rounded-md',
@@ -441,6 +460,7 @@ export function ConfirmModal({
       footer={
         <>
           <button
+            type="button"
             onClick={onClose}
             disabled={loading}
             className={cn(
@@ -454,6 +474,7 @@ export function ConfirmModal({
             {cancelText}
           </button>
           <button
+            type="button"
             onClick={handleConfirm}
             disabled={loading}
             className={cn(

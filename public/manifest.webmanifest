@@ -1,0 +1,49 @@
+{
+  "name": "Prompt Temple",
+  "short_name": "PromptTemple",
+  "description": "The Ultimate AI Prompt Sanctuary — craft, save, and optimize AI prompts.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0a0a0f",
+  "theme_color": "#CBA135",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/eye-of-horus.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "New Prompt",
+      "short_name": "New",
+      "url": "/optimization?new=1",
+      "description": "Open the optimizer with a blank prompt",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Prompt Library",
+      "short_name": "Library",
+      "url": "/prompt-library",
+      "description": "Browse your saved prompts",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "categories": ["productivity", "utilities", "developer tools"],
+  "screenshots": []
+}

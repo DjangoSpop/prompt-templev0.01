@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
@@ -45,6 +46,10 @@ import {
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useOptimizeWithAgent, usePromptOptimization } from '@/hooks/api/useAI';
+import { OptimizationResultPanel } from '@/components/optimizer/OptimizationResultPanel';
+import { PaywallModal } from '@/components/PaywallModal';
+import { usePaywallTrigger } from '@/lib/hooks/usePaywallTrigger';
+import { trackOptimization } from '@/lib/analytics/trackEvent';
 
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || 'https://api.prompt-temple.com';
@@ -710,7 +715,7 @@ const PromptEditor: React.FC<{
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder="Enter your prompt here... Be specific about what you want to achieve. Use {{variable}} syntax for dynamic content."
-            className="flex-1 resize-none rounded-lg border border-slate-200 dark:border-slate-600 p-4 font-mono text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            className="flex-1 min-h-[150px] lg:min-h-0 resize-none rounded-lg border border-slate-200 dark:border-slate-600 p-4 font-mono text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
           />
           
           {/* Inline Suggestions */}
@@ -943,7 +948,7 @@ const StreamingPane: React.FC<{
           {output ? (
             <div className={cn(
               "h-full overflow-auto",
-              showRaw ? "whitespace-pre-wrap font-mono text-sm text-slate-800 dark:text-slate-200" : "prose prose-sm max-w-none dark:prose-invert"
+              showRaw ? "whitespace-pre-wrap break-words font-mono text-sm text-slate-800 dark:text-slate-200" : "prose prose-sm max-w-none dark:prose-invert prose-pre:overflow-x-auto prose-pre:max-w-full"
             )}>
               {showRaw ? output : (
                 <div dangerouslySetInnerHTML={{
@@ -951,7 +956,7 @@ const StreamingPane: React.FC<{
                     .replace(/\n/g, '<br>')
                     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                     .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                    .replace(/```([\s\S]*?)```/g, '<pre class="bg-slate-100 dark:bg-slate-700 p-2 rounded text-xs overflow-x-auto"><code>$1</code></pre>')
+                    .replace(/```([\s\S]*?)```/g, '<pre class="bg-slate-100 dark:bg-slate-700 p-2 rounded text-xs max-w-full overflow-x-auto"><code>$1</code></pre>')
                     .replace(/`(.*?)`/g, '<code class="bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded text-xs">$1</code>')
                 }} />
               )}
@@ -1294,9 +1299,25 @@ const TemplateCreateModal: React.FC<{
 // Main Component
 export default function OptimizationPlayground() {
   const store = useOptimizationStore();
+  const searchParams = useSearchParams();
   // Legacy clients kept for backward-compat UI references; streaming is now
   // handled by aiService via usePromptOptimization
   const wsClient = useRef<PromptCraftWebSocket | null>(null);
+  const [activeTab, setActiveTab] = useState<'write' | 'output' | 'library'>('write');
+  const { checkAndTrigger, triggerOnHighScore } = usePaywallTrigger();
+
+  // Pre-fill prompt from URL query params (e.g. coming from Template Library)
+  useEffect(() => {
+    const content = searchParams?.get('content');
+    if (content && !store.prompt) {
+      try {
+        store.setPrompt(decodeURIComponent(content));
+      } catch {
+        store.setPrompt(content);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // aiService-powered SSE streaming hook
   const {
@@ -1320,6 +1341,13 @@ export default function OptimizationPlayground() {
       store.setTemplateOpportunity(hookResult.template_opportunity as any);
       toast.info('💡 Template opportunity detected!');
     }
+    // Track analytics + trigger paywall on high scores
+    if (hookResult.optimized) {
+      const overallScore = hookResult.improvements?.overall_score ?? 0;
+      const improvementCount = hookResult.suggestions?.length ?? 0;
+      trackOptimization(overallScore / 10, improvementCount);
+      triggerOnHighScore(overallScore / 10);
+    }
     // Cast to page-local OptimizationResult shape for history
     if (hookResult.optimized) {
       store.addOptimizationResult({
@@ -1342,6 +1370,11 @@ export default function OptimizationPlayground() {
     store.setIsStreaming(hookIsStreaming);
     if (!hookIsStreaming) store.setConnectionStatus(true);
   }, [hookIsStreaming]);
+
+  // Auto-switch to output tab on mobile when optimization starts
+  useEffect(() => {
+    if (store.isStreaming) setActiveTab('output');
+  }, [store.isStreaming]);
 
   // Initialize transport — always SSE via aiService; WS kept as opt-in fallback
   useEffect(() => {
@@ -1616,6 +1649,10 @@ export default function OptimizationPlayground() {
       return;
     }
 
+    // Check free-tier limit; shows upgrade modal and returns false if capped
+    const canProceed = checkAndTrigger();
+    if (!canProceed) return;
+
     if (store.transport === 'ws' && wsClient.current) {
       // Legacy WebSocket path
       wsClient.current.send({
@@ -1763,86 +1800,186 @@ export default function OptimizationPlayground() {
   }, [searchTemplates]);
 
   return (
-    <div className="temple-background flex min-h-screen flex-col bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 lg:h-screen lg:flex-row lg:overflow-hidden">
-      {/* Left Panel - Prompt Editor */}
-      <div className="flex w-full flex-col border-b border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900 lg:w-1/2 lg:border-b-0 lg:border-r">
-        <PromptEditor
-          value={store.prompt}
-          onChange={store.setPrompt}
-          onOptimize={runOptimization}
-          onDeepOptimize={runDeepOptimize}
-          isDeepOptimizing={agentOptimizeMutation.isPending}
-          isStreaming={store.isStreaming}
-          modelConfig={store.modelConfig}
-          onModelConfigChange={store.setModelConfig}
-        />
+    <>
+      {/* ── Mobile Tab Bar (hidden on lg+) ── */}
+      <div
+        className="flex border-b border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900 lg:hidden"
+        role="tablist"
+        aria-label="Optimizer panels"
+      >
+        {([
+          { id: 'write'   as const, label: 'Write',   icon: Edit3    },
+          { id: 'output'  as const, label: 'Output',  icon: Wand2    },
+          { id: 'library' as const, label: 'Library', icon: BookOpen },
+        ]).map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            aria-selected={activeTab === id ? true : false}
+            onClick={() => setActiveTab(id)}
+            className={cn(
+              'flex flex-1 items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors',
+              activeTab === id
+                ? 'border-b-2 border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
+                : 'text-slate-500 dark:text-slate-400'
+            )}
+          >
+            <Icon className="h-3.5 w-3.5" />
+            {label}
+            {id === 'output' && store.isStreaming && (
+              <span className="ml-1 h-1.5 w-1.5 animate-pulse rounded-full bg-blue-500" />
+            )}
+          </button>
+        ))}
       </div>
-      
-      {/* Right Panel - Output & Suggestions */}
-      <div className="flex w-full flex-1 flex-col bg-slate-50 dark:bg-slate-900 lg:w-1/2">
-        {/* Connection Status */}
-        <div className="border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-wrap items-center gap-2">
-              <div className={cn(
-                "flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm",
-                store.transport === 'sse'
-                  ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
-                  : store.isConnected
-                    ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
-                    : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300"
-              )}>
-                <div className="h-2 w-2 animate-pulse rounded-full bg-current" />
-                {store.transport === 'sse' ? 'SSE Active' : store.isConnected ? 'WebSocket Connected' : 'WebSocket Disconnected'}
+
+      {/* ── Main Layout ── */}
+      <div className="temple-background flex flex-col bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 lg:h-screen lg:flex-row lg:overflow-hidden">
+        {/* Left Panel - Prompt Editor */}
+        <div
+          className={cn(
+            'flex w-full flex-col border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900',
+            'lg:flex lg:w-1/2 lg:border-b-0 lg:border-r',
+            activeTab === 'write' ? 'flex border-b' : 'hidden'
+          )}
+        >
+          <PromptEditor
+            value={store.prompt}
+            onChange={store.setPrompt}
+            onOptimize={runOptimization}
+            onDeepOptimize={runDeepOptimize}
+            isDeepOptimizing={agentOptimizeMutation.isPending}
+            isStreaming={store.isStreaming}
+            modelConfig={store.modelConfig}
+            onModelConfigChange={store.setModelConfig}
+          />
+        </div>
+
+        {/* Right Panel - Output & Suggestions */}
+        <div
+          className={cn(
+            'w-full flex-1 flex-col bg-slate-50 dark:bg-slate-900',
+            'lg:flex lg:w-1/2',
+            activeTab !== 'write' ? 'flex' : 'hidden lg:flex'
+          )}
+        >
+          {/* Connection Status */}
+          <div className="border-b border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className={cn(
+                  'flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm',
+                  store.transport === 'sse'
+                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                    : store.isConnected
+                      ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                      : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                )}>
+                  <div className="h-2 w-2 animate-pulse rounded-full bg-current" />
+                  {store.transport === 'sse'
+                    ? 'SSE Active'
+                    : store.isConnected
+                      ? 'WebSocket Connected'
+                      : 'WebSocket Disconnected'}
+                </div>
+                {store.connectionError && (
+                  <span className="text-xs text-red-600 dark:text-red-400">{store.connectionError}</span>
+                )}
               </div>
-              {store.connectionError && (
-                <span className="text-xs text-red-600 dark:text-red-400">{store.connectionError}</span>
+            </div>
+          </div>
+
+          {/* Output and Suggestions */}
+          <div className="flex flex-1 flex-col overflow-hidden xl:flex-row">
+            {/* Output Pane */}
+            <div
+              className={cn(
+                'border-b border-slate-200 dark:border-slate-700 xl:border-b-0 xl:border-r',
+                activeTab === 'library'
+                  ? 'hidden xl:flex xl:flex-col xl:flex-1'
+                  : 'flex flex-col flex-1'
               )}
+            >
+              <StreamingPane
+                output={store.streamingOutput}
+                isStreaming={store.isStreaming}
+                onCopy={() => { toast.success('Copied to clipboard'); }}
+                onSave={saveAsTemplate}
+                onFork={forkVersion}
+              />
+              {/* WowScore + improvements panel — visible when streaming completes */}
+              {hookResult && (
+                <div className="border-t border-slate-200 dark:border-slate-700">
+                  <OptimizationResultPanel
+                    result={hookResult as any}
+                    originalPrompt={store.prompt}
+                    isStreaming={store.isStreaming}
+                    onCopy={() => { navigator.clipboard.writeText(store.streamingOutput); toast.success('Copied!'); }}
+                    onSave={saveAsTemplate}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Suggestions Pane */}
+            <div
+              className={cn(
+                'border-t border-slate-200 dark:border-slate-700 xl:border-t-0 xl:border-l',
+                activeTab === 'output'
+                  ? 'hidden xl:block xl:w-80'
+                  : 'flex flex-col flex-1 xl:flex-none xl:w-80'
+              )}
+            >
+              <SuggestionsPanel
+                suggestions={[...store.suggestions, ...store.inlineSuggestions]}
+                onApplySuggestion={applySuggestion}
+                searchQuery={store.searchQuery}
+                onSearchChange={store.setSearchQuery}
+                selectedCategory={store.selectedCategory}
+                onCategoryChange={store.setSelectedCategory}
+                templates={store.templates}
+                isLoadingTemplates={store.isLoadingTemplates}
+                onSearchTemplates={() => { searchTemplates(); searchPrompts(); }}
+              />
             </div>
           </div>
         </div>
-        
-        {/* Output and Suggestions Tabs */}
-        <div className="flex flex-1 flex-col xl:flex-row">
-          {/* Output Pane */}
-          <div className="flex-1 border-b border-slate-200 dark:border-slate-700 xl:border-b-0 xl:border-r">
-            <StreamingPane
-              output={store.streamingOutput}
-              isStreaming={store.isStreaming}
-              onCopy={() => {
-                // keep prop callback semantic - actual copy UX is handled inside StreamingPane
-                toast.success('Copied to clipboard');
-              }}
-              onSave={saveAsTemplate}
-              onFork={forkVersion}
-            />
-          </div>
-          
-          {/* Suggestions Pane */}
-          <div className="w-full border-t border-slate-200 dark:border-slate-700 xl:w-80 xl:border-t-0 xl:border-l">
-            <SuggestionsPanel
-              suggestions={[...store.suggestions, ...store.inlineSuggestions]}
-              onApplySuggestion={applySuggestion}
-              searchQuery={store.searchQuery}
-              onSearchChange={store.setSearchQuery}
-              selectedCategory={store.selectedCategory}
-              onCategoryChange={store.setSelectedCategory}
-              templates={store.templates}
-              isLoadingTemplates={store.isLoadingTemplates}
-              onSearchTemplates={() => { searchTemplates(); searchPrompts(); }}
-            />
-          </div>
-        </div>
+
+        {/* Template Create Modal */}
+        <TemplateCreateModal
+          opportunity={store.templateOpportunity}
+          optimizedContent={store.streamingOutput}
+          onClose={() => store.setTemplateOpportunity(null)}
+          onCreate={createTemplate}
+        />
       </div>
-      
-      {/* Template Create Modal */}
-      <TemplateCreateModal
-        opportunity={store.templateOpportunity}
-        optimizedContent={store.streamingOutput}
-        onClose={() => store.setTemplateOpportunity(null)}
-        onCreate={createTemplate}
-      />
-    </div>
+
+      {/* Global paywall upgrade modal */}
+      <PaywallModal />
+
+      {/* ── Mobile sticky Run button (Write tab only) ── */}
+      {activeTab === 'write' && (
+        <div className="sticky bottom-0 z-10 border-t border-slate-200 bg-white/95 p-3 backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/95 lg:hidden">
+          <button
+            type="button"
+            onClick={runOptimization}
+            disabled={store.isStreaming || !store.prompt.trim()}
+            className={cn(
+              'flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition-all duration-200',
+              store.isStreaming || !store.prompt.trim()
+                ? 'cursor-not-allowed bg-slate-100 text-slate-400 dark:bg-slate-700/60 dark:text-slate-500'
+                : 'bg-gradient-to-r from-blue-600 to-violet-600 text-white shadow-md shadow-blue-500/25 hover:from-blue-700 hover:to-violet-700'
+            )}
+          >
+            {store.isStreaming
+              ? <><Loader2 className="h-4 w-4 animate-spin" /><span>Optimizing…</span></>
+              : <><Zap className="h-4 w-4" /><span>Run Optimize</span></>
+            }
+          </button>
+        </div>
+      )}
+    </>
   );
 }
 

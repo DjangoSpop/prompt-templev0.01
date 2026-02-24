@@ -92,33 +92,43 @@ export class AuthService extends BaseApiClient {
 
     try {
       console.log('🔐 Attempting registration for:', userData.username);
-      
-      const response = await this.request<{ user: UserProfile; tokens: TokenPair }>('/api/v2/auth/register/', {
+
+      // Cast to any — the OpenAPI spec returns UserRegistration (no tokens) but some
+      // DRF setups return { user, tokens } or { access, refresh, user }.  We handle all.
+      const raw = await this.request<any>('/api/v2/auth/register/', {
         method: 'POST',
         data: userData,
       });
-      
+
+      // Detect which response shape the backend sent
+      const user: UserProfile = raw.user ?? (raw as UserProfile);
+      const tokens: TokenPair | null =
+        raw.tokens?.access && raw.tokens?.refresh
+          ? raw.tokens
+          : raw.access && raw.refresh
+            ? { access: raw.access, refresh: raw.refresh }
+            : null;
+
       console.log('✅ Registration response received:', {
-        hasTokens: !!response.tokens,
-        hasUser: !!response.user,
-        username: response.user?.username
+        hasTokens: !!tokens,
+        hasUser: !!(user as any)?.username,
+        username: (user as any)?.username ?? (raw as any)?.username,
       });
-      
-      const convertedResponse = {
-        user: response.user,
-        tokens: response.tokens
-      };
-      
-      this.saveTokensToStorage(convertedResponse.tokens);
-      this.emitEvent('login', convertedResponse);
-      
-      console.log('🎉 Registration successful, tokens saved and event emitted');
-      
-      return convertedResponse;
+
+      if (tokens) {
+        this.saveTokensToStorage(tokens);
+        this.emitEvent('login', { user, tokens });
+        console.log('🎉 Registration successful, tokens saved and login event emitted');
+      } else {
+        // Backend created the account but did not issue tokens (user must log in)
+        console.log('✅ Registration successful — no tokens in response, redirect to login');
+      }
+
+      // Return empty-string tokens so callers can detect "no auto-login" without crashing
+      return { user, tokens: tokens ?? { access: '', refresh: '' } };
     } catch (error: any) {
       console.error('❌ Registration failed:', error?.response?.status, error?.response?.data);
-      
-      // Enhance error information
+
       if (error?.status === 400) {
         const details = error?.response?.data;
         if (details?.username) {

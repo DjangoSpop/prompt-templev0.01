@@ -1,15 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useGameStore } from "@/lib/stores/gameStore";
+import { useAnalyticsDashboard } from "@/hooks/api/useAnalytics";
+import { useStreak as useStreakApi, useBadges } from "@/hooks/api/useGamification";
+import { useAIUsage } from "@/hooks/api/useAI";
+import { useAuthStore } from "@/store/user";
 import { formatNumber, formatRelativeTime } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { StatsBar } from "@/components/dashboard/StatsBar";
+import { AchievementBadges } from "@/components/dashboard/AchievementBadges";
+import { ReferralModule } from "@/components/dashboard/ReferralModule";
 import {
   Trophy,
   Crown,
@@ -55,37 +62,68 @@ export default function TempleDashboard() {
     getNextLevel,
     getProgressToNextLevel,
     updateStreak,
+    loadFromAPI,
     addExperience,
   } = useGameStore();
 
-  const [templeStats] = useState<TempleStats>({
-    totalTemplates: 1247,
+  // Real API data
+  const { data: dashboardData } = useAnalyticsDashboard();
+  const { data: streakApiData } = useStreakApi();
+  const { data: badgesData } = useBadges();
+  const { data: aiUsageData } = useAIUsage();
+  const authProfile = useAuthStore(state => state.profile);
+
+  const templeStats = useMemo<TempleStats>(() => ({
+    totalTemplates: dashboardData?.total_templates_used ?? 0,
     templatesCreated: stats.templatesCreated,
-    templatesUsed: stats.templatesUsed,
-    totalViews: 15420,
+    templatesUsed: dashboardData?.total_templates_used ?? stats.templatesUsed,
+    totalViews: dashboardData?.total_renders ?? 0,
     collaborations: stats.collaborations,
     weeklyActivity: [
-      { day: "Mon", value: 12 },
-      { day: "Tue", value: 8 },
-      { day: "Wed", value: 15 },
-      { day: "Thu", value: 22 },
-      { day: "Fri", value: 18 },
-      { day: "Sat", value: 25 },
-      { day: "Sun", value: 14 },
+      { day: "Mon", value: 0 },
+      { day: "Tue", value: 0 },
+      { day: "Wed", value: 0 },
+      { day: "Thu", value: 0 },
+      { day: "Fri", value: 0 },
+      { day: "Sat", value: 0 },
+      { day: "Sun", value: 0 },
     ],
-    achievements: 8,
-    streakCount: user.streak,
-  });
+    achievements: dashboardData?.gamification?.achievements_unlocked ?? 0,
+    streakCount: streakApiData?.current_streak ?? user.streak,
+  }), [dashboardData, streakApiData, stats, user.streak]);
 
   const currentLevel = getCurrentLevel();
   const nextLevel = getNextLevel();
   const levelProgress = getProgressToNextLevel();
   const recentNotifications = notifications.slice(0, 3);
 
-  // Update streak on page load
+  // Derive unlocked badge IDs from live API, fall back to local stats
+  const unlockedBadgeIds = useMemo(() => {
+    const apiIds: string[] = Array.isArray(badgesData?.results)
+      ? (badgesData.results as Array<{ id?: string; slug?: string; name?: string; earned?: boolean }>)
+          .filter(b => b.earned !== false)
+          .map(b => (b.slug ?? b.id ?? b.name ?? '').toLowerCase().replace(/\s+/g, ''))
+          .filter(Boolean)
+      : [];
+    if (apiIds.length) return apiIds;
+    // Fallback: derive from local stats + streak
+    const ids: string[] = [];
+    const totalOpts = dashboardData?.total_templates_used ?? stats.templatesUsed;
+    const streak = streakApiData?.current_streak ?? user.streak;
+    if (totalOpts >= 1) ids.push('apprentice');
+    if (totalOpts >= 10) ids.push('scribe');
+    if (streak >= 5) ids.push('vizier');
+    if ((dashboardData?.avg_wow_score ?? 0) >= 8) ids.push('highpriest');
+    if (totalOpts >= 100) ids.push('grandvizier');
+    if (totalOpts >= 500 && streak >= 30) ids.push('pharaoh');
+    return ids;
+  }, [badgesData, dashboardData, stats.templatesUsed, streakApiData, user.streak]);
+
+  // Sync game store from API on mount and update streak
   useEffect(() => {
     updateStreak();
-  }, [updateStreak]);
+    loadFromAPI();
+  }, [updateStreak, loadFromAPI]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -227,7 +265,7 @@ export default function TempleDashboard() {
               change: "+8%",
             },
             {
-              title: "Total Views",
+              title: "Total Renders",
               value: templeStats.totalViews,
               icon: Eye,
               color: "text-warning",
@@ -267,6 +305,15 @@ export default function TempleDashboard() {
               </Card>
             </motion.div>
           ))}
+        </motion.div>
+
+        {/* WowScore Stats Bar */}
+        <motion.div variants={itemVariants}>
+          <StatsBar
+            totalOptimizations={dashboardData?.total_templates_used ?? 0}
+            avgWowScore={dashboardData?.avg_wow_score ?? undefined}
+            creditsRemaining={aiUsageData?.remaining_credits ?? aiUsageData?.remaining ?? undefined}
+          />
         </motion.div>
 
         {/* Temple Activities */}
@@ -360,6 +407,12 @@ export default function TempleDashboard() {
             </TabsContent>
 
             <TabsContent value="achievements" className="space-y-4">
+              {/* Egyptian-themed achievement badges — live from API */}
+              <Card className="glass-effect">
+                <CardContent className="p-6">
+                  <AchievementBadges unlockedIds={unlockedBadgeIds} />
+                </CardContent>
+              </Card>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[
                   {
@@ -481,6 +534,11 @@ export default function TempleDashboard() {
             </TabsContent>
 
             <TabsContent value="rewards" className="space-y-4">
+              {/* Referral invite module — live user ID from auth store */}
+              <ReferralModule
+                referralCount={dashboardData?.referral_count ?? 0}
+                userId={authProfile?.id}
+              />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card className="glass-effect">
                   <CardHeader>

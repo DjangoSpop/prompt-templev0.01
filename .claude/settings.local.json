@@ -16,7 +16,8 @@
       "Bash(git add:*)",
       "Bash(heroku config:get:*)",
       "Bash(git stash:*)",
-      "Bash(npm audit:*)"
+      "Bash(npm audit:*)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []

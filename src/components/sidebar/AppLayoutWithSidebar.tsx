@@ -5,6 +5,8 @@ import { AppSidebar, SidebarToggle } from './AppSidebar';
 import { useSidebarStore } from '@/store/sidebarStore';
 import { ClientOnly } from '@/components/ClientOnly';
 import { cn } from '@/lib/utils';
+import { BottomNav } from '@/components/layout/BottomNav';
+import { FloatingActionButton } from '@/components/layout/FloatingActionButton';
 
 interface AppLayoutWithSidebarProps {
   children: ReactNode;
@@ -37,9 +39,9 @@ export function AppLayoutWithSidebar({ children }: AppLayoutWithSidebarProps) {
         <AppSidebar />
       </ClientOnly>
 
-      {/* Mobile sidebar toggle - fixed position */}
+      {/* Mobile sidebar toggle — hidden at md+ (tablet has persistent compact sidebar) */}
       <ClientOnly>
-        <div className="fixed top-4 left-4 z-[60] lg:hidden">
+        <div className="fixed top-4 left-4 z-[60] md:hidden">
           <SidebarToggle className="bg-obsidian-900/90 backdrop-blur-sm shadow-lg" />
         </div>
       </ClientOnly>
@@ -48,7 +50,9 @@ export function AppLayoutWithSidebar({ children }: AppLayoutWithSidebarProps) {
       <main
         className={cn(
           'flex-1 transition-all duration-300 ease-in-out',
-          // Add left margin on desktop to account for sidebar
+          // Tablet (md): always offset by 72px compact sidebar
+          // Desktop (lg+): offset by the current sidebar width (72 or 260)
+          'md:ml-[72px]',
           isMounted ? 'lg:ml-[var(--sidebar-width)]' : 'lg:ml-[260px]'
         )}
         style={{
@@ -66,6 +70,11 @@ export function AppLayoutWithSidebar({ children }: AppLayoutWithSidebarProps) {
           </div>
         </div>
       </main>
+
+      {/* Mobile bottom navigation — hidden on lg+ */}
+      <BottomNav />
+      {/* Floating Action Button — mobile only */}
+      <FloatingActionButton />
     </div>
   );
 }
@@ -93,9 +102,9 @@ export function AppLayoutWithSidebarFull({ children }: AppLayoutWithSidebarProps
         <AppSidebar />
       </ClientOnly>
 
-      {/* Mobile sidebar toggle */}
+      {/* Mobile sidebar toggle — hidden at md+ */}
       <ClientOnly>
-        <div className="fixed top-4 left-4 z-[60] lg:hidden">
+        <div className="fixed top-4 left-4 z-[60] md:hidden">
           <SidebarToggle className="bg-obsidian-900/90 backdrop-blur-sm shadow-lg" />
         </div>
       </ClientOnly>
@@ -104,6 +113,7 @@ export function AppLayoutWithSidebarFull({ children }: AppLayoutWithSidebarProps
       <main
         className={cn(
           'flex-1 min-h-screen transition-all duration-300 ease-in-out',
+          'md:ml-[72px]',
           isMounted ? 'lg:ml-[var(--sidebar-width)]' : 'lg:ml-[260px]'
         )}
         style={{
@@ -112,6 +122,11 @@ export function AppLayoutWithSidebarFull({ children }: AppLayoutWithSidebarProps
       >
         {children}
       </main>
+
+      {/* Mobile bottom navigation — hidden on lg+ */}
+      <BottomNav />
+      {/* Floating Action Button — mobile only */}
+      <FloatingActionButton />
     </div>
   );
 }

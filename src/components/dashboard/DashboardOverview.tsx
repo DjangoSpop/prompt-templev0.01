@@ -41,7 +41,7 @@ export function DashboardOverview() {
     );
   }
 
-  const unlockedAchievements = achievements?.filter((a: any) => a.unlocked).length || 0;
+  const unlockedAchievements = achievements?.filter((a: any) => a.is_unlocked || a.unlocked).length || 0;
   const totalAchievements = achievements?.length || 0;
 
   return (

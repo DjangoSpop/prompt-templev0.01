@@ -140,7 +140,7 @@ export class PromptCraftIntegrationService {
       // Fallback to HTTP API
       const response = await this.makeApiRequest('orchestrator.assess', {
         prompt: request.prompt,
-        intent: request.intent,
+        llm_response: '',
         context: request.context || [],
       });
 
@@ -155,17 +155,17 @@ export class PromptCraftIntegrationService {
   }
 
   private processOptimizationResponse(response: unknown, request: OptimizationRequest): OptimizationResponse {
-    // Process the API response and convert to our format
+    const r = (response || {}) as Record<string, unknown>;
     return {
       originalPrompt: request.prompt,
-      optimizedPrompt: request.prompt, // Would be replaced with actual optimized version
-      improvements: ['Enhanced clarity', 'Better structure'], // Mock improvements
-      score: 85,
-      suggestions: ['Consider adding context', 'Specify desired output format'],
-      intent: request.intent || 'general',
-      complexity: 'medium',
-      estimatedTokens: Math.floor(request.prompt.length / 4),
-      confidenceScore: 0.9,
+      optimizedPrompt: (r.optimized_prompt as string) || (r.rendered as string) || request.prompt,
+      improvements: (r.improvements as string[]) || [],
+      score: (r.score as number) ?? 0,
+      suggestions: (r.suggestions as string[]) || [],
+      intent: (r.intent as string) || request.intent || 'general',
+      complexity: (r.complexity as 'low' | 'medium' | 'high') || 'medium',
+      estimatedTokens: (r.estimated_tokens as number) || Math.floor(request.prompt.length / 4),
+      confidenceScore: (r.confidence_score as number) ?? 0,
     };
   }
 
@@ -266,24 +266,27 @@ export class PromptCraftIntegrationService {
     }
 
     try {
-      const [profileResponse, _statsResponse, _gamificationResponse] = await Promise.all([
+      const [profileResponse, statsResponse, achievementsResponse, streakResponse] = await Promise.all([
         apiClient.getProfile(),
-        this.makeApiRequest('auth.stats', {}),
-        this.config.enableGamification 
-          ? this.makeApiRequest('gamification.achievements', {})
-          : Promise.resolve(null),
+        apiClient.getUserStats(),
+        this.config.enableGamification ? apiClient.getAchievements() : Promise.resolve([]),
+        this.config.enableGamification ? apiClient.getStreak() : Promise.resolve(null),
       ]);
 
+      const stats = (statsResponse || {}) as Record<string, unknown>;
+      const achievements = Array.isArray(achievementsResponse) ? achievementsResponse : [];
+      const streak = (streakResponse || {}) as Record<string, unknown>;
+
       const analytics: UserAnalytics = {
-        totalPrompts: profileResponse.total_prompts_generated || 0,
-        optimizationsUsed: 0, // Would come from stats
-        templatesCreated: profileResponse.templates_created || 0,
-        templatesUsed: profileResponse.templates_completed || 0,
-        averageOptimizationScore: 0, // Would be calculated from history
-        streakDays: profileResponse.daily_streak || 0,
-        level: profileResponse.level || 1,
-        experiencePoints: profileResponse.experience_points || 0,
-        badges: [], // Would come from gamification response
+        totalPrompts: (profileResponse.total_prompts_generated as number) || 0,
+        optimizationsUsed: (stats.optimizations_used as number) || 0,
+        templatesCreated: (profileResponse.templates_created as number) || 0,
+        templatesUsed: (profileResponse.templates_completed as number) || 0,
+        averageOptimizationScore: (stats.average_optimization_score as number) || 0,
+        streakDays: (streak.current_streak as number) || (profileResponse.daily_streak as number) || 0,
+        level: (profileResponse.level as number) || 1,
+        experiencePoints: (profileResponse.experience_points as number) || 0,
+        badges: achievements.map((a: Record<string, unknown>) => a.badge_name as string || a.name as string || '').filter(Boolean),
       };
 
       this.setCache(cacheKey, analytics, 2 * 60 * 1000); // 2 minutes TTL
@@ -347,11 +350,7 @@ export class PromptCraftIntegrationService {
     variables: Record<string, string>
   ): Promise<string> {
     try {
-      const response = await this.makeApiRequest('orchestrator.render', {
-        templateId,
-        variables,
-      });
-
+      const response = await apiClient.renderTemplate(templateId, variables);
       return (response as { rendered: string }).rendered || '';
     } catch (error) {
       console.error('Template rendering failed:', error);
@@ -368,13 +367,13 @@ export class PromptCraftIntegrationService {
     }
 
     try {
-      await this.makeApiRequest('analytics.track', {
-        event,
+      await apiClient.trackEvent({
+        event_type: event,
         data: {
           ...data,
-          timestamp: new Date().toISOString(),
           sessionId: this.getSessionId(),
         },
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       console.error('Failed to track interaction:', error);
@@ -414,29 +413,36 @@ export class PromptCraftIntegrationService {
     }
   }
 
-  private async executeApiRequest(endpoint: string, _data: unknown): Promise<unknown> {
-    // Map endpoints to actual API calls
+  private async executeApiRequest(endpoint: string, data: unknown): Promise<unknown> {
+    const payload = data as Record<string, unknown>;
     switch (endpoint) {
       case 'orchestrator.assess':
-        // Would call the actual assess endpoint
-        return { score: 85, improvements: [] };
-      
+        return apiClient.assessPrompt(
+          (payload.prompt as string) || '',
+          (payload.llm_response as string) || '',
+          payload.context
+        );
+
       case 'orchestrator.render':
-        // Would call the actual render endpoint
-        return { rendered: 'Rendered template content' };
-      
+        return apiClient.renderTemplate(
+          (payload.templateId as string) || '',
+          (payload.variables as Record<string, string>) || {}
+        );
+
       case 'auth.stats':
-        // Would call the actual stats endpoint
-        return {};
-      
+        return apiClient.getUserStats();
+
       case 'gamification.achievements':
-        // Would call the actual achievements endpoint
-        return { achievements: [] };
-      
+        return apiClient.getAchievements();
+
       case 'analytics.track':
-        // Would call the actual track endpoint
+        await apiClient.trackEvent({
+          event_type: (payload.event as string) || 'interaction',
+          data: (payload.data as Record<string, unknown>) || {},
+          timestamp: (payload.timestamp as string) || new Date().toISOString(),
+        });
         return { success: true };
-      
+
       default:
         throw new Error(`Unknown endpoint: ${endpoint}`);
     }

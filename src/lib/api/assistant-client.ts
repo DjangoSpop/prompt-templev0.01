@@ -5,6 +5,10 @@ import type {
   Message,
   RunMessageRequest,
   RunMessageResponse,
+  AskMeStartResponse,
+  AskMeAnswerResponse,
+  AskMeFinalizeResponse,
+  AskMeSessionSummary,
 } from '@/types/assistant';
 
 const API_ORIGIN = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.prompt-temple.com';
@@ -93,5 +97,47 @@ export const assistantApi = {
   // Delete thread
   async deleteThread(threadId: string): Promise<void> {
     await assistantClient.delete(`/assistant/threads/${threadId}/`);
+  },
+
+  // ─── AskMe Guided Prompt Builder ─────────────────────────────────────────
+
+  // Step 1: Start a guided session with an initial request
+  async startAskMe(request: string): Promise<AskMeStartResponse> {
+    const { data } = await assistantClient.post('/askme/start/', { request });
+    return data;
+  },
+
+  // Step 2: Answer a question; returns the next question or marks completion
+  async answerAskMe(sessionId: string, answer: string): Promise<AskMeAnswerResponse> {
+    const { data } = await assistantClient.post('/askme/answer/', {
+      session_id: sessionId,
+      answer,
+    });
+    return data;
+  },
+
+  // Step 3: Finalize the session — backend composes the final polished prompt
+  async finalizeAskMe(sessionId: string): Promise<AskMeFinalizeResponse> {
+    const { data } = await assistantClient.post('/askme/finalize/', {
+      session_id: sessionId,
+    });
+    return data;
+  },
+
+  // List past AskMe sessions for the authenticated user
+  async getAskMeSessions(): Promise<AskMeSessionSummary[]> {
+    const { data } = await assistantClient.get('/askme/sessions/');
+    return data.sessions ?? data;
+  },
+
+  // Get a single AskMe session
+  async getAskMeSession(sessionId: string): Promise<AskMeSessionSummary> {
+    const { data } = await assistantClient.get(`/askme/sessions/${sessionId}/`);
+    return data;
+  },
+
+  // Delete an AskMe session
+  async deleteAskMeSession(sessionId: string): Promise<void> {
+    await assistantClient.delete(`/askme/sessions/${sessionId}/delete/`);
   },
 };

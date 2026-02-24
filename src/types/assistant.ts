@@ -90,3 +90,34 @@ export interface RunMessageResponse {
   thread: Thread;
   usage: TokenUsage;
 }
+
+// ─── AskMe Guided Prompt Builder ───────────────────────────────────────────
+
+export interface AskMeStartResponse {
+  session_id: string;
+  question: string;
+  status: string;
+}
+
+export interface AskMeAnswerResponse {
+  session_id: string;
+  follow_up_question: string | null;
+  is_complete: boolean;
+  questions_answered: number;
+  status: string;
+}
+
+export interface AskMeFinalizeResponse {
+  session_id: string;
+  final_prompt: string;
+  summary?: string;
+  refinements?: string[];
+}
+
+export interface AskMeSessionSummary {
+  session_id: string;
+  status: 'active' | 'finalized';
+  created_at: string;
+  questions_answered: number;
+  final_prompt?: string;
+}

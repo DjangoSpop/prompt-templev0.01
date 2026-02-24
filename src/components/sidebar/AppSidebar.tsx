@@ -28,6 +28,7 @@ import {
   User,
   LogOut,
   LogIn,
+  Network,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -106,19 +107,28 @@ const navigationItems: NavItem[] = [
   {
     id: 'assistant',
     label: 'AI Assistant',
-    href: '/assistant-full',
+    href: '/assistant',
     icon: Sparkles,
-    description: 'Smart AI conversations',
+    description: 'Threaded AI conversations',
     badge: 'New',
     category: 'tools',
   },
   {
     id: 'optimizer',
     label: 'Optimizer',
-    href: '/optimization',
+    href: '/optimizer',
     icon: Zap,
     description: 'AI prompt optimization',
     badge: 'Pro',
+    category: 'tools',
+  },
+  {
+    id: 'guided-builder',
+    label: 'Guided Builder',
+    href: '/optimizer?mode=guided',
+    icon: Bot,
+    description: 'Build prompts with AI questions',
+    badge: 'New',
     category: 'tools',
   },
   {
@@ -132,17 +142,25 @@ const navigationItems: NavItem[] = [
   {
     id: 'oracle',
     label: 'Oracle Chat',
-    href: '/enhanced',
+    href: '/live',
     icon: MessageSquare,
-    description: 'Live AI conversations',
+    description: 'Live streaming AI chat',
+    category: 'tools',
+  },
+  {
+    id: 'orchestrate',
+    label: 'Orchestrate',
+    href: '/orchestrate',
+    icon: Network,
+    description: 'Intent detection + template flow',
     category: 'tools',
   },
   {
     id: 'rag',
-    label: 'RAG',
-    href: '/rag',
+    label: 'RAG Chat',
+    href: '/live/rag',
     icon: Bot,
-    description: 'Knowledge retrieval',
+    description: 'Knowledge retrieval + AI',
     category: 'tools',
   },
   // Resources
@@ -236,14 +254,12 @@ export function AppSidebar({ className }: AppSidebarProps) {
     return null;
   }
 
-  const sidebarWidth = isCollapsed ? 'w-[72px]' : 'w-[260px]';
-
   return (
     <>
-      {/* Mobile Overlay */}
+      {/* Mobile Overlay — only below md (tablet gets persistent compact sidebar) */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden"
           onClick={close}
         />
       )}
@@ -255,10 +271,12 @@ export function AppSidebar({ className }: AppSidebarProps) {
           'bg-gradient-to-b from-obsidian-900 via-obsidian-950 to-black',
           'border-r border-royal-gold-500/20',
           'transition-all duration-300 ease-in-out',
-          sidebarWidth,
-          // Mobile: slide in/out
-          'lg:translate-x-0',
-          isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
+          // Tablet (md-lg): always 72px icon-only
+          'md:w-[72px] md:translate-x-0',
+          // Desktop (lg+): explicit classes so Tailwind includes both in the bundle
+          isCollapsed ? 'lg:w-[72px]' : 'lg:w-[260px]',
+          // Mobile (<md): slide in/out on demand
+          isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
           className
         )}
       >

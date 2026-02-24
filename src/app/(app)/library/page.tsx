@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGameStore } from "@/lib/stores/gameStore";
 import { Button } from "@/components/ui/button";
@@ -238,6 +239,7 @@ const rarityGlow = {
 };
 
 export default function LibraryPage() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedDifficulty, setSelectedDifficulty] = useState("all");
@@ -288,15 +290,13 @@ export default function LibraryPage() {
 
   const handleTemplateUse = (template: Template) => {
     addExperience(template.xpReward);
-    // addNotification({
-    //   id: Date.now().toString(),
-    //   type: 'achievement',
-    //   title: 'Template Used!',
-    //   message: `You earned ${template.xpReward} XP from "${template.title}"`,
-    //   read: false,
-    //   timestamp: new Date()
-    // });
-  // };
+    // Navigate to optimizer pre-filled with template content
+    const params = new URLSearchParams({
+      template: template.id,
+      content: encodeURIComponent(template.content),
+      title: template.title,
+    });
+    router.push(`/optimization?${params.toString()}`);
   };
   const handleBookmark = (templateId: string) => {
     // Toggle bookmark logic would go here
@@ -446,7 +446,21 @@ export default function LibraryPage() {
                 }}
                 layout
               >
-                <Card className={`group cursor-pointer transition-all duration-300 hover:scale-[1.02] glass-effect ${rarityGlow[template.rarity]}`}>
+                <Card className={`group relative cursor-pointer transition-all duration-300 hover:scale-[1.02] glass-effect ${rarityGlow[template.rarity]}`}>
+                  {/* Premium blur overlay for locked premium templates */}
+                  {template.isPremium && (
+                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-lg bg-black/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <Crown className="h-8 w-8 text-yellow-400 mb-2" />
+                      <p className="text-sm font-semibold text-white">Premium Template</p>
+                      <p className="text-xs text-white/70 mt-1">Upgrade to unlock</p>
+                      <button
+                        onClick={() => router.push('/pricing')}
+                        className="mt-3 rounded-lg bg-gradient-to-r from-yellow-400 to-orange-500 px-4 py-1.5 text-xs font-bold text-black hover:from-yellow-300 hover:to-orange-400 transition-all"
+                      >
+                        Upgrade
+                      </button>
+                    </div>
+                  )}
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-2">

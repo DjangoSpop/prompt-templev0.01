@@ -86,6 +86,46 @@
     --radius-xl: 1rem;      /* 16px */
     --radius-temple: 1rem;  /* 16px - for cards */
     --radius-pyramid: 1.5rem; /* 24px - for modals */
+
+    /* ─────────────────────────────────────────────────────────
+       VIRAL DESIGN SPEC TOKENS — Egyptian Pharaonic v2
+       ───────────────────────────────────────────────────────── */
+
+    /* Gold palette */
+    --gold-primary: #F5C518;
+    --gold-light: #FFE57A;
+    --gold-dark: #C9A227;
+
+    /* Lapis palette */
+    --lapis-deep: #1B2B6B;
+    --lapis-mid: #2E4A9E;
+
+    /* Sand palette */
+    --sand-warm: #F0E6D3;
+    --sand-mid: #D4B896;
+
+    /* Dark palette */
+    --obsidian-pure: #0D0D0D;
+    --obsidian-mid: #1A1A2E;
+
+    /* Gradients (CSS strings) */
+    --gradient-pharaoh: linear-gradient(135deg, #F5C518 0%, #C9A227 50%, #8B6914 100%);
+    --gradient-temple: linear-gradient(180deg, #1B2B6B 0%, #0D0D0D 100%);
+    --gradient-papyrus: linear-gradient(120deg, #F0E6D3 0%, #D4B896 100%);
+
+    /* Glass morphism */
+    --glass-bg: rgba(245, 197, 24, 0.05);
+    --glass-border: rgba(245, 197, 24, 0.15);
+    --glass-blur: blur(20px);
+
+    /* Typography */
+    --font-display: 'Cinzel', serif;
+    --font-body: 'Crimson Pro', serif;
+    --font-mono-code: 'JetBrains Mono', monospace;
+
+    /* Animations */
+    --transition-temple: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    --animation-glow: temple-glow 3s ease-in-out infinite;
   }
 
   .dark {
@@ -927,5 +967,68 @@ select:focus-visible {
   max-height: 80vh;
   overflow: hidden;
 }
+
+/* ── Viral Landing Keyframes ──────────────────────────────── */
+
+@keyframes temple-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(245, 197, 24, 0.3); }
+  50%       { box-shadow: 0 0 60px rgba(245, 197, 24, 0.7), 0 0 100px rgba(245, 197, 24, 0.3); }
+}
+
+@keyframes hieroglyph-reveal {
+  from { opacity: 0; transform: translateY(20px) rotateX(45deg); }
+  to   { opacity: 1; transform: translateY(0) rotateX(0deg); }
+}
+
+@keyframes papyrus-unfold {
+  from { transform: scaleY(0); opacity: 0; transform-origin: top; }
+  to   { transform: scaleY(1); opacity: 1; }
+}
+
+@keyframes pharaoh-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.05); }
+}
+
+@keyframes gold-shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Glass morphism utility */
+.glass-pharaoh {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+/* Gold gradient text */
+.text-gold-gradient {
+  background: var(--gradient-pharaoh);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Temple glow animation class */
+.animate-temple-glow {
+  animation: var(--animation-glow);
+}
+
+/* Pharaoh shimmer text */
+.text-shimmer {
+  background: linear-gradient(90deg, #C9A227 0%, #FFE57A 30%, #F5C518 50%, #FFE57A 70%, #C9A227 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gold-shimmer 3s linear infinite;
+}
+
+/* Scrollbar hide */
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+
 
 

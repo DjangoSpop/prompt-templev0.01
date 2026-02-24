@@ -116,8 +116,8 @@ export function ConversationPane({ threadId, assistantId }: ConversationPaneProp
         />
       </div>
 
-      {/* Composer */}
-      <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+      {/* Composer — pb-safe clears iOS home-indicator */}
+      <div className="shrink-0 border-t border-gray-200 bg-white pb-safe dark:border-gray-700 dark:bg-gray-800">
         <Composer
           threadId={threadId}
           assistantId={thread?.assistant_id || assistantId}

@@ -5,8 +5,8 @@ import { Send, Zap, Clock, Copy, ThumbsUp, ThumbsDown, RotateCcw, CheckCircle } 
 import TemplateCard from '@/components/TemplateCard';
 import VariableForm from '@/components/VariableForm';
 import PromptViewer from '@/components/PromptViewer';
-import { mockGetIntentCandidates, mockRenderTemplate, mockAssessResponse } from '@/lib/mock-data';
-import type { Template as MockTemplate, TemplateList, TemplateDetail, IntentResponse, RenderResponse, AssessmentResponse } from '@/lib/types';
+import { apiClient } from '@/lib/api-client';
+import type { Template as MockTemplate, TemplateList, TemplateDetail, RenderResponse, AssessmentResponse } from '@/lib/types';
 
 interface Session {
   id: string;
@@ -34,22 +34,30 @@ export default function OrchestrateView() {
 
     setIsProcessing(true);
     try {
-      const { intent, templates } = await mockGetIntentCandidates(userInput.trim());
-      
+      const [intentResponse, templatesResponse] = await Promise.all([
+        apiClient.detectIntent(userInput.trim()),
+        apiClient.getTemplates({ search: userInput.trim(), is_public: true, ordering: '-created_at' }),
+      ]);
+
+      const detectedIntent: string = (intentResponse as Record<string, unknown>)?.intent as string || 'general';
+      const templates = (templatesResponse?.results || []).slice(0, 10) as unknown as MockTemplate[];
+
       const session: Session = {
         id: `session_${Date.now()}`,
-        intent: intent.intent,
+        intent: detectedIntent,
         userInput: userInput.trim(),
-        templates: templates.slice(0, 10), // Limit to 10 templates
+        templates,
         timestamp: new Date(),
       };
 
       setCurrentSession(session);
-      setSessions(prev => [session, ...prev.slice(0, 9)]); // Keep last 10 sessions
+      setSessions(prev => [session, ...prev.slice(0, 9)]);
       setUserInput('');
-      
-      // Mock analytics tracking
-      console.log('Intent processed:', intent);
+
+      await apiClient.trackEvent({
+        event_type: 'orchestrator_intent_detected',
+        data: { intent: detectedIntent, input_length: userInput.trim().length },
+      });
     } catch (error) {
       console.error('Failed to process intent:', error);
     } finally {
@@ -74,23 +82,22 @@ export default function OrchestrateView() {
 
     setIsRendering(true);
     const startTime = Date.now();
-    
+
     try {
-      const renderResult = await mockRenderTemplate(currentSession.selectedTemplate.id, variables);
-
+      const raw = await apiClient.renderTemplate(currentSession.selectedTemplate.id, variables) as Record<string, unknown>;
       const renderTime = Date.now() - startTime;
-      
-      setCurrentSession(prev => prev ? {
-        ...prev,
-        variables,
-        renderResult,
-      } : null);
 
-      // Mock analytics tracking
-      console.log('Template rendered:', { 
-        templateId: currentSession.selectedTemplate.id, 
-        renderTime, 
-        variableCount: Object.keys(variables).length 
+      const renderResult: RenderResponse = {
+        primary_result: (raw.rendered as string) || (raw.primary_result as string) || '',
+        variants: (raw.variants as string[]) || undefined,
+        metadata: { processingTime: renderTime, ...(raw.metadata as Record<string, unknown> || {}) },
+      };
+
+      setCurrentSession(prev => prev ? { ...prev, variables, renderResult } : null);
+
+      await apiClient.trackEvent({
+        event_type: 'template_rendered',
+        data: { template_id: currentSession.selectedTemplate.id, render_time_ms: renderTime },
       });
     } catch (error) {
       console.error('Failed to render template:', error);
@@ -102,10 +109,9 @@ export default function OrchestrateView() {
   const handleCopyResult = (content: string) => {
     navigator.clipboard.writeText(content);
     if (currentSession?.selectedTemplate) {
-      // Mock analytics tracking
-      console.log('Template copied:', { 
-        templateId: currentSession.selectedTemplate.id, 
-        contentLength: content.length 
+      apiClient.trackEvent({
+        event_type: 'template_result_copied',
+        data: { template_id: currentSession.selectedTemplate.id, content_length: content.length },
       });
     }
   };
@@ -114,18 +120,27 @@ export default function OrchestrateView() {
     if (!assessmentInput.trim() || !currentSession?.renderResult) return;
 
     try {
-      const assessmentResult = await mockAssessResponse(
+      const raw = await apiClient.assessPrompt(
         currentSession.renderResult.primary_result,
         assessmentInput.trim()
-      );
+      ) as Record<string, unknown>;
+
+      const assessmentResult: AssessmentResponse = {
+        score: (raw.score as number) ?? 0,
+        critique: (raw.critique as string) || (raw.feedback as string) || '',
+        suggestions: Array.isArray(raw.suggestions)
+          ? (raw.suggestions as Record<string, unknown>[]).map(s => ({ text: (s.text as string) || String(s), action: (s.action as string) || '' }))
+          : Array.isArray(raw.improvements)
+          ? (raw.improvements as string[]).map(t => ({ text: t, action: '' }))
+          : [],
+      };
 
       setAssessment(assessmentResult);
-      
+
       if (currentSession.selectedTemplate) {
-        // Mock analytics tracking
-        console.log('Assessment completed:', {
-          templateId: currentSession.selectedTemplate.id,
-          score: assessmentResult.score
+        await apiClient.trackEvent({
+          event_type: 'prompt_assessed',
+          data: { template_id: currentSession.selectedTemplate.id, score: assessmentResult.score },
         });
       }
     } catch (error) {

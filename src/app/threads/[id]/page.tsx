@@ -13,7 +13,7 @@ export default function ThreadDetailPage() {
   const threadId = typeof params.id === 'string' ? params.id : '';
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)]">
+    <div className="flex flex-col h-[calc(100dvh-4rem)]">
       {/* Breadcrumb nav */}
       <div className="flex items-center gap-2 px-4 py-3 border-b bg-background shrink-0">
         <Button

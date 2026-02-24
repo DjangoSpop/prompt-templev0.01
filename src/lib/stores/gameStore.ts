@@ -687,15 +687,17 @@ export const useGameStore = create<GameState & GameActions>()(
       saveToAPI: async () => {
         try {
           const state = get();
-          // TODO: Implement game progress API endpoint
-          console.log('Game progress would be saved:', {
-            user: state.user,
-            onboarding: state.onboarding,
-            achievements: state.unlockedAchievements,
-            badges: state.unlockedBadges,
-            stats: state.stats,
+          await apiClient.trackEvent({
+            event_type: 'game_progress_sync',
+            data: {
+              level: state.user.level,
+              experience: state.user.experience,
+              streak: state.user.streak,
+              total_points: state.user.totalPoints,
+              unlocked_achievements: state.unlockedAchievements,
+              stats: state.stats,
+            },
           });
-          // For now, we'll skip the API call as the endpoint needs to be implemented
         } catch (error) {
           console.error('Failed to save game progress:', error);
         }
@@ -703,8 +705,45 @@ export const useGameStore = create<GameState & GameActions>()(
 
       loadFromAPI: async () => {
         try {
-          // Implementation would load from API
-          // For now, we'll use localStorage persistence
+          const [levelData, achievementsData, streakData] = await Promise.all([
+            apiClient.getUserLevel().catch(() => null),
+            apiClient.getAchievements().catch(() => []),
+            apiClient.getStreak().catch(() => null),
+          ]);
+
+          if (levelData) {
+            const ld = levelData as Record<string, unknown>;
+            set((state) => ({
+              user: {
+                ...state.user,
+                level: (ld.level as number) || state.user.level,
+                experience: (ld.experience_points as number) || state.user.experience,
+                totalPoints: (ld.total_points as number) || state.user.totalPoints,
+              },
+            }));
+          }
+
+          if (streakData) {
+            set((state) => ({
+              user: {
+                ...state.user,
+                streak: streakData.current_streak || state.user.streak,
+                longestStreak: streakData.longest_streak || state.user.longestStreak,
+              },
+            }));
+          }
+
+          if (Array.isArray(achievementsData) && achievementsData.length > 0) {
+            const unlockedIds = (achievementsData as Record<string, unknown>[])
+              .filter((a) => a.is_completed || a.claimed)
+              .map((a) => (a.id as string) || (a.achievement_id as string))
+              .filter(Boolean);
+            if (unlockedIds.length > 0) {
+              set((state) => ({
+                unlockedAchievements: Array.from(new Set([...state.unlockedAchievements, ...unlockedIds])),
+              }));
+            }
+          }
         } catch (error) {
           console.error('Failed to load game progress:', error);
         }

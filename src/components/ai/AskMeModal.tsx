@@ -136,7 +136,7 @@ export function AskMeModal({ open, onOpenChange }: AskMeModalProps) {
       return;
     }
     const result = await startMutation.mutateAsync({
-      goal: goal.trim(),
+      intent: goal.trim(),
       context: context.trim() || undefined,
     });
     setSession(result);

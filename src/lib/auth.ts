@@ -116,29 +116,23 @@ class AuthAdapter {
   async register(userData: UserRegistration): Promise<{ user: UserProfile; tokens: TokenPair }> {
     try {
       const response = await authService.register(userData);
-      
-      // Ensure tokens are properly stored
-      authService.saveTokensToStorage(response.tokens);
-      
-      // Convert user type if needed and ensure compatibility
+
+      // Only save & emit when the backend actually returned valid tokens
+      if (response.tokens?.access && response.tokens?.refresh) {
+        authService.saveTokensToStorage(response.tokens);
+        this.emitEvent('login', {
+          access: response.tokens.access,
+          refresh: response.tokens.refresh,
+          user: response.user,
+        });
+      }
+
       const userProfile: UserProfile = {
         ...response.user,
-        avatar_url: response.user.avatar_url || '/api/default-avatar.png'
+        avatar_url: response.user?.avatar_url || '/api/default-avatar.png'
       } as UserProfile;
-      
-      const result = {
-        user: userProfile,
-        tokens: response.tokens
-      };
-      
-      // Emit registration/login event
-      this.emitEvent('login', {
-        access: response.tokens.access,
-        refresh: response.tokens.refresh,
-        user: userProfile
-      });
-      
-      return result;
+
+      return { user: userProfile, tokens: response.tokens };
     } catch (error) {
       console.error('Registration failed:', error);
       throw error;

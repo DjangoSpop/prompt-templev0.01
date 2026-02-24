@@ -216,7 +216,7 @@ export class AIService extends BaseApiClient {
 
   private get baseUrl(): string {
     return (this.axiosInstance.defaults.baseURL as string) ||
-      process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ||
+      process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') ||
       'https://api.prompt-temple.com';
   }
 
@@ -324,16 +324,24 @@ export class AIService extends BaseApiClient {
     callbacks: OptimizeStreamCallbacks,
     signal?: AbortSignal,
   ): Promise<void> {
-    const url = `${this.baseUrl}/api/v2/ai/optimization/stream/`;
+    // POST /api/v2/ai/deepseek/stream/ — DeepSeek SSE proxy (the optimization/stream/ path does not exist)
+    const url = `${this.baseUrl}/api/v2/ai/deepseek/stream/`;
+
+    const systemPrompt =
+      'You are an expert AI prompt engineer. ' +
+      'Analyze the user\'s prompt and rewrite it to be clearer, more specific, and more effective for AI models. ' +
+      'Respond with ONLY the improved prompt text — no preamble, no explanations, no markdown fences.';
+
     const body = {
-      original: request.original,
-      session_id: request.session_id ?? `optimize_${Date.now()}`,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: `Optimize this prompt:\n\n${request.original}` },
+      ],
       model: request.model ?? 'deepseek-chat',
+      stream: true,
       temperature: request.temperature ?? 0.7,
       max_tokens: request.max_tokens ?? 2048,
-      mode: request.mode ?? 'fast',
-      context: request.context,
-      stream: true,
+      session_id: request.session_id ?? `optimize_${Date.now()}`,
     };
 
     let response: Response;

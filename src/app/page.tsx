@@ -35,9 +35,17 @@ import { RevealOnScroll } from '@/components/animations/RevealOnScroll';
 import { ProgressIndicator } from '@/components/animations/ProgressIndicator';
 import { PromptIQTestModal } from '@/components/academy/PromptIQTestModal';
 import { useAcademyStore } from '@/lib/stores/academyStore';
+// Viral landing components
+import { HeroTransformer } from '@/components/HeroTransformer';
+import { SocialProofTicker } from '@/components/SocialProofTicker';
+import { BeforeAfterShowcase } from '@/components/BeforeAfterShowcase';
+import { HowItWorks } from '@/components/HowItWorks';
+import { PricingSection } from '@/components/PricingSection';
+import { TestimonialsCarousel } from '@/components/TestimonialsCarousel';
+import { ViralCTAFooter } from '@/components/ViralCTAFooter';
+import { PaywallModal } from '@/components/PaywallModal';
 
 const TempleGateHero = dynamic(() => import('@/components/temple/TempleGateHero').then(m => m.TempleGateHero), { ssr: false });
-import ChatInterface from './../components/ChatInterface';
 import { TryMeButton } from '@/components/try-me/TryMeButton';
 
 export default function DashboardPage() {
@@ -63,110 +71,66 @@ export default function DashboardPage() {
   if (!isAuthenticated) {
     return (
       <>
-        <ProgressIndicator
-          color="#8B5CF6"
-          height={4}
-          className="z-50"
-        />
-        <ScrollifyContainer className="temple-background">
-          <EnhancedFloatingParticles
-            count={40}
-            colors={['#3B82F6', '#8B5CF6', '#F59E0B', '#10B981', '#EF4444', '#EC4899']}
-            interactive={true}
-            size={{ min: 3, max: 12 }}
-            speed={{ min: 3, max: 12 }}
+        <ProgressIndicator color="#F5C518" height={3} className="z-50" />
+
+        {/* ═══════════════════════════════════════════════
+            VIRAL LANDING PAGE — Full Sections
+            ═══════════════════════════════════════════════ */}
+        <div
+          className="min-h-screen relative"
+          style={{ background: 'linear-gradient(180deg, #0D0D0D 0%, #0A0A18 50%, #0D0D0D 100%)' }}
+        >
+          {/* Background grid pattern */}
+          <div
+            className="fixed inset-0 pointer-events-none opacity-[0.03]"
+            style={{
+              backgroundImage: `linear-gradient(rgba(245,197,24,0.5) 1px, transparent 1px),
+                                linear-gradient(90deg, rgba(245,197,24,0.5) 1px, transparent 1px)`,
+              backgroundSize: '60px 60px',
+            }}
           />
 
-        {/* Hero Section */}
-        <div className="scrollify-section relative z-10">
-          <TempleGateHero/>
+          {/* 1. HERO — Animated before/after transformer */}
+          <HeroTransformer />
+
+          {/* 2. SOCIAL PROOF TICKER */}
+          <div className="py-4 px-4">
+            <SocialProofTicker />
+          </div>
+
+          {/* Divider */}
+          <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #F5C518, transparent)' }} />
+
+          {/* 3. HOW IT WORKS */}
+          <HowItWorks />
+
+          {/* Divider */}
+          <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #A78BFA, transparent)' }} />
+
+          {/* 4. BEFORE/AFTER SHOWCASE */}
+          <BeforeAfterShowcase />
+
+          {/* Divider */}
+          <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #60A5FA, transparent)' }} />
+
+          {/* 5. PRICING TIERS */}
+          <PricingSection />
+
+          {/* Divider */}
+          <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #F5C518, transparent)' }} />
+
+          {/* 6. TESTIMONIALS */}
+          <TestimonialsCarousel />
+
+          {/* Divider */}
+          <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #10B981, transparent)' }} />
+
+          {/* 7. VIRAL CTA FOOTER */}
+          <ViralCTAFooter />
+
+          {/* Paywall Modal (global) */}
+          <PaywallModal />
         </div>
-
-        {/* Welcome Section */}
-        <div className="scrollify-section text-center max-w-4xl mx-auto relative z-10">
-          <RevealOnScroll direction="up" duration={1.2}>
-            <h1 className="text-5xl font-bold text-foreground mb-6 text-hieroglyph">
-              Welcome to PromptTemple
-            </h1>
-  
-          </RevealOnScroll>
-
-          <RevealOnScroll direction="up" duration={1} delay={0.3}>
-            <p className="text-xl text-muted-foreground mb-8">
-              Discover, create, and manage AI prompt templates with powerful analytics and collaboration features.
-            </p>
-          </RevealOnScroll>
-
-          <RevealOnScroll direction="scale" duration={1.5} delay={0.6}>
-            <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-8 md:mb-12">
-              <div className="parallax-element">
-                <PyramidGrid/>
-               
-              </div>
-              <Link href="/auth/login" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full sm:w-auto flex items-center justify-center space-x-2 hover:scale-105 transition-transform duration-300">
-                  <Play className="h-5 w-5" />
-                  <span>Get Started</span>
-                </Button>
-              </Link>
-              <Link href="/templates" className="w-full sm:w-auto">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto flex items-center justify-center space-x-2 hover:scale-105 transition-transform duration-300">
-                  <BookOpen className="h-5 w-5" />
-                  <span>Browse Templates</span>
-                </Button>
-              </Link>
-            </div>
-          </RevealOnScroll>
-        </div>
-
-        {/* Pharaoh Hero Section */}
-        <div className="scrollify-section">
-          <PharaohHero/>
-        </div>
-
-        {/* Hero Section */}
-        <div className="scrollify-section">
-          <HeroSection/>
-        </div>
-
-        {/* Feature Cards Section */}
-        <div className="scrollify-section container mx-auto px-4 py-16">
-          <RevealOnScroll direction="up" duration={1}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 mb-8 md:mb-16">
-              <Card className="temple-card p-6 text-center pyramid-elevation scale-element hover:scale-105 transition-transform duration-300">
-                <div className="w-12 h-12 bg-oasis/20 rounded-lg flex items-center justify-center mx-auto mb-4 stagger-element">
-                  <BookOpen className="h-6 w-6 text-oasis" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2 text-hieroglyph stagger-element">Temple Library</h3>
-                <p className="text-muted-foreground stagger-element">
-                  Access thousands of tested prompt templates for every use case
-                </p>
-              </Card>
-
-              <Card className="temple-card p-6 text-center pyramid-elevation scale-element hover:scale-105 transition-transform duration-300">
-                <div className="w-12 h-12 bg-pharaoh/20 rounded-lg flex items-center justify-center mx-auto mb-4 stagger-element">
-                  <BarChart3 className="h-6 w-6 text-pharaoh" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2 text-hieroglyph stagger-element">Sacred Analysis</h3>
-                <p className="text-muted-foreground stagger-element">
-                  Upload your chat exports and discover your most effective prompts
-                </p>
-              </Card>
-
-              <Card className="temple-card p-6 text-center pyramid-elevation scale-element hover:scale-105 transition-transform duration-300">
-                <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mx-auto mb-4 stagger-element">
-                  <Zap className="h-6 w-6 text-primary" />
-                  <AssistantBadge/>
-                </div>
-                <h3 className="text-lg font-semibold mb-2 text-hieroglyph stagger-element">Divine Enhancement</h3>
-                <p className="text-muted-foreground stagger-element">
-                  Get AI-powered suggestions to improve your prompts and templates
-                </p>
-              </Card>
-            </div>
-          </RevealOnScroll>
-        </div>
-      </ScrollifyContainer>
       </>
     );
   }

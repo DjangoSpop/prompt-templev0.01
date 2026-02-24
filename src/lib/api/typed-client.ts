@@ -250,8 +250,9 @@ class ApiClient {
     });
   }
 
-  async getTemplateAnalytics(id: string): Promise<any> {
-    return this.request(`/api/v2/templates/${id}/analytics/`);
+  async getTemplateAnalytics(id?: string): Promise<any> {
+    if (id) return this.request(`/api/v2/templates/${id}/analytics/`);
+    return this.request('/api/v2/analytics/template-analytics/');
   }
 
   // Category Methods
@@ -399,7 +400,7 @@ class ApiClient {
   // AskMe — Guided Prompt Builder
   // ============================================
 
-  async askmeStart(data: { goal: string; context?: string }): Promise<AskMeSession> {
+  async askmeStart(data: { intent: string; context?: string }): Promise<AskMeSession> {
     // Use `any` to handle the raw server shape before normalisation
     const raw = await this.request<any>('/api/v2/ai/askme/start/', {
       method: 'POST',
@@ -679,6 +680,94 @@ class ApiClient {
   async deleteSession(sessionId: string): Promise<void> {
     await this.request(`/api/v1/chat/sessions/${sessionId}/`, {
       method: 'DELETE',
+    });
+  }
+
+  // ============================================
+  // Gamification Methods
+  // ============================================
+
+  async getAchievements(): Promise<any> {
+    return this.request('/api/v2/gamification/achievements/');
+  }
+
+  async getBadges(): Promise<any> {
+    return this.request('/api/v2/gamification/badges/');
+  }
+
+  async getLeaderboard(limit: number = 50): Promise<any> {
+    return this.request(`/api/v2/gamification/leaderboard/?limit=${limit}`);
+  }
+
+  async getDailyChallenges(): Promise<any> {
+    return this.request('/api/v2/gamification/daily-challenges/');
+  }
+
+  async getUserLevel(): Promise<any> {
+    return this.request('/api/v2/gamification/user-level/');
+  }
+
+  async getStreak(): Promise<any> {
+    return this.request('/api/v2/gamification/streak/');
+  }
+
+  // ============================================
+  // Analytics Methods
+  // ============================================
+
+  // ============================================
+  // Conversation Threads (/api/v2/history/threads/)
+  // ============================================
+
+  async getConversationThreads(params?: { page?: number; is_shared?: boolean; status?: string }): Promise<any> {
+    const qs = new URLSearchParams();
+    if (params) Object.entries(params).forEach(([k, v]) => { if (v !== undefined) qs.append(k, String(v)); });
+    return this.request(`/api/v2/history/threads/${qs.toString() ? `?${qs}` : ''}`);
+  }
+
+  async getConversationThread(id: string): Promise<any> {
+    return this.request(`/api/v2/history/threads/${id}/`);
+  }
+
+  async createConversationThread(data: { title: string; status?: string; is_shared?: boolean }): Promise<any> {
+    return this.request('/api/v2/history/threads/', { method: 'POST', body: JSON.stringify(data) });
+  }
+
+  async updateConversationThread(id: string, data: Record<string, any>): Promise<any> {
+    return this.request(`/api/v2/history/threads/${id}/`, { method: 'PATCH', body: JSON.stringify(data) });
+  }
+
+  async deleteConversationThread(id: string): Promise<void> {
+    await this.request(`/api/v2/history/threads/${id}/`, { method: 'DELETE' });
+  }
+
+  async addIterationToThread(threadId: string, iterationId: string): Promise<any> {
+    return this.request(`/api/v2/history/threads/${threadId}/add-iteration/`, {
+      method: 'POST',
+      body: JSON.stringify({ iteration_id: iterationId }),
+    });
+  }
+
+  // ============================================
+  // Analytics
+  // ============================================
+
+  async getAnalyticsDashboard(): Promise<any> {
+    return this.request('/api/v2/analytics/dashboard/');
+  }
+
+  async getUserInsights(): Promise<any> {
+    return this.request('/api/v2/analytics/user-insights/');
+  }
+
+  async getRecommendations(): Promise<any> {
+    return this.request('/api/v2/analytics/recommendations/');
+  }
+
+  async trackAnalytics(event: { event_type: string; data?: any }): Promise<void> {
+    await this.request('/api/v2/analytics/track/', {
+      method: 'POST',
+      body: JSON.stringify(event),
     });
   }
 }

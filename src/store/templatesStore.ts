@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { apiClient } from '@/lib/api-client';
 
 export interface Template {
   id: string;
@@ -391,14 +392,10 @@ export const useTemplatesStore = create<TemplatesState & TemplatesActions>()(
       fetchTemplates: async () => {
         try {
           set({ loading: true, error: null });
-          // TODO: Replace with actual API call
-          // const templates = await apiClient.templates.getAll();
-          // get().setTemplates(templates);
-          
-          // For now, we'll use mock data if none exists
-          const { templates } = get();
-          if (templates.length === 0) {
-            // The Library page already has mock data, so we'll skip this for now
+          const result = await apiClient.getTemplates();
+          const list = (result as any)?.results ?? (result as any)?.templates ?? result;
+          if (Array.isArray(list) && list.length > 0) {
+            get().setTemplates(list as any[]);
           }
         } catch (error) {
           set({ error: error instanceof Error ? error.message : 'Failed to fetch templates' });
@@ -410,9 +407,8 @@ export const useTemplatesStore = create<TemplatesState & TemplatesActions>()(
       fetchTemplate: async (id) => {
         try {
           set({ loading: true, error: null });
-          // TODO: Replace with actual API call
-          // const template = await apiClient.templates.getById(id);
-          // get().selectTemplate(template);
+          const template = await apiClient.getTemplate(id);
+          if (template) get().selectTemplate(template as any);
         } catch (error) {
           set({ error: error instanceof Error ? error.message : 'Failed to fetch template' });
         } finally {
@@ -423,9 +419,8 @@ export const useTemplatesStore = create<TemplatesState & TemplatesActions>()(
       searchTemplates: async (query) => {
         try {
           set({ loading: true, error: null });
-          // TODO: Replace with actual API call
-          // const templates = await apiClient.templates.search(query);
-          // get().setTemplates(templates);
+          const templates = await apiClient.searchTemplates(query);
+          if (Array.isArray(templates)) get().setTemplates(templates as any[]);
           get().setSearch(query);
         } catch (error) {
           set({ error: error instanceof Error ? error.message : 'Failed to search templates' });

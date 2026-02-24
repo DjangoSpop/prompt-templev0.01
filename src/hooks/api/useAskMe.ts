@@ -37,7 +37,7 @@ export function useStartAskMe() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { goal: string; context?: string }) =>
+    mutationFn: (data: { intent: string; context?: string }) =>
       apiClient.askmeStart(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: askMeKeys.sessions() });

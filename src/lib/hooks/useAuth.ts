@@ -146,24 +146,26 @@ export const useAuth = () => {
   const registerMutation = useMutation({
     mutationFn: (userData: UserRegistration) => authService.register(userData),
     onSuccess: (data) => {
-      console.log('🎉 Registration mutation success, updating query cache with user:', data.user.username);
-      
-      // Immediately update the auth profile cache
-      queryClient.setQueryData(['auth', 'profile'], data.user);
-      
-      // Force auth state update immediately
-      setAuthState({
-        isAuthenticated: true,
-        lastCheck: Date.now()
-      });
-      
-      // Ensure all auth-related queries are invalidated and refetched
-      queryClient.invalidateQueries({ queryKey: ['auth'] });
-      
-      // Trigger a small delay to ensure proper state propagation
-      setTimeout(() => {
-        refetchUser();
-      }, 50);
+      const username = (data.user as any)?.username ?? '(registered)';
+      console.log('🎉 Registration mutation success:', username);
+
+      // Update profile cache only when we have a real user object
+      if (data.user && (data.user as any).username) {
+        queryClient.setQueryData(['auth', 'profile'], data.user);
+      }
+
+      // Mark as authenticated only when the backend returned valid tokens
+      if (data.tokens?.access) {
+        setAuthState({
+          isAuthenticated: true,
+          lastCheck: Date.now()
+        });
+        queryClient.invalidateQueries({ queryKey: ['auth'] });
+        setTimeout(() => {
+          refetchUser();
+        }, 50);
+      }
+      // No tokens → user needs to log in; leave auth state unchanged
     },
     onError: (error) => {
       console.error('❌ Registration failed:', error);

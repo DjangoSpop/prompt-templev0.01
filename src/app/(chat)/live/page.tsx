@@ -344,7 +344,7 @@ function EnhancedChatInterface() {
   const wsBase = process.env.NEXT_PUBLIC_WS_URL || 'wss://api.prompt-temple.com';
 
   return (
-    <div className="flex flex-col h-[650px] bg-pharaoh-gradient border-2 border-sand-200 rounded-cartouche shadow-xl backdrop-blur-sm">
+    <div className="flex flex-col h-[min(650px,75dvh)] bg-pharaoh-gradient border-2 border-sand-200 rounded-cartouche shadow-xl backdrop-blur-sm">
       {/* Enhanced connection status with pharaonic theme */}
       <div className="px-4 py-3 border-b border-sand-200 bg-sand-50/80 rounded-t-cartouche">
         <ConnectionStatus isConnected={isConnected} latency={latency} />
@@ -390,7 +390,7 @@ function EnhancedChatInterface() {
             }`}
           >
             <div className="whitespace-pre-wrap leading-relaxed font-ui">{m.content}</div>
-            
+
             {/* Optimization result display */}
             {m.optimization && (
               <div className="mt-3 p-3 bg-sand-50 border border-sand-200 rounded-lg">
@@ -407,7 +407,7 @@ function EnhancedChatInterface() {
                 </div>
               </div>
             )}
-            
+
             <div className={`mt-2 text-xs flex items-center gap-2 ${
               m.role === 'user' ? 'text-white/80' : 'text-stone-500'
             }`}>
@@ -415,8 +415,8 @@ function EnhancedChatInterface() {
               <span>{typeof m.timestamp === 'string' ? new Date(m.timestamp).toLocaleTimeString() : m.timestamp.toLocaleTimeString()}</span>
               {m.processingTime && (
                 <span className={`px-2 py-1 rounded-full text-xs ${
-                  m.role === 'user' 
-                    ? 'bg-white/20 text-white' 
+                  m.role === 'user'
+                    ? 'bg-white/20 text-white'
                     : 'bg-nile/10 text-nile'
                 }`}>
                   ⚡ {m.processingTime}ms
@@ -424,8 +424,8 @@ function EnhancedChatInterface() {
               )}
               {m.templateSuggestions && m.templateSuggestions.length > 0 && (
                 <span className={`px-2 py-1 rounded-full text-xs ${
-                  m.role === 'user' 
-                    ? 'bg-white/20 text-white' 
+                  m.role === 'user'
+                    ? 'bg-white/20 text-white'
                     : 'bg-sun/10 text-sun'
                 }`}>
                   <Crown className="h-3 w-3 inline mr-1" />
@@ -435,6 +435,16 @@ function EnhancedChatInterface() {
             </div>
           </div>
         ))}
+
+        {/* Live streaming bubble — shows SSE tokens as they arrive */}
+        {currentStreamingMessage && (
+          <div className="max-w-[75%] rounded-cartouche px-5 py-4 text-sm bg-white border border-sand-200 shadow-sand-200 opacity-90">
+            <div className="whitespace-pre-wrap leading-relaxed font-ui">
+              {currentStreamingMessage.content}
+              <span className="inline-block w-1 h-4 ml-1 bg-sun animate-pulse align-middle" />
+            </div>
+          </div>
+        )}
 
         {/* Egyptian Loading Animation for Deep Thinking */}
         {isThinking && (
@@ -495,8 +505,7 @@ function EnhancedChatInterface() {
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             placeholder="Ask the oracle... (or use /intent, /optimize, /rewrite, /summarize, /code)"
-            disabled={!isConnected}
-            className="flex-1 px-4 py-3 rounded-cartouche border border-sand-300 bg-white/90 backdrop-blur-sm outline-none text-sm font-ui focus:border-sun focus:ring-2 focus:ring-sun/20 disabled:bg-stone-100 disabled:text-stone-400 transition-all"
+            className="flex-1 px-4 py-3 rounded-cartouche border border-sand-300 bg-white/90 backdrop-blur-sm outline-none text-sm font-ui focus:border-sun focus:ring-2 focus:ring-sun/20 transition-all"
           />
           <button
             type="submit"

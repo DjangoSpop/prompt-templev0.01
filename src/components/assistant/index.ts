@@ -13,3 +13,4 @@ export { InspectorDrawer } from './InspectorDrawer';
 export { ThreadList } from './ThreadList';
 export { ThreadMetadata } from './ThreadMetadata';
 export { TypingIndicator } from './TypingIndicator';
+export { AskMeWizard } from './AskMeWizard';

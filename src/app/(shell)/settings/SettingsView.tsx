@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useAIQuotas } from '@/hooks/api/useAI';
+import { useEntitlements } from '@/hooks/api/useBilling';
 import {
   Settings,
   CreditCard,
@@ -44,6 +46,8 @@ interface SettingsState {
 }
 
 export default function SettingsView() {
+  const { data: quotasApiData } = useAIQuotas();
+  const { data: entitlementsData } = useEntitlements();
   const [quotas, setQuotas] = useState<Quota | null>(null);
   const [config, setConfig] = useState<any>(null);
   const [settings, setSettings] = useState<SettingsState>({
@@ -81,30 +85,6 @@ export default function SettingsView() {
   const loadSettings = async () => {
     try {
       setLoading(true);
-      
-      // Mock API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const mockQuotas = {
-        daily_limit: 100,
-        daily_used: 23,
-        monthly_limit: 2000,
-        monthly_used: 456,
-        reset_date: new Date(Date.now() + 86400000).toISOString() // Tomorrow
-      };
-      
-      const mockConfig = {
-        features: {
-          analytics: true,
-          premium_templates: true,
-          api_access: false
-        }
-      };
-      
-      setQuotas(mockQuotas);
-      setConfig(mockConfig);
-      
-      // Load settings from localStorage or config
       const savedSettings = localStorage.getItem('promptcord-settings');
       if (savedSettings) {
         setSettings(JSON.parse(savedSettings));
@@ -115,6 +95,31 @@ export default function SettingsView() {
       setLoading(false);
     }
   };
+
+  // Sync real API quota data into state
+  useEffect(() => {
+    if (quotasApiData) {
+      const q = quotasApiData as any;
+      setQuotas({
+        daily_limit: q.daily_limit ?? 20,
+        daily_used: q.used_today ?? 0,
+        monthly_limit: q.monthly_limit ?? 500,
+        monthly_used: q.used_monthly ?? 0,
+        reset_date: q.reset_time ?? new Date(Date.now() + 86400000).toISOString(),
+      });
+    }
+  }, [quotasApiData]);
+
+  // Sync entitlements into config
+  useEffect(() => {
+    if (entitlementsData) {
+      const e = entitlementsData as any;
+      const features = Array.isArray(e)
+        ? Object.fromEntries((e as any[]).map((ent: any) => [ent.feature, ent.unlimited || ent.remaining > 0]))
+        : e;
+      setConfig({ features });
+    }
+  }, [entitlementsData]);
 
   const handleSettingChange = (category: keyof SettingsState, key: string, value: any) => {
     setSettings(prev => ({

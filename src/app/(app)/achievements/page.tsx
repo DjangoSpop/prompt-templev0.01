@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGameStore } from "@/lib/stores/gameStore";
+import { useAchievements, useLeaderboard, useUserLevel, useStreak } from "@/hooks/api/useGamification";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -102,179 +103,66 @@ const rarityGlow = {
   diamond: 'ring-cyan-400/20 shadow-cyan-400/10',
 };
 
-const mockAchievements: Achievement[] = [
-  {
-    id: 'first-template',
-    title: 'First Steps',
-    description: 'Use your first template',
-    category: 'usage',
-    rarity: 'bronze',
-    xpReward: 50,
-    iconType: 'star',
-    requirements: ['Use 1 template'],
-    isUnlocked: true,
-    unlockedAt: new Date('2024-01-10'),
-  },
-  {
-    id: 'template-master',
-    title: 'Template Master',
-    description: 'Use 100 different templates',
-    category: 'usage',
-    rarity: 'gold',
-    progress: {
-      current: 67,
-      required: 100,
-    },
-    xpReward: 500,
-    iconType: 'trophy',
-    requirements: ['Use 100 unique templates'],
-    isUnlocked: false,
-  },
-  {
-    id: 'week-streak',
-    title: 'Weekly Warrior',
-    description: 'Maintain a 7-day activity streak',
-    category: 'progression',
-    rarity: 'silver',
-    xpReward: 200,
-    iconType: 'flame',
-    requirements: ['Complete 7 consecutive days of activity'],
-    isUnlocked: true,
-    unlockedAt: new Date('2024-01-18'),
-  },
-  {
-    id: 'team-player',
-    title: 'Team Player',
-    description: 'Join your first team',
-    category: 'social',
-    rarity: 'bronze',
-    xpReward: 100,
-    iconType: 'users',
-    requirements: ['Join a team'],
-    isUnlocked: true,
-    unlockedAt: new Date('2024-01-15'),
-  },
-  {
-    id: 'power-user',
-    title: 'Power User',
-    description: 'Reach level 50',
-    category: 'progression',
-    rarity: 'platinum',
-    progress: {
-      current: 34,
-      required: 50,
-    },
-    xpReward: 1000,
-    iconType: 'crown',
-    requirements: ['Reach level 50'],
-    isUnlocked: false,
-  },
-  {
-    id: 'creator',
-    title: 'Template Creator',
-    description: 'Create and publish 10 custom templates',
-    category: 'usage',
-    rarity: 'gold',
-    progress: {
-      current: 3,
-      required: 10,
-    },
-    xpReward: 750,
-    iconType: 'zap',
-    requirements: ['Create 10 custom templates', 'Publish templates to community'],
-    isUnlocked: false,
-  },
-  {
-    id: 'social-butterfly',
-    title: 'Social Butterfly',
-    description: 'Share templates with 25 different users',
-    category: 'social',
-    rarity: 'silver',
-    progress: {
-      current: 8,
-      required: 25,
-    },
-    xpReward: 300,
-    iconType: 'users',
-    requirements: ['Share templates with 25 users'],
-    isUnlocked: false,
-  },
-  {
-    id: 'legendary-master',
-    title: 'Legendary Master',
-    description: 'Complete all other achievements',
-    category: 'special',
-    rarity: 'diamond',
-    xpReward: 2500,
-    iconType: 'award',
-    requirements: ['Complete all other achievements'],
-    isUnlocked: false,
-    isSecret: true,
-  },
-];
 
-const mockLeaderboard: LeaderboardEntry[] = [
-  {
-    rank: 1,
+// ── API rarity → local rarity ──────────────────────────────────────────────
+const RARITY_MAP: Record<string, Achievement['rarity']> = {
+  common: 'bronze',
+  uncommon: 'silver',
+  rare: 'gold',
+  epic: 'platinum',
+  legendary: 'diamond',
+};
+
+// Map backend icon string to local iconType
+function mapIconType(icon: string): Achievement['iconType'] {
+  const map: Record<string, Achievement['iconType']> = {
+    trophy: 'trophy', star: 'star', crown: 'crown', target: 'target',
+    flame: 'flame', fire: 'flame', users: 'users', group: 'users',
+    zap: 'zap', bolt: 'zap', book: 'book', award: 'award', medal: 'award',
+    emoji_events: 'trophy',
+  };
+  return map[icon?.toLowerCase()] ?? 'star';
+}
+
+// Map API achievement object → local Achievement type
+function adaptAchievement(raw: Record<string, unknown>): Achievement {
+  const progressValue = (raw.progress_value as number) ?? 0;
+  const requirementValue = (raw.requirement_value as number) ?? 1;
+  const isUnlocked = !!(raw.is_unlocked ?? raw.unlocked);
+  const apiRarity = (raw.rarity as string) ?? 'common';
+  return {
+    id: String(raw.id ?? ''),
+    title: (raw.name as string) ?? (raw.title as string) ?? 'Achievement',
+    description: (raw.description as string) ?? '',
+    category: (raw.category as Achievement['category']) ?? 'usage',
+    rarity: RARITY_MAP[apiRarity] ?? 'bronze',
+    xpReward: (raw.experience_reward as number) ?? (raw.credits_reward as number) ?? (raw.points as number) ?? 0,
+    iconType: mapIconType((raw.icon as string) ?? ''),
+    requirements: raw.requirement_description
+      ? [(raw.requirement_description as string)]
+      : [`${raw.requirement_type ?? 'complete'}: ${requirementValue}`],
+    isUnlocked,
+    isSecret: !!(raw.is_hidden),
+    unlockedAt: raw.unlocked_at ? new Date(raw.unlocked_at as string) : undefined,
+    progress: !isUnlocked ? { current: progressValue, required: requirementValue } : undefined,
+  };
+}
+
+// Map API leaderboard entry → local LeaderboardEntry
+function adaptLeaderboard(raw: Record<string, unknown>): LeaderboardEntry {
+  return {
+    rank: (raw.rank as number) ?? 0,
     user: {
-      id: '1',
-      name: 'Sarah Chen',
-      avatar: '/avatars/sarah.jpg',
-      level: 67,
+      id: String(raw.user_id ?? raw.id ?? ''),
+      name: (raw.username as string) ?? 'User',
+      avatar: (raw.avatar_url as string) ?? '',
+      level: (raw.level as number) ?? 1,
     },
-    score: 15420,
-    change: 2,
-    achievements: 24,
-  },
-  {
-    rank: 2,
-    user: {
-      id: '2',
-      name: 'Alex Rodriguez',
-      avatar: '/avatars/alex.jpg',
-      level: 61,
-    },
-    score: 14890,
-    change: -1,
-    achievements: 22,
-  },
-  {
-    rank: 3,
-    user: {
-      id: '3',
-      name: 'Maya Patel',
-      avatar: '/avatars/maya.jpg',
-      level: 58,
-    },
-    score: 13750,
-    change: 1,
-    achievements: 19,
-  },
-  {
-    rank: 4,
-    user: {
-      id: '4',
-      name: 'Jordan Kim',
-      avatar: '/avatars/jordan.jpg',
-      level: 52,
-    },
-    score: 12340,
+    score: (raw.experience_points as number) ?? 0,
     change: 0,
-    achievements: 18,
-  },
-  {
-    rank: 5,
-    user: {
-      id: 'current',
-      name: 'You',
-      avatar: '/avatars/current.jpg',
-      level: 34,
-    },
-    score: 8900,
-    change: 3,
-    achievements: 12,
-  },
-];
+    achievements: (raw.achievements_count as number) ?? 0,
+  };
+}
 
 export default function AchievementsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -283,6 +171,36 @@ export default function AchievementsPage() {
   const [leaderboardPeriod, setLeaderboardPeriod] = useState<'weekly' | 'monthly' | 'all-time'>('weekly');
 
   const { user } = useGameStore();
+
+  // Real API hooks
+  const { data: achievementsRaw, isLoading: achievementsLoading } = useAchievements();
+  const { data: leaderboardRaw, isLoading: leaderboardLoading } = useLeaderboard(50);
+  const { data: levelData } = useUserLevel();
+  const { data: streakData } = useStreak();
+
+  // Adapt API data to local types, with fallback to empty arrays
+  const achievements: Achievement[] = useMemo(() => {
+    if (!achievementsRaw) return [];
+    const list = Array.isArray(achievementsRaw) ? achievementsRaw : (achievementsRaw as Record<string, unknown[]>)?.results ?? [];
+    return (list as Record<string, unknown>[]).map(adaptAchievement);
+  }, [achievementsRaw]);
+
+  // Pick leaderboard list based on selected period
+  const leaderboardEntries: LeaderboardEntry[] = useMemo(() => {
+    if (!leaderboardRaw) return [];
+    const raw = leaderboardRaw as Record<string, unknown>;
+    const key = leaderboardPeriod === 'weekly' ? 'weekly_leaders'
+               : leaderboardPeriod === 'monthly' ? 'monthly_leaders'
+               : 'all_time_leaders';
+    const list = (raw[key] as Record<string, unknown>[]) ?? (raw['all_time_leaders'] as Record<string, unknown>[]) ?? [];
+    return list.map(adaptLeaderboard);
+  }, [leaderboardRaw, leaderboardPeriod]);
+
+  // User's rank from leaderboard response
+  const userRank = useMemo(() => {
+    if (!leaderboardRaw) return 0;
+    return (leaderboardRaw as Record<string, unknown>).user_rank as number ?? 0;
+  }, [leaderboardRaw]);
 
   const categories = [
     { id: 'all', name: 'All', icon: Trophy },
@@ -301,7 +219,7 @@ export default function AchievementsPage() {
     { id: 'diamond', name: 'Diamond' },
   ];
 
-  const filteredAchievements = mockAchievements.filter(achievement => {
+  const filteredAchievements = achievements.filter(achievement => {
     if (!achievement.isSecret) {
       if (selectedCategory !== 'all' && achievement.category !== selectedCategory) return false;
       if (selectedRarity !== 'all' && achievement.rarity !== selectedRarity) return false;
@@ -309,8 +227,8 @@ export default function AchievementsPage() {
     return true;
   });
 
-  const unlockedCount = mockAchievements.filter(a => a.isUnlocked).length;
-  const totalCount = mockAchievements.filter(a => !a.isSecret).length;
+  const unlockedCount = achievements.filter(a => a.isUnlocked).length;
+  const totalCount = Math.max(1, achievements.filter(a => !a.isSecret).length);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-primary/5">
@@ -356,10 +274,8 @@ export default function AchievementsPage() {
                   <div>
                     <p className="text-sm text-muted-foreground">Achievement XP</p>
                     <p className="text-lg font-bold">
-                      {mockAchievements
-                        .filter(a => a.isUnlocked)
-                        .reduce((total, a) => total + a.xpReward, 0)
-                        .toLocaleString()}
+                      {(levelData as Record<string, unknown>)?.experience_points?.toLocaleString?.()
+                        ?? achievements.filter(a => a.isUnlocked).reduce((t, a) => t + a.xpReward, 0).toLocaleString()}
                     </p>
                   </div>
                 </div>
@@ -386,7 +302,7 @@ export default function AchievementsPage() {
                   <TrendingUp className="h-5 w-5 text-green-500" />
                   <div>
                     <p className="text-sm text-muted-foreground">Leaderboard Rank</p>
-                    <p className="text-lg font-bold">#5</p>
+                    <p className="text-lg font-bold">{userRank > 0 ? `#${userRank}` : '—'}</p>
                   </div>
                 </div>
               </CardContent>
@@ -461,7 +377,19 @@ export default function AchievementsPage() {
             </div>
 
             {/* Achievements Grid/List */}
-            <div className={viewMode === 'grid' 
+            {achievementsLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="h-48 rounded-lg bg-secondary/20 animate-pulse" />
+                ))}
+              </div>
+            ) : filteredAchievements.length === 0 ? (
+              <div className="text-center py-16 text-muted-foreground">
+                <Trophy className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                <p>No achievements found. Start exploring to unlock them!</p>
+              </div>
+            ) : (
+            <div className={viewMode === 'grid'
               ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
               : "space-y-4"
             }>
@@ -575,6 +503,7 @@ export default function AchievementsPage() {
                 })}
               </AnimatePresence>
             </div>
+            )}
           </TabsContent>
 
           <TabsContent value="leaderboard" className="space-y-6">
@@ -605,8 +534,14 @@ export default function AchievementsPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {mockLeaderboard.map((entry) => {
-                    const isCurrentUser = entry.user.id === 'current';
+                  {leaderboardLoading ? (
+                    Array.from({ length: 5 }).map((_, i) => (
+                      <div key={i} className="h-16 rounded-lg bg-secondary/20 animate-pulse" />
+                    ))
+                  ) : leaderboardEntries.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8">No leaderboard data yet. Be the first!</p>
+                  ) : leaderboardEntries.map((entry) => {
+                    const isCurrentUser = !!(leaderboardRaw as Record<string, unknown>)?.current_user && entry.rank === userRank;
                     
                     return (
                       <motion.div
@@ -641,7 +576,7 @@ export default function AchievementsPage() {
 
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <span className="font-medium">{entry.user.name}</span>
+                              <span className="font-medium">{entry.user.name || entry.user.id}</span>
                               {isCurrentUser && (
                                 <Badge variant="outline" className="text-xs">You</Badge>
                               )}

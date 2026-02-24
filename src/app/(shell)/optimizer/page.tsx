@@ -1,15 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/providers/AuthProvider';
-import { apiClient } from '@/lib/api-client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { usePromptOptimization, useAIModels, useAIUsage } from '@/hooks/api/useAI';
+import { AskMeWizard } from '@/components/assistant/AskMeWizard';
 
-import { 
-  Zap, 
-  Download, 
-  Copy, 
+import {
+  Zap,
+  Download,
+  Copy,
   RefreshCw,
   Sparkles,
   CheckCircle,
@@ -23,31 +25,23 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { OptimizationResult } from '@/hooks/useStreamingChat';
 
-// Mock AI providers data (replace with actual API data)
-const AI_PROVIDERS: { id: string; name: string; models: string[] }[] = [
-  {
-    id: 'openai',
-    name: 'OpenAI',
-    models: ['gpt-4', 'gpt-4o', 'gpt-3.5-turbo'],
-  },
-  {
-    id: 'anthropic',
-    name: 'Anthropic',
-    models: ['claude-3-opus', 'claude-instant'],
-  },
-  {
-    id: 'google',
-    name: 'Google',
-    models: ['gemini-pro', 'gemini-1.5'],
-  },
+type OptimizerTab = 'optimize' | 'guided';
+
+const FALLBACK_PROVIDERS: { id: string; name: string; models: string[] }[] = [
+  { id: 'deepseek', name: 'DeepSeek', models: ['deepseek-chat', 'deepseek-coder'] },
+  { id: 'openai',   name: 'OpenAI',   models: ['gpt-4', 'gpt-3.5-turbo'] },
+  { id: 'anthropic', name: 'Anthropic', models: ['claude-3-opus', 'claude-instant'] },
 ];
 
-export default function OptimizerPage() {
+function OptimizerPageInner() {
   const { user } = useAuth();
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState<OptimizerTab>(
+    searchParams.get('mode') === 'guided' ? 'guided' : 'optimize'
+  );
   const [inputPrompt, setInputPrompt] = useState('');
-  const [selectedProvider, setSelectedProvider] = useState('openai');
-  const [selectedModel, setSelectedModel] = useState('gpt-4');
-  const [isOptimizing, setIsOptimizing] = useState(false);
+  const [selectedProvider, setSelectedProvider] = useState('deepseek');
+  const [selectedModel, setSelectedModel] = useState('deepseek-chat');
   const [optimizationResult, setOptimizationResult] = useState<OptimizationResult | null>(null);
   const [optimizationHistory, setOptimizationHistory] = useState<OptimizationResult[]>([]);
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
@@ -60,69 +54,76 @@ export default function OptimizerPage() {
     targetAudience: 'general',
   });
 
-  useEffect(() => {
-    loadOptimizationHistory();
-  }, []);
+  // Real API hooks
+  const { optimize, isStreaming, output, result, error } = usePromptOptimization();
+  const { data: modelsData } = useAIModels();
+  const { data: usageData } = useAIUsage();
 
-  const loadOptimizationHistory = async () => {
-    try {
-      // TODO: Implement actual API call to get user's optimization history
-      // const history = await apiClient.getOptimizationHistory();
-      // setOptimizationHistory(history);
-    } catch (error) {
-      console.error('Failed to load optimization history:', error);
+  // Group API models by provider; fall back to static list when API is empty
+  const providers = useMemo(() => {
+    if (modelsData && (modelsData as any[]).length > 0) {
+      const grouped: Record<string, string[]> = {};
+      (modelsData as any[]).forEach((m: any) => {
+        const provider = m.provider?.name || m.provider_name || m.provider || 'DeepSeek';
+        if (!grouped[provider]) grouped[provider] = [];
+        grouped[provider].push(m.name || m.model_id || m.id);
+      });
+      return Object.entries(grouped).map(([name, models]) => ({
+        id: name.toLowerCase().replace(/\s+/g, '-'),
+        name,
+        models,
+      }));
     }
-  };
+    return FALLBACK_PROVIDERS;
+  }, [modelsData]);
+
+  // Map streaming result → OptimizationResult shape the UI expects
+  useEffect(() => {
+    if (result) {
+      const mapped: OptimizationResult = {
+        original_prompt: inputPrompt,
+        optimized_prompt: result.optimized || output,
+        improvements: result.suggestions ?? [],
+        confidence: ((result as any).scores?.overall ?? 0) / 10,
+        processing_time_ms: result.usage?.tokens_out ?? 0,
+      };
+      setOptimizationResult(mapped);
+      setOptimizationHistory(prev => [mapped, ...prev].slice(0, 10));
+    }
+  }, [result]);
+
+  // Fallback: if backend sends only token stream (no final result blob), build result from accumulated output
+  useEffect(() => {
+    if (!isStreaming && output && !result && !optimizationResult) {
+      const mapped: OptimizationResult = {
+        original_prompt: inputPrompt,
+        optimized_prompt: output,
+        improvements: [],
+        confidence: 0.85,
+        processing_time_ms: 0,
+      };
+      setOptimizationResult(mapped);
+      setOptimizationHistory(prev => [mapped, ...prev].slice(0, 10));
+    }
+  }, [isStreaming, output, result, optimizationResult, inputPrompt]);
 
   const handleOptimize = async () => {
     if (!inputPrompt.trim()) return;
-
-    setIsOptimizing(true);
-    try {
-      // Mock optimization result - replace with actual API call
-      const result: OptimizationResult = {
-      
-        original_prompt: inputPrompt,
-        optimized_prompt: `# Optimized Prompt
-
-**Role**: You are an expert ${optimizationSettings.targetAudience} advisor with deep knowledge in the subject matter.
-
-**Context**: ${inputPrompt}
-
-**Task**: Please provide a comprehensive response that is:
-- Clear and actionable
-- Specific to the user's needs
-- Well-structured and easy to follow
-
-**Format**: 
-1. Brief summary of key points
-2. Detailed explanation with examples
-3. Actionable next steps
-
-**Constraints**: 
-- Keep responses factual and evidence-based
-- Use clear, professional language
-- Provide specific examples where relevant`,
-        improvements: [
-          'Added clear role definition for better context',
-          'Structured the prompt with clear sections',
-          'Added output format specification',
-          'Included constraints for better control',
-          'Enhanced specificity and clarity'
-        ],
-        confidence: 15,
-          processing_time_ms: 1200,
-    
-      };
-
-      setOptimizationResult(result);
-      setOptimizationHistory(prev => [result, ...prev]);
-    } catch (error) {
-      console.error('Optimization failed:', error);
-    } finally {
-      setIsOptimizing(false);
-    }
+    setOptimizationResult(null);
+    await optimize({
+      original: inputPrompt,
+      session_id: `optimize_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      model: selectedModel,
+      mode: 'fast',
+      context: {
+        focus: optimizationSettings.focus,
+        target_audience: optimizationSettings.targetAudience,
+        include_examples: optimizationSettings.includeExamples,
+      },
+    });
   };
+
+  const isOptimizing = isStreaming;
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -141,7 +142,7 @@ export default function OptimizerPage() {
   };
 
   const getProviderModels = (providerId: string) => {
-    return AI_PROVIDERS.find(p => p.id === providerId)?.models || [];
+    return providers.find(p => p.id === providerId)?.models || [];
   };
 
   return (
@@ -162,6 +163,43 @@ export default function OptimizerPage() {
         </p>
       </div>
 
+      {/* Tab switcher */}
+      <div className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg max-w-xs">
+        <button
+          type="button"
+          onClick={() => setActiveTab('optimize')}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            activeTab === 'optimize'
+              ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+              : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+          }`}
+        >
+          <Zap className="h-4 w-4" />
+          Optimize
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('guided')}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            activeTab === 'guided'
+              ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+              : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+          }`}
+        >
+          <Sparkles className="h-4 w-4" />
+          Guided Build
+        </button>
+      </div>
+
+      {/* Guided Builder tab */}
+      {activeTab === 'guided' && (
+        <Card className="p-6 max-w-2xl">
+          <AskMeWizard />
+        </Card>
+      )}
+
+      {/* Optimize tab */}
+      {activeTab === 'optimize' && (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Input Section */}
         <div className="lg:col-span-2 space-y-6">
@@ -205,7 +243,7 @@ export default function OptimizerPage() {
   }}
   className="w-full p-3 border border-gray-300 rounded-lg dark:bg-gray-800 dark:border-gray-600"
 >
-                    {AI_PROVIDERS.map(provider => (
+                    {providers.map(provider => (
                       <option key={provider.id} value={provider.id}>
                         {provider.name}
                       </option>
@@ -334,7 +372,7 @@ export default function OptimizerPage() {
                 {isOptimizing ? (
                   <>
                     <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
-                    Optimizing...
+                    {output ? 'Streaming...' : 'Optimizing...'}
                   </>
                 ) : (
                   <>
@@ -345,6 +383,18 @@ export default function OptimizerPage() {
               </Button>
             </div>
           </Card>
+
+          {/* Live streaming output — shown while SSE tokens arrive */}
+          {isStreaming && output && (
+            <Card className="p-6 border-purple-200 bg-purple-50/30">
+              <h2 className="text-lg font-semibold text-purple-900 mb-3 flex items-center gap-2">
+                <RefreshCw className="w-4 h-4 animate-spin" /> Optimizing...
+              </h2>
+              <pre className="text-sm text-gray-700 whitespace-pre-wrap font-mono leading-relaxed">
+                {output}<span className="animate-pulse">▋</span>
+              </pre>
+            </Card>
+          )}
 
           {/* Results Section */}
           {optimizationResult && (
@@ -437,26 +487,6 @@ export default function OptimizerPage() {
                   </div>
                 </div>
 
-                Model Variants
-                {optimizationResult.improvements && Object.keys(optimizationResult.improvements).length > 0 && (
-                  <div className="space-y-3">
-                    <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">
-                      Model-Specific Variants
-                    </h3>
-                    <div className="space-y-3">
-                      {Object.entries(optimizationResult.improvements).map(([model, variant]) => (
-                          <div key={model} className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                            <h4 className="font-medium text-blue-900 dark:text-blue-300 mb-2">
-                              {model}
-                            </h4>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                              {typeof variant === 'string' ? variant : JSON.stringify(variant)}
-                            </p>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                )}
               </div>
             </Card>
           )}
@@ -550,32 +580,47 @@ export default function OptimizerPage() {
           {user && (
             <Card className="p-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Your Usage
+                Your AI Usage
               </h3>
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600 dark:text-gray-400">
-                    Optimizations this month
+                    Tokens used today
                   </span>
-                  <span className="text-sm font-medium">24</span>
+                  <span className="text-sm font-medium">
+                    {(usageData as any)?.tokens_used_today ?? '—'}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600 dark:text-gray-400">
-                    Average improvement
+                    Tokens remaining
                   </span>
-                  <span className="text-sm font-medium text-green-600">+67%</span>
+                  <span className="text-sm font-medium text-green-600">
+                    {(usageData as any)?.tokens_remaining_today ?? '—'}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600 dark:text-gray-400">
-                    Templates created
+                    Cost today
                   </span>
-                  <span className="text-sm font-medium">8</span>
+                  <span className="text-sm font-medium">
+                    ${(usageData as any)?.cost_today?.toFixed(4) ?? '0.0000'}
+                  </span>
                 </div>
               </div>
             </Card>
           )}
         </div>
       </div>
+      )} {/* end activeTab === 'optimize' */}
     </div>
+  );
+}
+
+export default function OptimizerPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-gray-500">Loading…</div>}>
+      <OptimizerPageInner />
+    </Suspense>
   );
 }
