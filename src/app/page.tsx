@@ -38,7 +38,6 @@ import { useAcademyStore } from '@/lib/stores/academyStore';
 // Viral landing components
 import { HeroTransformer } from '@/components/HeroTransformer';
 import { SocialProofTicker } from '@/components/SocialProofTicker';
-import { BeforeAfterShowcase } from '@/components/BeforeAfterShowcase';
 import { HowItWorks } from '@/components/HowItWorks';
 import { PricingSection } from '@/components/PricingSection';
 import { TestimonialsCarousel } from '@/components/TestimonialsCarousel';
@@ -107,21 +106,24 @@ export default function DashboardPage() {
           {/* Divider */}
           <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #A78BFA, transparent)' }} />
 
-          {/* 4. BEFORE/AFTER SHOWCASE */}
-          <BeforeAfterShowcase />
-
+         
+          <HeroSection/>
+            <EnhancedFloatingParticles/>
           {/* Divider */}
           <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #60A5FA, transparent)' }} />
-
+          <TempleGateHero/>
+          <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #60A5FA, transparent)' }} />
+            <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #60A5FA, transparent)' }} />
+          
           {/* 5. PRICING TIERS */}
           <PricingSection />
-
+         <PharaohHero/>
           {/* Divider */}
           <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #F5C518, transparent)' }} />
-
+        
           {/* 6. TESTIMONIALS */}
           <TestimonialsCarousel />
-
+            
           {/* Divider */}
           <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #10B981, transparent)' }} />
 

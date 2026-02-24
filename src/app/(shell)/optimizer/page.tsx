@@ -6,6 +6,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { usePromptOptimization, useAIModels, useAIUsage } from '@/hooks/api/useAI';
+import { SavePromptButton } from '@/components/optimizer/SavePromptButton';
 import { AskMeWizard } from '@/components/assistant/AskMeWizard';
 
 import {
@@ -458,14 +459,11 @@ function OptimizerPageInner() {
                         <Copy className="w-4 h-4 mr-2" />
                         Copy
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleSaveTemplate}
-                      >
-                        <Save className="w-4 h-4 mr-2" />
-                        Save as Template
-                      </Button>
+                      <SavePromptButton
+                        originalPrompt={optimizationResult.original_prompt}
+                        optimizedPrompt={optimizationResult.optimized_prompt}
+                        improvements={optimizationResult.improvements}
+                      />
                     </div>
                   </div>
                 </div>

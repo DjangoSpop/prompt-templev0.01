@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { create } from 'zustand';
@@ -1296,8 +1296,8 @@ const TemplateCreateModal: React.FC<{
   );
 };
 
-// Main Component
-export default function OptimizationPlayground() {
+// Main Component (content)
+function OptimizationContent() {
   const store = useOptimizationStore();
   const searchParams = useSearchParams();
   // Legacy clients kept for backward-compat UI references; streaming is now
@@ -1980,6 +1980,14 @@ export default function OptimizationPlayground() {
         </div>
       )}
     </>
+  );
+}
+
+export default function OptimizationPlayground() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <OptimizationContent />
+    </Suspense>
   );
 }
 
