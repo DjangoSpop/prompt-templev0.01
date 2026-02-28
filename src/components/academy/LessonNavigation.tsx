@@ -62,28 +62,30 @@ export function LessonNavigation({
   };
 
   return (
-    <div className={`flex items-center justify-between gap-4 ${className}`}>
+    <div className={`flex items-center justify-between gap-2 md:gap-4 ${className}`}>
       {/* Previous Button */}
       <Button
         variant="outline"
         onClick={onPrevious}
         disabled={isFirstLesson}
-        className="flex items-center gap-2 min-w-[120px]"
+        className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 flex-shrink-0"
       >
-        <ChevronLeft className="w-4 h-4" />
-        Previous
+        <ChevronLeft className="w-4 h-4 flex-shrink-0" />
+        <span className="hidden xs:inline sm:inline">Previous</span>
+        <span className="xs:hidden sm:hidden">Prev</span>
       </Button>
 
       {/* Progress Indicator */}
-      <div className="flex-1 text-center">
+      <div className="flex-1 text-center min-w-0">
         {!showQuiz && (
-          <p className="text-sm text-desert-sand-300">
-            Lesson <span className="text-royal-gold-400 font-semibold">{currentLessonIndex + 1}</span> of{' '}
-            {totalLessons}
+          <p className="text-xs md:text-sm text-desert-sand-300 truncate">
+            <span className="hidden sm:inline">Lesson </span>
+            <span className="text-royal-gold-400 font-semibold">{currentLessonIndex + 1}</span>
+            <span className="text-desert-sand-400"> / {totalLessons}</span>
           </p>
         )}
         {showQuiz && (
-          <p className="text-sm text-royal-gold-400 font-semibold">
+          <p className="text-xs md:text-sm text-royal-gold-400 font-semibold truncate">
             Module Quiz
           </p>
         )}
@@ -93,17 +95,17 @@ export function LessonNavigation({
       <Button
         onClick={handleNext}
         disabled={isCompleting}
-        className="flex items-center gap-2 min-w-[120px] bg-gradient-to-r from-royal-gold-500 to-royal-gold-600 hover:from-royal-gold-600 hover:to-royal-gold-700"
+        className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 flex-shrink-0 bg-gradient-to-r from-royal-gold-500 to-royal-gold-600 hover:from-royal-gold-600 hover:to-royal-gold-700"
       >
         {isCompleting ? (
           <>
-            <CheckCircle className="w-4 h-4 animate-pulse" />
-            Complete
+            <CheckCircle className="w-4 h-4 animate-pulse flex-shrink-0" />
+            <span className="hidden xs:inline">Saving</span>
           </>
         ) : (
           <>
-            {isLastLesson && !showQuiz ? 'Take Quiz' : 'Next'}
-            <ChevronRight className="w-4 h-4" />
+            <span>{isLastLesson && !showQuiz ? 'Quiz' : 'Next'}</span>
+            <ChevronRight className="w-4 h-4 flex-shrink-0" />
           </>
         )}
       </Button>

@@ -68,33 +68,33 @@ export default function Module1Page() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-obsidian-950">
+    <div className="fixed inset-0 z-[100] flex flex-col bg-obsidian-900">
       {/* Header with Progress */}
       <header className="flex-shrink-0 bg-obsidian-900/95 backdrop-blur-sm border-b border-royal-gold-500/20">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-3 md:py-4">
           <div className="flex items-center justify-between">
             <Link
               href="/academy"
               className="flex items-center text-desert-sand-300 hover:text-royal-gold-400 transition-colors"
             >
               <ChevronLeft className="w-5 h-5 mr-1" />
-              Back to Academy
+              <span className="text-sm md:text-base">Back</span>
             </Link>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 md:gap-4">
               <div className="hidden sm:flex items-center gap-2 text-sm text-desert-sand-300">
                 <GraduationCap className="w-4 h-4" />
                 <span>Module 1: Foundations</span>
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="w-32 h-2 bg-obsidian-800 rounded-full overflow-hidden">
+                <div className="w-24 md:w-32 h-2 bg-obsidian-800 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-royal-gold-500 to-nile-teal-500 transition-all duration-500"
                     style={{ width: `${progressPercentage}%` }}
                   />
                 </div>
-                <span className="text-sm text-desert-sand-300 font-medium">
+                <span className="text-xs md:text-sm text-desert-sand-300 font-medium">
                   {progressPercentage}%
                 </span>
               </div>
@@ -118,71 +118,75 @@ export default function Module1Page() {
           }}
         />
 
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto p-6 md:p-10">
-          <div className="max-w-4xl">
-            {showQuiz ? (
-              // Quiz View
-              <div>
-                <div className="mb-8">
-                  <h1 className="text-3xl lg:text-4xl font-bold text-royal-gold-400 mb-4">
-                    {module.quiz.title}
-                  </h1>
-                  <p className="text-desert-sand-200">
-                    {module.quiz.description}
-                  </p>
-                  <div className="mt-4 flex items-center gap-4 text-sm text-desert-sand-300">
-                    <span>{module.quiz.questions.length} questions</span>
-                    <span>•</span>
-                    <span>Passing score: {module.quiz.passingScore}%</span>
-                    <span>•</span>
-                    <span className="text-nile-teal-400 font-semibold">
-                      {module.quiz.xpReward} XP
-                    </span>
+        {/* Main Content + Sticky Footer */}
+        <div className="flex-1 flex flex-col min-h-0">
+          {/* Scrollable Content */}
+          <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-10">
+            <div className="max-w-4xl pb-4">
+              {showQuiz ? (
+                // Quiz View
+                <div>
+                  <div className="mb-8">
+                    <h1 className="text-2xl lg:text-4xl font-bold text-royal-gold-400 mb-4">
+                      {module.quiz.title}
+                    </h1>
+                    <p className="text-desert-sand-200">
+                      {module.quiz.description}
+                    </p>
+                    <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-desert-sand-300">
+                      <span>{module.quiz.questions.length} questions</span>
+                      <span>•</span>
+                      <span>Passing score: {module.quiz.passingScore}%</span>
+                      <span>•</span>
+                      <span className="text-nile-teal-400 font-semibold">
+                        {module.quiz.xpReward} XP
+                      </span>
+                    </div>
+                  </div>
+
+                  <QuizEngine quiz={module.quiz} moduleId={MODULE_ID} />
+                </div>
+              ) : (
+                // Lesson View
+                <div>
+                  {/* Lesson Header */}
+                  <div className="mb-6 md:mb-8">
+                    <div className="text-sm text-royal-gold-400 font-semibold mb-2">
+                      Lesson {currentLessonIndex + 1} of {totalLessons}
+                    </div>
+                    <h1 className="text-2xl lg:text-4xl font-bold text-royal-gold-400 mb-3">
+                      {currentLesson.title}
+                    </h1>
+                    <div className="flex items-center gap-3 text-sm text-desert-sand-300">
+                      <span>{currentLesson.estimatedTime} min read</span>
+                      <span>•</span>
+                      <span className="text-nile-teal-400 font-semibold">
+                        +{currentLesson.xpReward} XP
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Lesson Content */}
+                  <div className="max-w-none">
+                    <LessonContent content={currentLesson.content} lessonId={currentLesson.id} />
                   </div>
                 </div>
+              )}
+            </div>
+          </main>
 
-                <QuizEngine quiz={module.quiz} moduleId={MODULE_ID} />
-              </div>
-            ) : (
-              // Lesson View
-              <div>
-                {/* Lesson Header */}
-                <div className="mb-8">
-                  <div className="text-sm text-royal-gold-400 font-semibold mb-2">
-                    Lesson {currentLessonIndex + 1} of {totalLessons}
-                  </div>
-                  <h1 className="text-3xl lg:text-4xl font-bold text-royal-gold-400 mb-4">
-                    {currentLesson.title}
-                  </h1>
-                  <div className="flex items-center gap-4 text-sm text-desert-sand-300">
-                    <span>{currentLesson.estimatedTime} min read</span>
-                    <span>•</span>
-                    <span className="text-nile-teal-400 font-semibold">
-                      +{currentLesson.xpReward} XP
-                    </span>
-                  </div>
-                </div>
-
-                {/* Lesson Content */}
-                <div className="prose prose-invert prose-desert max-w-none">
-                  <LessonContent content={currentLesson.content} lessonId={currentLesson.id} />
-                </div>
-
-                {/* Navigation */}
-                <LessonNavigation
-                  moduleId={MODULE_ID}
-                  currentLessonIndex={currentLessonIndex}
-                  totalLessons={totalLessons}
-                  showQuiz={showQuiz}
-                  onPrevious={handlePreviousLesson}
-                  onNext={handleNextLesson}
-                  className="mt-12"
-                />
-              </div>
-            )}
+          {/* Sticky Navigation Footer — always visible, never buried in scroll */}
+          <div className="flex-shrink-0 bg-obsidian-900/95 backdrop-blur-sm border-t border-royal-gold-500/20 px-4 py-3 md:px-6 lg:px-10">
+            <LessonNavigation
+              moduleId={MODULE_ID}
+              currentLessonIndex={currentLessonIndex}
+              totalLessons={totalLessons}
+              showQuiz={showQuiz}
+              onPrevious={handlePreviousLesson}
+              onNext={handleNextLesson}
+            />
           </div>
-        </main>
+        </div>
       </div>
     </div>
   );

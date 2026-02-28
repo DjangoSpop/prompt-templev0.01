@@ -53,7 +53,9 @@ interface NavItem {
 }
 
 const navigationItems: NavItem[] = [
+
   // Main
+
   {
     id: 'dashboard',
     label: 'Dashboard',
@@ -61,6 +63,14 @@ const navigationItems: NavItem[] = [
     icon: Home,
     description: 'Overview and analytics',
     category: 'main',
+  },
+    {
+    id: 'academy',
+    label: 'Academy',
+    href: '/academy',
+    icon: Crown,
+    description: 'Learning & Tutorials',
+    category: 'resources',
   },
   {
     id: 'templates',
@@ -164,14 +174,7 @@ const navigationItems: NavItem[] = [
   //   category: 'tools',
   // },
   // Resources
-  {
-    id: 'academy',
-    label: 'Academy',
-    href: '/academy',
-    icon: Crown,
-    description: 'Learning & Tutorials',
-    category: 'resources',
-  },
+
   {
     id: 'help',
     label: 'Help',

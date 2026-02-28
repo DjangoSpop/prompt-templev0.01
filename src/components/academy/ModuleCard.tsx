@@ -69,7 +69,7 @@ export function ModuleCard({ module }: ModuleCardProps) {
       <Card
         className={`p-6 transition-all duration-300 hover:shadow-lg ${getBorderColor()} ${
           !isUnlocked ? 'opacity-75' : ''
-        } relative overflow-hidden group`}
+        } relative overflow-hidden group bg-obsidian-900 text-white`}
       >
         {/* Background glow effect */}
         {isUnlocked && !isCompleted && (
@@ -82,10 +82,10 @@ export function ModuleCard({ module }: ModuleCardProps) {
 
           <div className="flex flex-col items-end gap-2">
             {!isUnlocked && (
-              <Lock className="w-5 h-5 text-royal-gold-500" />
+              <Lock className="w-5 h-5 text-royal-gold-400" />
             )}
             {isCompleted && (
-              <CheckCircle className="w-5 h-5 text-nile-teal-500" />
+              <CheckCircle className="w-5 h-5 text-emerald-400" />
             )}
             {status === 'in-progress' && (
               <Badge variant="warning" className="text-xs">
@@ -97,35 +97,35 @@ export function ModuleCard({ module }: ModuleCardProps) {
 
         {/* Module Info */}
         <div className="relative z-10">
-          <h3 className="text-xl font-bold text-royal-gold-400 mb-2 group-hover:text-royal-gold-300 transition-colors">
+          <h3 className="text-xl font-bold text-royal-gold-300 mb-2 group-hover:text-royal-gold-200 transition-colors">
             {module.title}
           </h3>
 
-          <p className="text-sm text-desert-sand-200 mb-4 line-clamp-2">
+          <p className="text-sm text-gray-200 mb-4 line-clamp-2 leading-relaxed">
             {module.description}
           </p>
 
           {/* Meta Info */}
-          <div className="flex flex-wrap items-center gap-3 text-xs text-desert-sand-300 mb-4">
+          <div className="flex flex-wrap items-center gap-3 text-xs text-gray-300 mb-4">
             <span className="flex items-center gap-1">
-              <Clock className="w-3 h-3" />
+              <Clock className="w-3 h-3 text-gray-400" />
               {module.duration} min
             </span>
-            <span>•</span>
-            <span className="flex items-center gap-1 text-nile-teal-400 font-semibold">
+            <span className="text-gray-500">•</span>
+            <span className="flex items-center gap-1 text-emerald-400 font-semibold">
               <Award className="w-3 h-3" />
               {module.xpReward} XP
             </span>
-            <span>•</span>
-            <span>{module.lessons.length} lessons</span>
+            <span className="text-gray-500">•</span>
+            <span className="text-gray-300">{module.lessons.length} lessons</span>
           </div>
 
           {/* Progress Bar (only if started) */}
           {hasStarted && !isCompleted && (
             <div className="mb-4">
-              <div className="flex items-center justify-between text-xs text-desert-sand-300 mb-1">
+              <div className="flex items-center justify-between text-xs text-gray-300 mb-1">
                 <span>Progress</span>
-                <span>{progressPercentage}%</span>
+                <span className="font-semibold text-royal-gold-300">{progressPercentage}%</span>
               </div>
               <Progress value={progressPercentage} className="h-2" />
             </div>
@@ -133,10 +133,10 @@ export function ModuleCard({ module }: ModuleCardProps) {
 
           {/* Quiz Score (if completed) */}
           {isCompleted && moduleProgress?.quizScore !== null && (
-            <div className="mb-4 p-3 bg-nile-teal-900/20 border border-nile-teal-500/30 rounded-lg">
+            <div className="mb-4 p-3 bg-emerald-900/30 border border-emerald-500/40 rounded-lg">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-desert-sand-200">Quiz Score:</span>
-                <span className="text-nile-teal-400 font-bold">
+                <span className="text-gray-200 font-medium">Quiz Score:</span>
+                <span className="text-emerald-300 font-bold">
                   {moduleProgress.quizScore}%
                 </span>
               </div>
@@ -153,7 +153,7 @@ export function ModuleCard({ module }: ModuleCardProps) {
           ) : (
             <Button
               variant="outline"
-              className="w-full border-royal-gold-500/50 hover:border-royal-gold-500"
+              className="w-full border-royal-gold-500/50 text-royal-gold-300 hover:border-royal-gold-400 hover:bg-royal-gold-500/10"
               onClick={handleClick}
             >
               <Lock className="w-4 h-4 mr-2" />
@@ -163,7 +163,7 @@ export function ModuleCard({ module }: ModuleCardProps) {
 
           {/* Prerequisites (if any and locked) */}
           {!isUnlocked && module.prerequisites.length > 0 && (
-            <p className="text-xs text-desert-sand-400 mt-3 text-center">
+            <p className="text-xs text-gray-400 mt-3 text-center">
               Complete {module.prerequisites.join(', ')} first
             </p>
           )}

@@ -8,6 +8,10 @@ type Props = {
 	showLabel?: boolean;
 	labelText?: string;
 	className?: string;
+	/** Enable slow, layered animations — orbit ring, iris pulse, eyelid blink */
+	animated?: boolean;
+	/** Base speed multiplier — higher = slower. 1 = default, 2 = twice as slow */
+	speedMultiplier?: number;
 };
 
 export default function Eyehorus({
@@ -18,12 +22,56 @@ export default function Eyehorus({
 	showLabel = false,
 	labelText = "PromptTemple",
 	className = "",
+	animated = false,
+	speedMultiplier = 1,
 }: Props) {
 	const labelSize = Math.max(12, Math.round(size * 0.14));
 	const glowStdDeviation = glowIntensity === "high" ? 4 : glowIntensity === "medium" ? 2.5 : 1.5;
 
+	// Animation durations — all deliberately slow so they read beautifully on screen
+	// speedMultiplier > 1 makes everything slower (easier to see / iterate)
+	const orbitDur = `${8 * speedMultiplier}s`;
+	const orbitDurReverse = `${12 * speedMultiplier}s`;
+	const pulseDur = `${4 * speedMultiplier}s`;
+	const blinkDur = `${6 * speedMultiplier}s`;
+	const shimmerDur = `${3 * speedMultiplier}s`;
+
 	return (
 		<div className={`inline-flex flex-col items-center ${className}`}>
+			{animated && (
+				<style>{`
+					@keyframes eoh-orbit {
+						from { transform: rotate(0deg); }
+						to   { transform: rotate(360deg); }
+					}
+					@keyframes eoh-orbit-reverse {
+						from { transform: rotate(0deg); }
+						to   { transform: rotate(-360deg); }
+					}
+					@keyframes eoh-iris-pulse {
+						0%, 100% { transform: scale(1);   opacity: 1; }
+						50%       { transform: scale(1.18); opacity: 0.85; }
+					}
+					@keyframes eoh-blink {
+						0%, 85%, 100% { transform: scaleY(1); }
+						90%           { transform: scaleY(0.08); }
+					}
+					@keyframes eoh-shimmer {
+						0%, 100% { opacity: 0.6; }
+						50%       { opacity: 1; }
+					}
+					@keyframes eoh-outer-glow {
+						0%, 100% { filter: blur(6px); opacity: 0.3; }
+						50%       { filter: blur(14px); opacity: 0.7; }
+					}
+					.eoh-orbit          { animation: eoh-orbit         ${orbitDur} linear infinite; transform-origin: 60px 60px; }
+					.eoh-orbit-reverse  { animation: eoh-orbit-reverse  ${orbitDurReverse} linear infinite; transform-origin: 60px 60px; }
+					.eoh-iris-pulse     { animation: eoh-iris-pulse     ${pulseDur} ease-in-out infinite; transform-origin: 60px 55px; }
+					.eoh-blink          { animation: eoh-blink          ${blinkDur} ease-in-out infinite; transform-origin: 60px 55px; }
+					.eoh-shimmer        { animation: eoh-shimmer        ${shimmerDur} ease-in-out infinite; }
+					.eoh-outer-glow     { animation: eoh-outer-glow     ${pulseDur} ease-in-out infinite; }
+				`}</style>
+			)}
 			<svg
 				width={size}
 				height={size}
@@ -40,6 +88,13 @@ export default function Eyehorus({
 						<stop offset="50%" stopColor="#d4af37" />
 						<stop offset="75%" stopColor="#c5a028" />
 						<stop offset="100%" stopColor="#b8941f" />
+					</linearGradient>
+
+					{/* Orbit ring gradient */}
+					<linearGradient id={`orbit-gold-${variant}`} x1="0%" y1="0%" x2="100%" y2="0%">
+						<stop offset="0%" stopColor="#f4d03f" stopOpacity="0" />
+						<stop offset="50%" stopColor="#ffd700" stopOpacity="1" />
+						<stop offset="100%" stopColor="#f4d03f" stopOpacity="0" />
 					</linearGradient>
 
 					{/* Inner Glow Gradient */}
@@ -67,7 +122,37 @@ export default function Eyehorus({
 					</filter>
 				</defs>
 
+				{/* Animated outer glow ring — only rendered when animated=true */}
+				{animated && (
+					<circle
+						cx="60" cy="60" r="56"
+						fill="none"
+						stroke="#f4d03f"
+						strokeWidth="0.5"
+						strokeOpacity="0.25"
+						className="eoh-outer-glow"
+					/>
+				)}
+
+				{/* Outer orbit ring — slow clockwise */}
+				{animated && (
+					<g className="eoh-orbit">
+						<circle cx="60" cy="60" r="52" fill="none" stroke={`url(#orbit-gold-${variant})`} strokeWidth="1" strokeDasharray="18 314" strokeLinecap="round" />
+						{/* orbit dot */}
+						<circle cx="60" cy="8" r="2.5" fill="#ffd700" opacity="0.9" />
+					</g>
+				)}
+
+				{/* Inner orbit ring — slow counter-clockwise */}
+				{animated && (
+					<g className="eoh-orbit-reverse">
+						<circle cx="60" cy="60" r="45" fill="none" stroke="#d4af37" strokeWidth="0.6" strokeDasharray="8 274" strokeLinecap="round" opacity="0.5" />
+					</g>
+				)}
+
 				<g filter={glow ? `url(#pharaonic-glow-${variant})` : undefined}>
+					{/* Eyelids wrap — blink animation applied here */}
+					<g className={animated ? "eoh-blink" : undefined}>
 					{/* Upper Eye Lid - Iconic Horus Shape */}
 					<path
 						d="M 20 60 Q 30 35, 60 35 Q 90 35, 100 60"
@@ -96,8 +181,9 @@ export default function Eyehorus({
 						ry="18"
 						fill="rgba(15, 15, 20, 0.8)"
 					/>
+					</g>{/* end blink group */}
 
-					{/* Iris - Glowing Center */}
+					{/* Iris - Glowing Center — pulse animation */}
 					<ellipse
 						cx="60"
 						cy="55"
@@ -105,6 +191,7 @@ export default function Eyehorus({
 						ry="12"
 						fill={`url(#inner-glow-${variant})`}
 						filter={`url(#drop-shadow-${variant})`}
+						className={animated ? "eoh-iris-pulse" : undefined}
 					/>
 
 					{/* Pupil - Deep Black */}
@@ -115,13 +202,14 @@ export default function Eyehorus({
 						fill="rgba(10, 10, 10, 0.95)"
 					/>
 
-					{/* Inner Eye Highlight */}
+					{/* Inner Eye Highlight — shimmer when animated */}
 					<ellipse
 						cx="62"
 						cy="53"
 						rx="2"
 						ry="2.5"
 						fill="rgba(255, 255, 255, 0.6)"
+						className={animated ? "eoh-shimmer" : undefined}
 					/>
 
 					{/* Horus Markings - Right Side Extension */}

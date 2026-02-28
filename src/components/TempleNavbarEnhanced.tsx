@@ -777,6 +777,7 @@ export function TempleNavbarEnhanced() {
                     
                     {/* Mobile Toggle */}
                     <button
+                    title='setMobile open'
                       onClick={() => setIsMobileMenuOpen(true)}
                       className="lg:hidden p-2 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-full transition-colors"
                     >

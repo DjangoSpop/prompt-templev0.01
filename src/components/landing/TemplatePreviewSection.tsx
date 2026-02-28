@@ -1,13 +1,8 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { ArrowRight, Star, Users } from 'lucide-react'
-
-gsap.registerPlugin(ScrollTrigger)
 
 const PREVIEW_TEMPLATES = [
   {
@@ -54,51 +49,24 @@ const PREVIEW_TEMPLATES = [
   },
 ]
 
+// FM-only variants with per-item stagger via `custom` prop — no GSAP conflict
 const cardVariants = {
-  hidden: { opacity: 0, y: 40, scale: 0.95 } as const,
-  visible: {
+  hidden: { opacity: 0, y: 40, scale: 0.95 },
+  visible: (i: number) => ({
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: { duration: 0.5, ease: [0.23, 1, 0.32, 1] },
-  } as const,
+    transition: {
+      duration: 0.55,
+      delay: i * 0.07,
+      ease: [0.23, 1, 0.32, 1] as [number, number, number, number],
+    },
+  }),
 }
 
 export function TemplatePreviewSection() {
-  const sectionRef = useRef<HTMLElement>(null)
-
-  useEffect(() => {
-    if (!sectionRef.current) return
-
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (prefersReduced) {
-      gsap.set('.preview-card', { opacity: 1, y: 0, rotation: 0 })
-      return
-    }
-
-    const mobile = window.innerWidth < 768
-
-    const ctx = gsap.context(() => {
-      gsap.from('.preview-card', {
-        rotation: mobile ? 0 : ((i: number) => -6 + i * 3),
-        y: mobile ? 30 : 60,
-        opacity: 0,
-        stagger: mobile ? 0.06 : 0.08,
-        duration: mobile ? 0.5 : 0.7,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: mobile ? 'top 88%' : 'top 75%',
-          once: true,
-        },
-      })
-    }, sectionRef)
-
-    return () => ctx.revert()
-  }, [])
-
   return (
-    <section ref={sectionRef} className="py-20 px-4">
+    <section className="py-20 px-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
@@ -115,7 +83,7 @@ export function TemplatePreviewSection() {
           {PREVIEW_TEMPLATES.map((template, i) => (
             <motion.div
               key={i}
-              className="preview-card"
+              custom={i}
               variants={cardVariants}
               initial="hidden"
               whileInView="visible"
@@ -127,7 +95,7 @@ export function TemplatePreviewSection() {
               }}
             >
               <div className="rounded-2xl border border-[#F5C518]/15 bg-gradient-to-br from-[#1A1200]/80 to-[#0D0D0D]/90 backdrop-blur-xl overflow-hidden group">
-                {/* Golden accent bar */}
+                {/* Golden accent bar on hover */}
                 <div className="h-[2px] bg-gradient-to-r from-transparent via-[#F5C518] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                 <div className="p-6">

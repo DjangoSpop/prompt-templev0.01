@@ -145,7 +145,7 @@ function CodeBlock({ language, code, caption }: { language: string; code: string
         </SyntaxHighlighter>
       </div>
       {caption && (
-        <p className="academy-body-font text-sm text-desert-sand-200 mt-2 text-center italic">
+        <p className="academy-body-font text-sm text-desert-sand-300 mt-2 text-center italic">
           {caption}
         </p>
       )}

@@ -5,6 +5,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import { useEventTracker } from '@/providers/AnalyticsProvider';
 import { useDashboard } from '@/lib/hooks';
 import { GamificationDashboard } from '@/components/GamificationDashboard';
+import Eyehorus from '@/components/pharaonic/Eyehorus';
 import {
   TrendingUp,
   Zap,
@@ -17,7 +18,9 @@ import {
   Brain,
   Trophy,
   RotateCcw,
-  Library
+  Library,
+  Download,
+  Puzzle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -145,20 +148,88 @@ export default function DashboardPage() {
           speed={{ min: 4, max: 10 }}
         />
       <div className="container mx-auto px-4 py-4 md:py-8 relative z-10">
-      {/* Welcome Header */}
-      <div className="scrollify-section mb-8">
+      {/* ── Eye of Horus Welcome Bar ─────────────────────────────────── */}
+      <div className="scrollify-section mb-6">
         <RevealOnScroll direction="up" duration={1}>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-4 stagger-element">
-            <div className="w-12 h-12 pharaoh-badge rounded-full flex items-center justify-center">
-              <Crown className="h-6 w-6 text-white" />
+          {/* ── Top row: eye + welcome + quick actions ── */}
+          <div
+            className="relative rounded-2xl border border-royal-gold-500/20 shadow-xl overflow-hidden"
+            style={{ background: 'linear-gradient(135deg,#0e0e18 0%,#0a0a14 100%)' }}
+          >
+            {/* Subtle gold top-edge gleam */}
+            <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(212,175,55,0.5),transparent)' }} />
+
+            <div className="flex flex-col sm:flex-row items-center gap-4 px-5 py-4">
+              {/* Small animated eye */}
+              <div className="shrink-0 relative flex items-center justify-center" style={{ filter: 'drop-shadow(0 0 14px rgba(212,175,55,0.6))' }}>
+                <div
+                  className="absolute rounded-full pointer-events-none"
+                  style={{ width: 72, height: 72, background: 'radial-gradient(circle,rgba(212,175,55,0.2) 0%,transparent 70%)', animation: 'eoh-outer-glow 4s ease-in-out infinite' }}
+                />
+                <Eyehorus size={64} variant="hero" glow={true} glowIntensity="high" animated={true} speedMultiplier={2} showLabel={false} />
+              </div>
+
+              {/* Welcome copy */}
+              <div className="flex-1 text-center sm:text-left min-w-0">
+                <p className="text-xs font-semibold tracking-widest uppercase text-royal-gold-400/70 mb-0.5">PromptTemple Dashboard</p>
+                <h1 className="text-xl md:text-2xl font-bold tracking-tight leading-tight"
+                  style={{ fontFamily: "'Playfair Display', serif", textShadow: '0 0 20px rgba(212,175,55,0.25)' }}>
+                  <span className="text-white">Welcome back,&nbsp;</span>
+                  <span style={{ background: 'linear-gradient(135deg,#ffe066 0%,#f4d03f 40%,#d4af37 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                    {user?.first_name || user?.username}
+                  </span>
+                </h1>
+                <p className="text-sm text-gray-300 mt-1 leading-snug">
+                  Craft, save &amp; optimize AI prompts — your sacred toolkit awaits.
+                </p>
+              </div>
+
+              {/* Quick-action buttons */}
+              <div className="flex flex-wrap gap-2 justify-center sm:justify-end shrink-0">
+                <Link href="/templates/create">
+                  <Button size="sm" className="text-xs font-semibold rounded-lg h-8 px-3"
+                    style={{ background: 'linear-gradient(135deg,#f4d03f,#b8941f)', color: '#0d0d18', boxShadow: '0 0 12px rgba(212,175,55,0.4)' }}>
+                    <Zap className="mr-1.5 h-3.5 w-3.5" />Forge
+                  </Button>
+                </Link>
+                <Link href="/templates">
+                  <Button size="sm" className="text-xs font-semibold rounded-lg h-8 px-3 bg-transparent border border-royal-gold-400 text-royal-gold-300 hover:bg-royal-gold-500/15 hover:text-royal-gold-200 hover:border-royal-gold-300 transition-colors">
+                    <BookOpen className="mr-1.5 h-3.5 w-3.5" />Archive
+                  </Button>
+                </Link>
+                <Link href="/academy">
+                  <Button size="sm" className="text-xs font-semibold rounded-lg h-8 px-3 bg-transparent border border-purple-400 text-purple-300 hover:bg-purple-500/15 hover:text-purple-200 hover:border-purple-300 transition-colors">
+                    <Brain className="mr-1.5 h-3.5 w-3.5" />Academy
+                  </Button>
+                </Link>
+                <Link href="/download">
+                  <Button size="sm" className="text-xs font-bold rounded-lg h-8 px-3 border border-sky-400 text-sky-200 bg-sky-500/10 hover:bg-sky-500/20 hover:border-sky-300 hover:text-white transition-colors shadow-[0_0_10px_rgba(56,189,248,0.25)]">
+                    <Puzzle className="mr-1.5 h-3.5 w-3.5" />Extension
+                  </Button>
+                </Link>
+              </div>
             </div>
-            <h1 className="text-2xl md:text-4xl font-bold text-hieroglyph text-glow-lg">
-              Welcome back to the Temple, {user?.first_name || user?.username}!
-            </h1>
+
+            {/* ── Platform tips strip ── */}
+            <div className="border-t border-royal-gold-500/20 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 divide-x divide-royal-gold-500/10">
+              {[
+                { icon: <Zap className="h-3.5 w-3.5 text-amber-400" />, label: 'The Forge', tip: 'Build & render dynamic AI prompts with reusable variable slots.', href: '/templates/create', color: 'text-amber-300' },
+                { icon: <BookOpen className="h-3.5 w-3.5 text-emerald-400" />, label: 'The Archive', tip: 'Browse 100+ expert-crafted templates across every use case.', href: '/templates', color: 'text-emerald-300' },
+                { icon: <Library className="h-3.5 w-3.5 text-yellow-300" />, label: 'Scroll Vault', tip: 'Save your best prompts in a personal searchable library.', href: '/prompt-library', color: 'text-yellow-200' },
+                { icon: <Brain className="h-3.5 w-3.5 text-purple-400" />, label: 'Academy', tip: 'Level up with lessons, quizzes and your Prompt IQ score.', href: '/academy', color: 'text-purple-300' },
+                { icon: <BarChart3 className="h-3.5 w-3.5 text-sky-400" />, label: 'Observatory', tip: 'Analyse prompt performance and track your improvement.', href: '/analysis', color: 'text-sky-300' },
+                { icon: <Puzzle className="h-3.5 w-3.5 text-cyan-400" />, label: 'Extension', tip: 'Install the browser extension — access your prompts anywhere in one click.', href: '/download', color: 'text-cyan-300' },
+              ].map(({ icon, label, tip, href, color }) => (
+                <Link key={label} href={href} className="group flex items-start gap-2.5 px-4 py-3 hover:bg-white/[0.05] transition-colors">
+                  <span className="mt-0.5 shrink-0">{icon}</span>
+                  <div className="min-w-0">
+                    <p className={`text-xs font-bold ${color} group-hover:underline underline-offset-2`}>{label}</p>
+                    <p className="text-[11.5px] leading-snug text-gray-300 mt-0.5">{tip}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
-          <p className="text-muted-foreground mt-2 text-lg stagger-element">
-            Your journey through the sacred halls of prompt mastery continues. Here&apos;s your current progress.
-          </p>
         </RevealOnScroll>
       </div>
 
