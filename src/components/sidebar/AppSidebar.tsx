@@ -29,6 +29,8 @@ import {
   LogOut,
   LogIn,
   Network,
+  Shield,
+  FileText,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -202,6 +204,22 @@ const settingsItems: NavItem[] = [
     description: 'Configuration',
     category: 'settings',
   },
+  {
+    id: 'privacy-policy',
+    label: 'Privacy Policy',
+    href: '/privacy-policy',
+    icon: Shield,
+    description: 'Data & Privacy',
+    category: 'settings',
+  },
+  {
+    id: 'terms-of-service',
+    label: 'Terms of Service',
+    href: '/privacy-policy/terms-of-service',
+    icon: FileText,
+    description: 'Legal terms',
+    category: 'settings',
+  },
 ];
 
 // Category labels
@@ -217,6 +235,7 @@ const groupedItems = {
   main: navigationItems.filter((item) => item.category === 'main'),
   tools: navigationItems.filter((item) => item.category === 'tools'),
   resources: navigationItems.filter((item) => item.category === 'resources'),
+  settings: settingsItems.filter((item) => item.category === 'settings'),
 };
 
 interface AppSidebarProps {

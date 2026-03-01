@@ -35,7 +35,7 @@ export function AppLayoutWithSidebar({ children }: AppLayoutWithSidebarProps) {
   return (
     <div className="flex min-h-screen min-h-dvh overflow-x-hidden bg-gradient-to-br from-background via-papyrus/5 to-background/80">
       {/* Sidebar - Client only to avoid hydration issues */}
-      <ClientOnly fallback={<div className="hidden lg:block w-[260px] shrink-0" />}>
+      <ClientOnly fallback={null}>
         <AppSidebar />
       </ClientOnly>
 
