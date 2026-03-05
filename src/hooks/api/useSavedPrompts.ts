@@ -38,6 +38,8 @@ export const savedPromptKeys = {
   search: (q: string) => [...savedPromptKeys.all, 'search', q] as const,
   iterations: (promptId: string) => [...savedPromptKeys.all, 'iterations', promptId] as const,
   usageHistory: (promptId: string) => [...savedPromptKeys.all, 'usage', promptId] as const,
+  discover: (filters?: Record<string, any>) => ['saved-prompts', 'discover', filters] as const,
+  discoverCategories: () => ['saved-prompts', 'discover-categories'] as const,
 };
 
 // ============================================
@@ -320,5 +322,53 @@ export function usePromptUsageHistory(promptId: string, page = 1, limit = 20) {
     queryKey: savedPromptKeys.usageHistory(promptId),
     queryFn: () => apiClient.getPromptUsageHistory(promptId, { page, limit }),
     enabled: !!promptId,
+  });
+}
+
+// ============================================
+// Discover — Public Template Browsing
+// ============================================
+
+export function useDiscoverTemplates(filters?: {
+  search?: string;
+  category?: string;
+  sort_by?: 'use_count' | 'created_at';
+  sort_order?: 'asc' | 'desc';
+  page?: number;
+}) {
+  return useQuery({
+    queryKey: savedPromptKeys.discover(filters),
+    queryFn: () => apiClient.discoverTemplates(filters) as Promise<PaginatedSavedPrompts>,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+}
+
+export function useDiscoverCategories() {
+  return useQuery({
+    queryKey: savedPromptKeys.discoverCategories(),
+    queryFn: () => apiClient.getDiscoverCategories(),
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+  });
+}
+
+export function useCopyFromTemplate() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (templateId: string) => apiClient.copyFromTemplate(templateId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: savedPromptKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: savedPromptKeys.stats() });
+      toast.success('Prompt copied to your library!');
+    },
+    onError: (error: Error & { status?: number }) => {
+      if (error.status === 401) {
+        toast.error('Sign in to copy prompts to your library');
+      } else {
+        toast.error(error.message || 'Failed to copy prompt');
+      }
+    },
   });
 }

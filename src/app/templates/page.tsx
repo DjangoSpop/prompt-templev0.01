@@ -38,6 +38,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import Link from 'next/link';
+import { CHROME_STORE_URL } from '@/lib/extension';
 
 type ViewMode = 'grid' | 'list';
 type SortOption = 'popularity' | 'rating' | 'recent' | 'trending';
@@ -546,9 +547,11 @@ export default function TemplatesPage() {
               <p className="text-muted-foreground text-sm mb-4">
                 Access templates directly in your browser
               </p>
-              <Button variant="outline" className="w-full hover:border-primary hover:bg-primary/10">
-                Download Extension
-              </Button>
+              <a href={CHROME_STORE_URL} target="_blank" rel="noopener noreferrer" className="block w-full">
+                <Button variant="outline" className="w-full hover:border-primary hover:bg-primary/10">
+                  Download Extension
+                </Button>
+              </a>
             </Card>
 
             <Card className="temple-card p-6 text-center pyramid-elevation hover:pharaoh-glow transition-all duration-300">

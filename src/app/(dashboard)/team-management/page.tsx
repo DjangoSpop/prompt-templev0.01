@@ -202,6 +202,7 @@ function InviteMemberModal({ isOpen, onClose, onInvite }: InviteMemberModalProps
                 Role
               </label>
               <select
+              title='setRole'
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
                 className="w-full px-3 py-2 bg-bg-floating border border-border rounded-md text-text-primary focus:outline-none focus:ring-2 focus:ring-brand"

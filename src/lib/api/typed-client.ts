@@ -607,6 +607,40 @@ class ApiClient {
     });
   }
 
+  async discoverTemplates(params?: {
+    search?: string;
+    category?: string;
+    sort_by?: 'use_count' | 'created_at';
+    sort_order?: 'asc' | 'desc';
+    page?: number;
+  }): Promise<PaginatedSavedPrompts> {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      const { sort_by, sort_order, ...rest } = params;
+      if (sort_by) {
+        const prefix = sort_order === 'asc' ? '' : '-';
+        queryParams.append('ordering', `${prefix}${sort_by}`);
+      }
+      Object.entries(rest).forEach(([key, value]) => {
+        if (value !== undefined) queryParams.append(key, String(value));
+      });
+    }
+    return this.request<PaginatedSavedPrompts>(
+      `/api/v2/history/saved-prompts/discover/?${queryParams.toString()}`
+    );
+  }
+
+  async getDiscoverCategories(): Promise<string[]> {
+    return this.request<string[]>('/api/v2/history/saved-prompts/categories/');
+  }
+
+  async copyFromTemplate(templateId: string): Promise<SavedPrompt> {
+    return this.request<SavedPrompt>('/api/v2/history/saved-prompts/copy-from-template/', {
+      method: 'POST',
+      body: JSON.stringify({ template_id: templateId }),
+    });
+  }
+
   // ============================================
   // Prompt Iterations (Version Control) Methods
   // ============================================
