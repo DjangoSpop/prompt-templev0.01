@@ -31,6 +31,7 @@ import {
   Network,
   Shield,
   FileText,
+  Search,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -140,6 +141,15 @@ const navigationItems: NavItem[] = [
     href: '/optimizer?mode=guided',
     icon: Bot,
     description: 'Build prompts with AI questions',
+    badge: 'New',
+    category: 'tools',
+  },
+  {
+    id: 'seo-spec-generator',
+    label: 'SEO Spec Generator',
+    href: '/seo-spec-generator',
+    icon: Search,
+    description: 'Generate technical SEO specifications',
     badge: 'New',
     category: 'tools',
   },
