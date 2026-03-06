@@ -51,21 +51,21 @@ export function ReferralModule({ userId, referralCount = 0 }: ReferralModuleProp
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="rounded-2xl border border-white/10 bg-gradient-to-br from-yellow-500/10 to-orange-600/10 p-5"
+      className="rounded-2xl border border-border bg-gradient-to-br from-yellow-500/10 to-orange-600/10 p-5"
     >
       <div className="flex items-center gap-3 mb-4">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-yellow-400/20">
           <Users className="h-5 w-5 text-yellow-400" />
         </div>
         <div>
-          <h3 className="text-sm font-bold text-white">Invite & Earn</h3>
-          <p className="text-xs text-white/40">Invite friends — earn rewards together</p>
+          <h3 className="text-sm font-bold text-foreground">Invite & Earn</h3>
+          <p className="text-xs text-muted-foreground">Invite friends — earn rewards together</p>
         </div>
       </div>
 
       {/* Referral link */}
-      <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/30 px-3 py-2 mb-4">
-        <span className="flex-1 truncate font-mono text-xs text-white/60">{referralUrl}</span>
+      <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/50 px-3 py-2 mb-4">
+        <span className="flex-1 truncate font-mono text-xs text-muted-foreground">{referralUrl}</span>
         <button
           onClick={handleCopy}
           className="shrink-0 flex items-center gap-1 rounded-lg bg-yellow-400/20 px-3 py-1.5 text-xs font-semibold text-yellow-300 hover:bg-yellow-400/30 transition-colors"
@@ -82,7 +82,7 @@ export function ReferralModule({ userId, referralCount = 0 }: ReferralModuleProp
       {nextMilestone && (
         <div className="mb-4">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-xs text-white/50">
+            <span className="text-xs text-muted-foreground">
               {referralCount} / {nextMilestone.invites} invites
             </span>
             <span className="text-xs font-semibold text-yellow-400 flex items-center gap-1">
@@ -90,7 +90,7 @@ export function ReferralModule({ userId, referralCount = 0 }: ReferralModuleProp
               {nextMilestone.reward}
             </span>
           </div>
-          <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+          <div className="h-1.5 rounded-full bg-border overflow-hidden">
             <motion.div
               className="h-full rounded-full bg-gradient-to-r from-yellow-400 to-orange-500"
               initial={{ width: 0 }}
@@ -110,8 +110,8 @@ export function ReferralModule({ userId, referralCount = 0 }: ReferralModuleProp
               key={tier.invites}
               className={`flex items-center gap-2 rounded-xl border px-3 py-2 transition-all ${
                 unlocked
-                  ? 'border-yellow-400/30 bg-yellow-400/10 text-yellow-200'
-                  : 'border-white/5 bg-white/3 text-white/30'
+                  ? 'border-yellow-400/30 bg-yellow-400/10 text-yellow-700 dark:text-yellow-200'
+                  : 'border-border bg-muted/30 text-muted-foreground'
               }`}
             >
               <span className="text-lg">{tier.icon}</span>

@@ -158,10 +158,10 @@ export default function TempleDashboard() {
           <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-purple-500/20 to-blue-500/20" />
           <div className="absolute inset-0 bg-game-pattern opacity-30" />
           <Card className="relative glass-effect border-primary/30">
-            <CardContent className="p-8">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-6">
-                  <div className="relative">
+            <CardContent className="p-4 sm:p-6 md:p-8">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="relative flex-shrink-0">
                     <motion.div
                       animate={{
                         rotate: [0, 5, -5, 0],
@@ -172,52 +172,52 @@ export default function TempleDashboard() {
                         repeat: Infinity,
                         ease: "easeInOut",
                       }}
-                      className="w-20 h-20 bg-gradient-to-br from-achievement via-primary to-purple-600 rounded-2xl flex items-center justify-center shadow-2xl"
+                      className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-achievement via-primary to-purple-600 rounded-2xl flex items-center justify-center shadow-2xl"
                     >
-                      <Building2 className="h-10 w-10 text-white" />
+                      <Building2 className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
                     </motion.div>
-                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-achievement rounded-full flex items-center justify-center text-sm font-bold text-background">
+                    <div className="absolute -top-2 -right-2 w-7 h-7 sm:w-8 sm:h-8 bg-achievement rounded-full flex items-center justify-center text-xs sm:text-sm font-bold text-background">
                       {user.level}
                     </div>
                   </div>
-                  <div>
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-purple-400 to-blue-400 bg-clip-text text-transparent">
-                      {getGreeting()}, {user.username || "Temple Keeper"}!
+                  <div className="min-w-0">
+                    <h1 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary via-purple-400 to-blue-400 bg-clip-text text-transparent leading-tight">
+                      {getGreeting()},<br className="sm:hidden" /> {user.username || "Temple Keeper"}!
                     </h1>
-                    <p className="text-lg text-muted-foreground mt-1" style={{ color: currentLevel.color }}>
+                    <p className="text-sm sm:text-lg text-muted-foreground mt-1" style={{ color: currentLevel.color }}>
                       {currentLevel.title} • Level {user.level}
                     </p>
-                    <div className="flex items-center gap-4 mt-2">
+                    <div className="flex flex-wrap items-center gap-3 mt-2">
                       <div className="flex items-center gap-1">
                         <Flame className="h-4 w-4 text-warning" />
-                        <span className="text-sm font-medium">{user.streak} day streak</span>
+                        <span className="text-xs sm:text-sm font-medium">{user.streak} day streak</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <Coins className="h-4 w-4 text-achievement" />
-                        <span className="text-sm font-medium">{formatNumber(user.totalPoints)} points</span>
+                        <span className="text-xs sm:text-sm font-medium">{formatNumber(user.totalPoints)} points</span>
                       </div>
                     </div>
                   </div>
                 </div>
                 
                 {/* Download App Section */}
-                <div className="text-center">
-                  <h3 className="text-lg font-semibold mb-3 text-glow">Download Our App</h3>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="glass-effect border-primary/20">
-                      <Smartphone className="h-4 w-4 mr-2" />
+                <div className="text-center sm:text-right flex-shrink-0">
+                  <h3 className="text-sm sm:text-base font-semibold mb-2 text-glow">Download Our App</h3>
+                  <div className="flex gap-2 justify-center sm:justify-end flex-wrap">
+                    <Button variant="outline" size="sm" className="glass-effect border-primary/20 text-xs sm:text-sm">
+                      <Smartphone className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                       iOS
                     </Button>
-                    <Button variant="outline" size="sm" className="glass-effect border-primary/20">
-                      <Monitor className="h-4 w-4 mr-2" />
+                    <Button variant="outline" size="sm" className="glass-effect border-primary/20 text-xs sm:text-sm">
+                      <Monitor className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                       Android
                     </Button>
-                    <Button variant="outline" size="sm" className="glass-effect border-primary/20">
-                      <Globe className="h-4 w-4 mr-2" />
+                    <Button variant="outline" size="sm" className="glass-effect border-primary/20 text-xs sm:text-sm">
+                      <Globe className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                       Web
                     </Button>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2">Available on all platforms</p>
+                  <p className="text-xs text-muted-foreground mt-1">Available on all platforms</p>
                 </div>
               </div>
               
@@ -246,7 +246,7 @@ export default function TempleDashboard() {
         </motion.div>
 
         {/* Temple Statistics */}
-        <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <motion.div variants={itemVariants} className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           {[
             {
               title: "Templates Created",
@@ -288,18 +288,18 @@ export default function TempleDashboard() {
               transition={{ type: "spring", damping: 20 }}
             >
               <Card className={`game-card card-hover bg-gradient-to-br ${stat.bgColor} border-glow`}>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className={`p-2 rounded-lg bg-background/20`}>
-                      <stat.icon className={`h-6 w-6 ${stat.color}`} />
+                <CardContent className="p-3 sm:p-4 md:p-6">
+                  <div className="flex items-center justify-between mb-2 sm:mb-4">
+                    <div className={`p-1.5 sm:p-2 rounded-lg bg-background/20`}>
+                      <stat.icon className={`h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 ${stat.color}`} />
                     </div>
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" className="text-[10px] sm:text-xs px-1.5 sm:px-2">
                       {stat.change}
                     </Badge>
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{formatNumber(stat.value)}</p>
-                    <p className="text-sm text-slate-600 dark:text-slate-300">{stat.title}</p>
+                    <p className="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100">{formatNumber(stat.value)}</p>
+                    <p className="text-[11px] sm:text-xs md:text-sm text-slate-600 dark:text-slate-300 leading-tight">{stat.title}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -320,21 +320,21 @@ export default function TempleDashboard() {
         <motion.div variants={itemVariants}>
           <Tabs defaultValue="activity" className="space-y-4">
             <TabsList className="grid w-full grid-cols-4 glass-effect">
-              <TabsTrigger value="activity" className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                Activity
+              <TabsTrigger value="activity" className="flex items-center gap-1 sm:gap-2 px-1 sm:px-3">
+                <Clock className="h-4 w-4 flex-shrink-0" />
+                <span className="hidden sm:inline text-xs sm:text-sm">Activity</span>
               </TabsTrigger>
-              <TabsTrigger value="achievements" className="flex items-center gap-2">
-                <Trophy className="h-4 w-4" />
-                Achievements
+              <TabsTrigger value="achievements" className="flex items-center gap-1 sm:gap-2 px-1 sm:px-3">
+                <Trophy className="h-4 w-4 flex-shrink-0" />
+                <span className="hidden sm:inline text-xs sm:text-sm">Achievements</span>
               </TabsTrigger>
-              <TabsTrigger value="leaderboard" className="flex items-center gap-2">
-                <Crown className="h-4 w-4" />
-                Leaderboard
+              <TabsTrigger value="leaderboard" className="flex items-center gap-1 sm:gap-2 px-1 sm:px-3">
+                <Crown className="h-4 w-4 flex-shrink-0" />
+                <span className="hidden sm:inline text-xs sm:text-sm">Leaderboard</span>
               </TabsTrigger>
-              <TabsTrigger value="rewards" className="flex items-center gap-2">
-                <Gift className="h-4 w-4" />
-                Rewards
+              <TabsTrigger value="rewards" className="flex items-center gap-1 sm:gap-2 px-1 sm:px-3">
+                <Gift className="h-4 w-4 flex-shrink-0" />
+                <span className="hidden sm:inline text-xs sm:text-sm">Rewards</span>
               </TabsTrigger>
             </TabsList>
 
@@ -387,13 +387,13 @@ export default function TempleDashboard() {
                         <p className="text-muted-foreground mb-6">
                           Start your journey by exploring templates and earning your first achievements!
                         </p>
-                        <div className="flex justify-center gap-3">
-                          <Button onClick={() => addExperience(100)} className="neon-border">
+                        <div className="flex flex-col sm:flex-row justify-center gap-3">
+                          <Button onClick={() => addExperience(100)} className="neon-border text-sm">
                             <Gift className="h-4 w-4 mr-2" />
                             Claim Welcome Bonus (+100 XP)
                           </Button>
                           <Link href="/library">
-                            <Button variant="outline">
+                            <Button variant="outline" className="w-full sm:w-auto text-sm">
                               <BookOpen className="h-4 w-4 mr-2" />
                               Explore Library
                             </Button>
@@ -668,19 +668,19 @@ export default function TempleDashboard() {
         <motion.div variants={itemVariants}>
           <Card className="glass-effect border-primary/20">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                  <h3 className="text-lg font-semibold mb-2">Share Your Temple Progress</h3>
+                  <h3 className="text-base sm:text-lg font-semibold mb-1 sm:mb-2">Share Your Temple Progress</h3>
                   <p className="text-muted-foreground text-sm">
                     Show off your achievements and invite friends to join your temple journey!
                   </p>
                 </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm">
+                <div className="flex flex-wrap gap-2 sm:flex-shrink-0">
+                  <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
                     <Share className="h-4 w-4 mr-2" />
                     Share Progress
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
                     <Heart className="h-4 w-4 mr-2" />
                     Invite Friends
                   </Button>

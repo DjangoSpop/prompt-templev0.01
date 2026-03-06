@@ -24,6 +24,10 @@ export function BottomNav() {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
 
+  // Hide on full-screen module pages — they have their own navigation footer
+  const isModulePage = pathname.startsWith('/academy/module');
+  if (isModulePage) return null;
+
   return (
     <>
       <nav

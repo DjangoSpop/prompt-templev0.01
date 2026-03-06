@@ -84,6 +84,14 @@ const navigationItems: NavItem[] = [
     category: 'main',
   },
   {
+    id: 'discover',
+    label: 'Discover',
+    href: '/discover',
+    icon: Globe,
+    description: 'Community prompts',
+    category: 'main',
+  },
+  {
     id: 'prompt-library',
     label: 'Prompt Library',
     href: '/prompt-library',
@@ -106,14 +114,6 @@ const navigationItems: NavItem[] = [
     href: '/history',
     icon: History,
     description: 'Past chat sessions',
-    category: 'main',
-  },
-  {
-    id: 'discover',
-    label: 'Discover',
-    href: '/discover',
-    icon: Globe,
-    description: 'Community prompts',
     category: 'main',
   },
   // Tools
@@ -245,7 +245,6 @@ const groupedItems = {
   main: navigationItems.filter((item) => item.category === 'main'),
   tools: navigationItems.filter((item) => item.category === 'tools'),
   resources: navigationItems.filter((item) => item.category === 'resources'),
-  settings: settingsItems.filter((item) => item.category === 'settings'),
 };
 
 interface AppSidebarProps {

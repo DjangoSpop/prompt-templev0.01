@@ -176,7 +176,7 @@ export default function Module1Page() {
           </main>
 
           {/* Sticky Navigation Footer — always visible, never buried in scroll */}
-          <div className="flex-shrink-0 bg-obsidian-900/95 backdrop-blur-sm border-t border-royal-gold-500/20 px-4 py-3 md:px-6 lg:px-10">
+          <div className="flex-shrink-0 bg-obsidian-900/95 backdrop-blur-sm border-t border-royal-gold-500/20 px-4 py-3 md:px-6 lg:px-10 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
             <LessonNavigation
               moduleId={MODULE_ID}
               currentLessonIndex={currentLessonIndex}

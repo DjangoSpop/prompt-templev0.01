@@ -19,7 +19,7 @@ function StatCard({ icon, label, value, sub, color, delay = 0 }: StatCardProps) 
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay }}
-      className="relative flex flex-1 items-center gap-4 overflow-hidden rounded-2xl border border-white/10 bg-white/5 px-5 py-4 backdrop-blur-sm"
+      className="relative flex flex-1 items-center gap-4 overflow-hidden rounded-2xl border border-border bg-card px-5 py-4 shadow-sm"
     >
       {/* Glow accent */}
       <div
@@ -33,9 +33,9 @@ function StatCard({ icon, label, value, sub, color, delay = 0 }: StatCardProps) 
         <span style={{ color }}>{icon}</span>
       </div>
       <div className="min-w-0">
-        <p className="text-xs font-medium text-white/50 uppercase tracking-widest">{label}</p>
-        <p className="mt-0.5 text-2xl font-bold text-white leading-none">{value}</p>
-        {sub && <p className="mt-1 text-xs text-white/40">{sub}</p>}
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest">{label}</p>
+        <p className="mt-0.5 text-2xl font-bold text-foreground leading-none">{value}</p>
+        {sub && <p className="mt-1 text-xs text-muted-foreground">{sub}</p>}
       </div>
     </motion.div>
   );
@@ -57,7 +57,7 @@ export function StatsBar({ totalOptimizations, avgWowScore, creditsRemaining }: 
         <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: level.color }}>
           {level.name}
         </span>
-        <div className="relative flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
+        <div className="relative flex-1 h-1.5 rounded-full bg-border overflow-hidden">
           <motion.div
             className="absolute inset-y-0 left-0 rounded-full"
             style={{ background: level.color }}
@@ -66,7 +66,7 @@ export function StatsBar({ totalOptimizations, avgWowScore, creditsRemaining }: 
             transition={{ duration: 1, ease: 'easeOut' }}
           />
         </div>
-        <span className="text-xs text-white/40">{xp} XP</span>
+        <span className="text-xs text-muted-foreground">{xp} XP</span>
       </div>
 
       {/* Stats grid */}

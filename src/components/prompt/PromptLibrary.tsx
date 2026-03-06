@@ -151,7 +151,7 @@ function PromptCard({
         </div>
 
         {/* Meta */}
-        <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
+        <div className="hidden sm:flex items-center gap-3 text-xs text-muted-foreground shrink-0">
           <span className="flex items-center gap-1">
             <TrendingUp className="h-3 w-3" />
             {prompt.use_count}
@@ -163,7 +163,7 @@ function PromptCard({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+        <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
           <Button variant="ghost" size="sm" onClick={() => onUse(prompt)} className="h-7 px-2">
             <Send className="h-3.5 w-3.5" />
           </Button>
@@ -465,26 +465,26 @@ export function PromptLibrary() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold font-display flex items-center gap-2">
-            <BookOpen className="h-6 w-6 text-pharaoh" />
+          <h1 className="text-xl sm:text-2xl font-bold font-display flex items-center gap-2">
+            <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-pharaoh" />
             Prompt Library
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Manage, iterate, and organize your prompt collection
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Button
             variant="outline"
             onClick={() => setAskMeOpen(true)}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 flex-1 sm:flex-none justify-center"
           >
             <Sparkles className="h-4 w-4" />
             Create with AI
           </Button>
-          <Button onClick={handleNewPrompt} className="pharaoh-button flex items-center gap-2">
+          <Button onClick={handleNewPrompt} className="pharaoh-button flex items-center gap-2 flex-1 sm:flex-none justify-center">
             <Plus className="h-4 w-4" />
             New Prompt
           </Button>
@@ -495,53 +495,54 @@ export function PromptLibrary() {
       <StatsBar stats={stats} />
 
       {/* Search & Controls */}
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Search prompts by title, content, or tags..."
+            placeholder="Search prompts..."
             className="pl-9"
           />
         </div>
-
-        <Select
-          value={filters.sort_by || 'updated_at'}
-          onValueChange={(v) =>
-            setFilters({ sort_by: v as SavedPromptFilters['sort_by'] })
-          }
-        >
-          <SelectTrigger className="w-[160px]">
-            <ArrowUpDown className="h-3.5 w-3.5 mr-1" />
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="updated_at">Last Modified</SelectItem>
-            <SelectItem value="created_at">Date Created</SelectItem>
-            <SelectItem value="use_count">Most Used</SelectItem>
-            <SelectItem value="title">Title A-Z</SelectItem>
-            <SelectItem value="last_used_at">Recently Used</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <div className="flex items-center border rounded-md">
-          <Button
-            variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-            size="sm"
-            className="h-9 px-2.5 rounded-r-none"
-            onClick={() => setViewMode('grid')}
+        <div className="flex items-center gap-2">
+          <Select
+            value={filters.sort_by || 'updated_at'}
+            onValueChange={(v) =>
+              setFilters({ sort_by: v as SavedPromptFilters['sort_by'] })
+            }
           >
-            <Grid3X3 className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-            size="sm"
-            className="h-9 px-2.5 rounded-l-none"
-            onClick={() => setViewMode('list')}
-          >
-            <List className="h-4 w-4" />
-          </Button>
+            <SelectTrigger className="flex-1 sm:w-[160px]">
+              <ArrowUpDown className="h-3.5 w-3.5 mr-1" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="updated_at">Last Modified</SelectItem>
+              <SelectItem value="created_at">Date Created</SelectItem>
+              <SelectItem value="use_count">Most Used</SelectItem>
+              <SelectItem value="title">Title A-Z</SelectItem>
+              <SelectItem value="last_used_at">Recently Used</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <div className="flex items-center border rounded-md shrink-0">
+            <Button
+              variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+              size="sm"
+              className="h-9 px-2.5 rounded-r-none"
+              onClick={() => setViewMode('grid')}
+            >
+              <Grid3X3 className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+              size="sm"
+              className="h-9 px-2.5 rounded-l-none"
+              onClick={() => setViewMode('list')}
+            >
+              <List className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
 

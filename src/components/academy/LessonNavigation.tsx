@@ -62,17 +62,17 @@ export function LessonNavigation({
   };
 
   return (
-    <div className={`flex items-center justify-between gap-2 md:gap-4 ${className}`}>
+    <div className={`flex items-center justify-between gap-2 md:gap-4 mt-8 mb-4 ${className}`}>
       {/* Previous Button */}
       <Button
         variant="outline"
         onClick={onPrevious}
         disabled={isFirstLesson}
-        className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 flex-shrink-0"
+        className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 h-10 md:h-auto flex-shrink-0"
       >
         <ChevronLeft className="w-4 h-4 flex-shrink-0" />
-        <span className="hidden xs:inline sm:inline">Previous</span>
-        <span className="xs:hidden sm:hidden">Prev</span>
+        <span className="hidden sm:inline">Previous</span>
+        <span className="sm:hidden">Prev</span>
       </Button>
 
       {/* Progress Indicator */}
@@ -95,12 +95,12 @@ export function LessonNavigation({
       <Button
         onClick={handleNext}
         disabled={isCompleting}
-        className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 flex-shrink-0 bg-gradient-to-r from-royal-gold-500 to-royal-gold-600 hover:from-royal-gold-600 hover:to-royal-gold-700"
+        className="flex items-center gap-1.5 md:gap-2 px-4 md:px-5 h-10 md:h-auto flex-shrink-0 bg-gradient-to-r from-royal-gold-500 to-royal-gold-600 hover:from-royal-gold-600 hover:to-royal-gold-700"
       >
         {isCompleting ? (
           <>
             <CheckCircle className="w-4 h-4 animate-pulse flex-shrink-0" />
-            <span className="hidden xs:inline">Saving</span>
+            <span className="hidden sm:inline">Saving</span>
           </>
         ) : (
           <>
