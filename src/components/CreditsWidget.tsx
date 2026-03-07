@@ -196,3 +196,100 @@ export default function CreditsWidget({ quotas, className = "", compact = false 
     </div>
   );
 }
+
+// ── Self-contained credits display (uses useEntitlements internally) ──────────
+// Use this in new code — no prop drilling required.
+
+import { useEntitlements } from '@/hooks/api/useBilling';
+
+interface CreditsWidgetConnectedProps {
+  className?: string;
+  compact?: boolean;
+}
+
+export function CreditsWidgetConnected({ className = '', compact = false }: CreditsWidgetConnectedProps) {
+  const { data: entitlements, isLoading } = useEntitlements();
+
+  if (isLoading) {
+    return (
+      <div className={`rounded-lg bg-bg-secondary border border-border p-4 animate-pulse h-16 ${className}`} />
+    );
+  }
+
+  if (!entitlements) return null;
+
+  const used = entitlements.monthly_credits - entitlements.credits_available;
+  const pct = entitlements.monthly_credits > 0
+    ? Math.round((used / entitlements.monthly_credits) * 100)
+    : 0;
+
+  const color =
+    pct >= 90 ? 'text-red' : pct >= 75 ? 'text-yellow' : 'text-green';
+  const barColor =
+    pct >= 90 ? 'bg-red' : pct >= 75 ? 'bg-yellow' : 'bg-green';
+
+  if (compact) {
+    return (
+      <div className={`bg-bg-secondary rounded-lg p-4 border border-border ${className}`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <CreditCard className="w-4 h-4 text-brand" />
+            <span className="text-text-primary font-medium text-sm">Credits</span>
+          </div>
+          <div className="text-right">
+            <div className="text-sm font-medium text-text-primary">
+              {entitlements.credits_available.toLocaleString()} / {entitlements.monthly_credits.toLocaleString()}
+            </div>
+            <div className="text-xs text-text-muted">remaining this month</div>
+          </div>
+        </div>
+        <div className="mt-3">
+          <div className="flex justify-between items-center mb-1">
+            <span className="text-xs text-text-muted">Monthly usage</span>
+            <span className={`text-xs font-medium ${color}`}>{pct}%</span>
+          </div>
+          <div className="w-full bg-bg-tertiary rounded-full h-2">
+            <div className={`h-2 rounded-full transition-all duration-300 ${barColor}`} style={{ width: `${pct}%` }} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`bg-bg-secondary rounded-lg border border-border ${className}`}>
+      <div className="p-6 border-b border-border">
+        <h3 className="text-text-primary font-medium flex items-center space-x-2">
+          <CreditCard className="w-5 h-5" />
+          <span>AI Credits</span>
+        </h3>
+      </div>
+      <div className="p-6 space-y-4">
+        <div className="flex items-baseline gap-2">
+          <span className="text-3xl font-bold text-text-primary">
+            {entitlements.credits_available.toLocaleString()}
+          </span>
+          <span className="text-text-muted text-sm">
+            / {entitlements.monthly_credits.toLocaleString()} this month
+          </span>
+        </div>
+        <div className="space-y-1">
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-text-muted">{used.toLocaleString()} used</span>
+            <span className={`text-sm font-medium ${color}`}>{pct}%</span>
+          </div>
+          <div className="w-full bg-bg-tertiary rounded-full h-3">
+            <div className={`h-3 rounded-full transition-all duration-500 ${barColor}`} style={{ width: `${pct}%` }} />
+          </div>
+        </div>
+        {pct >= 90 && (
+          <div className="flex items-center space-x-2 text-red text-sm">
+            <AlertTriangle className="w-4 h-4" />
+            <span>Credits almost exhausted — consider upgrading</span>
+          </div>
+        )}
+        <p className="text-xs text-text-muted">Plan: {entitlements.plan_name}</p>
+      </div>
+    </div>
+  );
+}

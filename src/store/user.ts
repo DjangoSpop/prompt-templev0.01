@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { devtools, persist } from 'zustand/middleware';
 
 export interface UserProfile {
   id: string;
@@ -30,41 +30,53 @@ export interface AuthState {
 
 export const useAuthStore = create<AuthState>()(
   devtools(
-    (set, get) => ({
-      accessToken: undefined,
-      profile: undefined,
-      isPremium: false,
-      isAuthenticated: false,
-      
-      setToken: (token?: string) => {
-        set({ 
-          accessToken: token, 
-          isAuthenticated: !!token 
-        });
-      },
-      
-      setProfile: (profile: UserProfile) => {
-        set({ 
-          profile, 
-          isPremium: profile.is_premium,
-          isAuthenticated: true 
-        });
-      },
-      
-      logout: () => {
-        set({ 
-          accessToken: undefined, 
-          profile: undefined, 
-          isPremium: false,
-          isAuthenticated: false 
-        });
-      },
-      
-      checkPremiumStatus: () => {
-        const state = get();
-        return state.isPremium || state.profile?.is_premium || false;
-      },
-    }),
+    persist(
+      (set, get) => ({
+        accessToken: undefined,
+        profile: undefined,
+        isPremium: false,
+        isAuthenticated: false,
+
+        setToken: (token?: string) => {
+          set({
+            accessToken: token,
+            isAuthenticated: !!token,
+          });
+        },
+
+        setProfile: (profile: UserProfile) => {
+          set({
+            profile,
+            isPremium: profile.is_premium,
+            isAuthenticated: true,
+          });
+        },
+
+        logout: () => {
+          set({
+            accessToken: undefined,
+            profile: undefined,
+            isPremium: false,
+            isAuthenticated: false,
+          });
+        },
+
+        checkPremiumStatus: () => {
+          const state = get();
+          return state.isPremium || state.profile?.is_premium || false;
+        },
+      }),
+      {
+        name: 'prompt-temple-auth',
+        // Only persist the token and profile — not derived flags
+        partialize: (state) => ({
+          accessToken: state.accessToken,
+          profile: state.profile,
+          isPremium: state.isPremium,
+          isAuthenticated: state.isAuthenticated,
+        }),
+      }
+    ),
     { name: 'auth-store' }
   )
 );

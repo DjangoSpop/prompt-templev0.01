@@ -41,7 +41,8 @@ import {
   Trash2,
   Edit3,
   Download,
-  Sparkles
+  Sparkles,
+  Crown,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -557,7 +558,9 @@ const PromptEditor: React.FC<{
   isStreaming: boolean;
   modelConfig: ModelConfig;
   onModelConfigChange: (config: ModelConfig) => void;
-}> = ({ value, onChange, onOptimize, onDeepOptimize, isDeepOptimizing, isStreaming, modelConfig, onModelConfigChange }) => {
+  isCapped?: boolean;
+  creditsAvailable?: number | null;
+}> = ({ value, onChange, onOptimize, onDeepOptimize, isDeepOptimizing, isStreaming, modelConfig, onModelConfigChange, isCapped = false, creditsAvailable = null }) => {
   const [variables, setVariables] = useState<Record<string, string>>({});
   const [showVariables, setShowVariables] = useState(false);
   
@@ -751,13 +754,27 @@ const PromptEditor: React.FC<{
           
           {/* Action Buttons */}
           <div className="flex flex-col gap-2 sm:flex-row">
+            {/* Credits indicator */}
+            {creditsAvailable !== null && (
+              <div className={cn(
+                'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium w-full sm:w-auto',
+                isCapped
+                  ? 'bg-red-50 text-red-600 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800'
+                  : creditsAvailable <= 5
+                  ? 'bg-yellow-50 text-yellow-700 border border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800'
+                  : 'bg-green-50 text-green-600 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800'
+              )}>
+                <Zap className="h-3.5 w-3.5" />
+                {isCapped ? 'No credits — upgrade to continue' : `${creditsAvailable} credits left`}
+              </div>
+            )}
             {/* Primary: Run Optimize */}
             <button
               onClick={onOptimize}
-              disabled={isStreaming || !value.trim()}
+              disabled={isStreaming || !value.trim() || isCapped}
               className={cn(
                 "flex flex-1 items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-all duration-200",
-                isStreaming || !value.trim()
+                isStreaming || !value.trim() || isCapped
                   ? "cursor-not-allowed bg-slate-100 text-slate-400 dark:bg-slate-700/60 dark:text-slate-500"
                   : "bg-gradient-to-r from-blue-600 to-violet-600 text-white shadow-md shadow-blue-500/25 hover:-translate-y-0.5 hover:from-blue-700 hover:to-violet-700 hover:shadow-lg hover:shadow-blue-500/35 active:translate-y-0"
               )}
@@ -767,10 +784,15 @@ const PromptEditor: React.FC<{
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span>Optimizing...</span>
                 </>
+              ) : isCapped ? (
+                <>
+                  <Crown className="h-4 w-4" />
+                  <span>Upgrade to Continue</span>
+                </>
               ) : (
                 <>
                   <Zap className="h-4 w-4" />
-                  <span>Run Optimize</span>
+                  <span>Run Optimize (~5 credits)</span>
                 </>
               )}
             </button>
@@ -1304,7 +1326,7 @@ function OptimizationContent() {
   // handled by aiService via usePromptOptimization
   const wsClient = useRef<PromptCraftWebSocket | null>(null);
   const [activeTab, setActiveTab] = useState<'write' | 'output' | 'library'>('write');
-  const { checkAndTrigger, triggerOnHighScore } = usePaywallTrigger();
+  const { checkAndTrigger, triggerOnHighScore, creditsAvailable, isCapped } = usePaywallTrigger();
 
   // Pre-fill prompt from URL query params (e.g. coming from Template Library)
   useEffect(() => {
@@ -1853,6 +1875,8 @@ function OptimizationContent() {
             isStreaming={store.isStreaming}
             modelConfig={store.modelConfig}
             onModelConfigChange={store.setModelConfig}
+            isCapped={isCapped}
+            creditsAvailable={creditsAvailable}
           />
         </div>
 

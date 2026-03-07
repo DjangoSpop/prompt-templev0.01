@@ -5,6 +5,9 @@ import { Toaster, toast } from 'react-hot-toast';
 import { Send, Zap, Wifi, WifiOff, Clock, Eye, Code, RotateCcw, FileText, Crown } from 'lucide-react';
 import { useSSEChat } from '@/lib/services/sse-chat';
 import EgyptianLoading from '@/components/EgyptianLoading';
+import { useEntitlements, billingKeys } from '@/hooks/api/useBilling';
+import { useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 
 // Pharaonic UI Components
 const SunDisk = ({ className = "", size = 20 }: { className?: string; size?: number }) => (
@@ -81,6 +84,10 @@ const getToken = () => {
 };
 
 function EnhancedChatInterface() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const { data: entitlements } = useEntitlements();
+
   // User ID management for WebSocket sessions
   const getOrCreateUserId = useCallback(() => {
     if (typeof window === 'undefined') return 'server_user';
@@ -197,7 +204,10 @@ function EnhancedChatInterface() {
       setIsAITyping(false);
       setIsThinking(false);
       setCurrentStreamingMessage(null);
-      
+
+      // Refresh credit balance after each AI response
+      queryClient.invalidateQueries({ queryKey: billingKeys.entitlements() });
+
       // Handle optimization results
       if (message.optimizationData) {
         setOptimizationResult({
@@ -296,6 +306,15 @@ function EnhancedChatInterface() {
         return;
       }
 
+      // Credits pre-check — warn before the round-trip
+      if (entitlements && entitlements.credits_available <= 0) {
+        toast.error('You\'ve run out of credits. Upgrade to continue chatting.', {
+          duration: 5000,
+        });
+        router.push('/billing');
+        return;
+      }
+
       // Add user message immediately
       const messageId = crypto.randomUUID();
       appendUserMessage(messageId, content);
@@ -323,13 +342,19 @@ function EnhancedChatInterface() {
 
         await service.sendMessage(content, payloadMessages as any);
       } catch (error) {
+        const err = error as Error & { status?: number };
         console.error('Failed to send message:', error);
         setIsAITyping(false);
         setIsThinking(false);
-        toast.error('Failed to send message');
+        if (err.status === 402) {
+          toast.error('Out of credits. Upgrade to continue.');
+          router.push('/billing');
+        } else {
+          toast.error('Failed to send message');
+        }
       }
     },
-    [isConnected, service, appendUserMessage, messages]
+    [isConnected, service, appendUserMessage, messages, entitlements, router]
   );
 
   const handleSubmit = useCallback(

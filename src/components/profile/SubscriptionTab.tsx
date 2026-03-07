@@ -25,10 +25,10 @@ export const SubscriptionTab: React.FC = () => {
   const { data: subscription, isLoading: subscriptionLoading } = useSubscription();
   const { data: entitlements, isLoading: entitlementsLoading } = useEntitlements();
   const { data: usage, isLoading: usageLoading } = useBillingUsage();
-  const { createPortalSession, isCreatingPortal } = useBillingActions();
+  const { openPortal, isOpeningPortal } = useBillingActions();
 
   const handleManageBilling = () => {
-    createPortalSession();
+    openPortal();
   };
 
   if (subscriptionLoading || entitlementsLoading || usageLoading) {
@@ -79,16 +79,12 @@ export const SubscriptionTab: React.FC = () => {
             <div className="flex items-center justify-between p-4 bg-secondary/10 rounded-lg">
               <div>
                 <p className="font-medium text-lg">{subscription.plan?.name || 'Free Plan'}</p>
-                <p className="text-sm text-muted-foreground">
-                  {subscription.plan?.billing_period === 'yearly' ? 'Billed Annually' : 'Billed Monthly'}
-                </p>
+                <p className="text-sm text-muted-foreground">Billed Monthly</p>
               </div>
               <div className="text-right">
                 <p className="font-bold text-2xl">
-                  ${subscription.plan?.price || 0}
-                  <span className="text-sm font-normal text-muted-foreground">
-                    /{subscription.plan?.billing_period === 'yearly' ? 'year' : 'month'}
-                  </span>
+                  ${parseFloat(subscription.plan?.price ?? '0').toFixed(0)}
+                  <span className="text-sm font-normal text-muted-foreground">/month</span>
                 </p>
                 {getStatusBadge(subscription.status)}
               </div>
@@ -98,12 +94,14 @@ export const SubscriptionTab: React.FC = () => {
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Current period ends:</span>
                 <span className="font-medium">
-                  {new Date(subscription.current_period_end).toLocaleDateString()}
+                  {subscription.current_period_end
+                    ? new Date(subscription.current_period_end).toLocaleDateString()
+                    : '—'}
                 </span>
               </div>
             )}
 
-            {subscription.cancel_at_period_end && (
+            {!subscription.auto_renew && subscription.status === 'active' && (
               <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
                 <AlertCircle className="h-4 w-4 text-destructive" />
                 <p className="text-sm text-destructive">
@@ -112,12 +110,12 @@ export const SubscriptionTab: React.FC = () => {
               </div>
             )}
 
-            <Button 
+            <Button
               onClick={handleManageBilling}
-              disabled={isCreatingPortal}
+              disabled={isOpeningPortal}
               className="w-full"
             >
-              {isCreatingPortal ? (
+              {isOpeningPortal ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Opening Portal...
@@ -138,46 +136,46 @@ export const SubscriptionTab: React.FC = () => {
       </Card>
 
       {/* Entitlements */}
-      {entitlements && entitlements.length > 0 && (
+      {entitlements && (
         <Card variant="temple" className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Feature Usage</h3>
+          <h3 className="text-lg font-semibold mb-4">Features &amp; Credits</h3>
           <div className="space-y-4">
-            {entitlements.map((entitlement: any) => {
-              const percentage = entitlement.unlimited 
-                ? 100 
-                : (entitlement.used / entitlement.limit) * 100;
-              const isNearLimit = percentage > 80 && !entitlement.unlimited;
-
-              return (
-                <div key={entitlement.feature} className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium capitalize">
-                      {entitlement.feature.replace(/_/g, ' ')}
-                    </span>
-                    <span className="text-muted-foreground">
-                      {entitlement.unlimited ? (
-                        <Badge variant="success">Unlimited</Badge>
-                      ) : (
-                        `${entitlement.used} / ${entitlement.limit}`
-                      )}
-                    </span>
-                  </div>
-                  {!entitlement.unlimited && (
-                    <>
-                      <Progress 
-                        value={percentage} 
-                        className={isNearLimit ? 'bg-destructive/20' : ''}
-                      />
-                      {isNearLimit && (
-                        <p className="text-xs text-destructive">
-                          ⚠️ Approaching limit. Consider upgrading your plan.
-                        </p>
-                      )}
-                    </>
+            {/* Credits bar */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="font-medium">Credits Available</span>
+                <span className="text-muted-foreground">
+                  {entitlements.credits_available} / {entitlements.monthly_credits}
+                </span>
+              </div>
+              <Progress
+                value={
+                  entitlements.monthly_credits > 0
+                    ? (entitlements.credits_available / entitlements.monthly_credits) * 100
+                    : 0
+                }
+              />
+            </div>
+            {/* Boolean feature flags */}
+            <div className="grid grid-cols-2 gap-2 pt-2">
+              {([
+                { label: 'Premium Templates', value: entitlements.premium_templates },
+                { label: 'Analytics', value: entitlements.analytics },
+                { label: 'API Access', value: entitlements.api_access },
+                { label: 'Collaboration', value: entitlements.collaboration },
+                { label: 'Ads Free', value: entitlements.ads_free },
+                { label: 'Priority Support', value: entitlements.priority_support },
+              ] as const).map(({ label, value }) => (
+                <div key={label} className="flex items-center gap-2 text-sm">
+                  {value ? (
+                    <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
+                  ) : (
+                    <XCircle className="h-4 w-4 text-muted-foreground shrink-0" />
                   )}
+                  <span className={value ? 'text-foreground' : 'text-muted-foreground'}>{label}</span>
                 </div>
-              );
-            })}
+              ))}
+            </div>
           </div>
         </Card>
       )}

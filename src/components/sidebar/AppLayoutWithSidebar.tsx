@@ -7,6 +7,7 @@ import { ClientOnly } from '@/components/ClientOnly';
 import { cn } from '@/lib/utils';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { FloatingActionButton } from '@/components/layout/FloatingActionButton';
+import { SubscriptionStatusBanner } from '@/components/billing/SubscriptionStatusBanner';
 
 interface AppLayoutWithSidebarProps {
   children: ReactNode;
@@ -59,6 +60,11 @@ export function AppLayoutWithSidebar({ children }: AppLayoutWithSidebarProps) {
           '--sidebar-width': `${sidebarWidth}px`,
         } as React.CSSProperties}
       >
+        {/* Subscription status banner — hidden when active */}
+        <ClientOnly>
+          <SubscriptionStatusBanner />
+        </ClientOnly>
+
         {/* Content wrapper with padding */}
         <div className="min-h-screen">
           <div className="px-4 py-4 md:px-6 md:py-6 lg:px-8 lg:py-6">

@@ -7,6 +7,7 @@ import { useGameStore } from "@/lib/stores/gameStore";
 import { useAnalyticsDashboard } from "@/hooks/api/useAnalytics";
 import { useStreak as useStreakApi, useBadges } from "@/hooks/api/useGamification";
 import { useAIUsage } from "@/hooks/api/useAI";
+import { useEntitlements } from "@/hooks/api/useBilling";
 import { useAuthStore } from "@/store/user";
 import { formatNumber, formatRelativeTime } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -71,6 +72,7 @@ export default function TempleDashboard() {
   const { data: streakApiData } = useStreakApi();
   const { data: badgesData } = useBadges();
   const { data: aiUsageData } = useAIUsage();
+  const { data: entitlements } = useEntitlements();
   const authProfile = useAuthStore(state => state.profile);
 
   const templeStats = useMemo<TempleStats>(() => ({
@@ -312,7 +314,7 @@ export default function TempleDashboard() {
           <StatsBar
             totalOptimizations={dashboardData?.total_templates_used ?? 0}
             avgWowScore={dashboardData?.avg_wow_score ?? undefined}
-            creditsRemaining={aiUsageData?.remaining_credits ?? aiUsageData?.remaining ?? undefined}
+            creditsRemaining={entitlements?.credits_available ?? aiUsageData?.remaining_credits ?? aiUsageData?.remaining ?? undefined}
           />
         </motion.div>
 

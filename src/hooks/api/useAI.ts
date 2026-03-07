@@ -2,7 +2,7 @@
  * AI hooks using React Query and the aiService streaming client
  */
 
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useRef, useState } from 'react';
 import { apiClient } from '@/lib/api/typed-client';
 import type { AgentOptimizeResult } from '@/lib/api/typed-client';
@@ -13,6 +13,16 @@ import {
   type DeepSeekStreamRequest,
 } from '@/lib/api/ai';
 import { toast } from 'sonner';
+import { billingKeys } from '@/hooks/api/useBilling';
+import { useRouter } from 'next/navigation';
+
+// Shared 402 error handler — shows toast with link to /billing
+function handle402(router: ReturnType<typeof useRouter>) {
+  toast.error('You\'ve run out of credits. Upgrade your plan to continue.', {
+    action: { label: 'Upgrade', onClick: () => router.push('/billing') },
+    duration: 6000,
+  });
+}
 
 // Query keys
 export const aiKeys = {
@@ -72,25 +82,45 @@ export function useAgentStats() {
 
 // Mutation Hooks
 export function useGenerateWithAI() {
+  const queryClient = useQueryClient();
+  const router = useRouter();
   return useMutation({
     mutationFn: (data: any) => apiClient.generateWithAI(data),
-    onError: (error: Error) => {
-      toast.error(error.message || 'AI generation failed');
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: billingKeys.entitlements() });
+    },
+    onError: (error: Error & { status?: number }) => {
+      if (error.status === 402) {
+        handle402(router);
+      } else {
+        toast.error(error.message || 'AI generation failed');
+      }
     },
   });
 }
 
 export function useAISuggestions() {
+  const queryClient = useQueryClient();
+  const router = useRouter();
   return useMutation({
     mutationFn: (data: any) => apiClient.getAISuggestions(data),
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to get AI suggestions');
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: billingKeys.entitlements() });
+    },
+    onError: (error: Error & { status?: number }) => {
+      if (error.status === 402) {
+        handle402(router);
+      } else {
+        toast.error(error.message || 'Failed to get AI suggestions');
+      }
     },
   });
 }
 
 // Chat Hook with Streaming
 export function useStreamChat() {
+  const queryClient = useQueryClient();
+  const router = useRouter();
   return useMutation({
     mutationFn: async ({
       messages,
@@ -110,8 +140,15 @@ export function useStreamChat() {
 
       return chunks;
     },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Chat stream failed');
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: billingKeys.entitlements() });
+    },
+    onError: (error: Error & { status?: number }) => {
+      if (error.status === 402) {
+        handle402(router);
+      } else {
+        toast.error(error.message || 'Chat stream failed');
+      }
     },
   });
 }
@@ -139,15 +176,20 @@ export function useRAGAnswer() {
 
 // Agent Hooks
 export function useOptimizeWithAgent() {
+  const queryClient = useQueryClient();
+  const router = useRouter();
   return useMutation<
     AgentOptimizeResult,
     Error & { status?: number },
     { session_id: string; original: string; mode?: 'fast' | 'deep'; context?: Record<string, unknown>; budget?: { tokens_in?: number; tokens_out?: number; max_credits?: number } }
   >({
     mutationFn: (data) => apiClient.optimizeWithAgent(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: billingKeys.entitlements() });
+    },
     onError: (error) => {
       if (error.status === 402) {
-        toast.error('Insufficient credits for agent optimization. Please upgrade your plan.');
+        handle402(router);
       } else if (error.status === 429) {
         toast.error('Rate limit reached (20 requests/hour). Please try again later.');
       } else if (error.status === 503) {
@@ -181,6 +223,8 @@ export interface UsePromptOptimizationState {
  * await optimize({ original: 'Write something about AI' });
  */
 export function usePromptOptimization() {
+  const queryClient = useQueryClient();
+  const router = useRouter();
   const [state, setState] = useState<UsePromptOptimizationState>({
     isStreaming: false,
     output: '',
@@ -211,21 +255,27 @@ export function usePromptOptimization() {
           setState(prev => ({
             ...prev,
             result: data,
-            // If the result contains the full optimised text, surface it
             output: data.optimized || prev.output,
           })),
 
         onError: (err) => {
           setState(prev => ({ ...prev, isStreaming: false, error: err }));
-          toast.error(err);
+          if (err.includes('402') || err.toLowerCase().includes('credit')) {
+            handle402(router);
+          } else {
+            toast.error(err);
+          }
         },
 
-        onComplete: () =>
-          setState(prev => ({ ...prev, isStreaming: false })),
+        onComplete: () => {
+          setState(prev => ({ ...prev, isStreaming: false }));
+          // Refresh credit balance after optimization
+          queryClient.invalidateQueries({ queryKey: billingKeys.entitlements() });
+        },
       },
       abortRef.current.signal,
     );
-  }, []);
+  }, [queryClient, router]);
 
   const cancel = useCallback(() => {
     abortRef.current?.abort();
@@ -255,6 +305,8 @@ export interface UseDeepSeekStreamState {
  * await stream({ messages: [{ role: 'user', content: 'Hello!' }] });
  */
 export function useDeepSeekStream() {
+  const queryClient = useQueryClient();
+  const router = useRouter();
   const [state, setState] = useState<UseDeepSeekStreamState>({
     isStreaming: false,
     output: '',
@@ -275,17 +327,24 @@ export function useDeepSeekStream() {
         onToken: (content) =>
           setState(prev => ({ ...prev, output: prev.output + content })),
 
-        onStreamComplete: (fullContent) =>
-          setState({ isStreaming: false, output: fullContent, error: null }),
+        onStreamComplete: (fullContent) => {
+          setState({ isStreaming: false, output: fullContent, error: null });
+          // Refresh credit balance after stream completes
+          queryClient.invalidateQueries({ queryKey: billingKeys.entitlements() });
+        },
 
         onError: (err) => {
           setState(prev => ({ ...prev, isStreaming: false, error: err }));
-          toast.error(err);
+          if (err.includes('402') || err.toLowerCase().includes('credit')) {
+            handle402(router);
+          } else {
+            toast.error(err);
+          }
         },
       },
       abortRef.current.signal,
     );
-  }, []);
+  }, [queryClient, router]);
 
   const cancel = useCallback(() => {
     abortRef.current?.abort();

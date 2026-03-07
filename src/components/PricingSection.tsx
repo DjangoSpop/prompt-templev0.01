@@ -1,32 +1,34 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Zap, Crown, BookOpen, Star, ArrowRight } from 'lucide-react';
+import { Check, Zap, Crown, BookOpen, ArrowRight, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import {
+  useBillingPlans,
+  usePlanCode,
+  useBillingActions,
+  type PlanCode,
+} from '@/hooks/api/useBilling';
+import { useAuthStore } from '@/store/user';
 
-interface PricingTier {
-  id: string;
-  name: string;
+interface PlanMeta {
   hieroglyphic: string;
-  price: { monthly: number; annual: number };
+  displayName: string;
   description: string;
   icon: React.ReactNode;
   color: string;
   glow: string;
   badge?: string;
-  features: { text: string; included: boolean }[];
-  cta: string;
-  ctaHref: string;
   popular?: boolean;
+  features: { text: string; included: boolean }[];
 }
 
-const TIERS: PricingTier[] = [
-  {
-    id: 'free',
-    name: 'Scribe',
-    hieroglyphic: '𓏲',
-    price: { monthly: 0, annual: 0 },
+const PLAN_META: Record<string, PlanMeta> = {
+  FREE: {
+    hieroglyphic: 'ð“²',
+    displayName: 'Scribe',
     description: 'Begin your journey in the temple',
     icon: <BookOpen className="w-6 h-6" />,
     color: '#9CA3AF',
@@ -41,14 +43,10 @@ const TIERS: PricingTier[] = [
       { text: 'Priority processing', included: false },
       { text: 'Analytics dashboard', included: false },
     ],
-    cta: 'Start for Free',
-    ctaHref: '/auth/register',
   },
-  {
-    id: 'scholar',
-    name: 'High Priest',
-    hieroglyphic: '𓊹',
-    price: { monthly: 19, annual: 15 },
+  PRO: {
+    hieroglyphic: 'ð“Š¹',
+    displayName: 'High Priest',
     description: 'Ascend to temple wisdom',
     icon: <Zap className="w-6 h-6" />,
     color: '#A78BFA',
@@ -65,14 +63,10 @@ const TIERS: PricingTier[] = [
       { text: 'Pharaoh-tier optimization', included: false },
       { text: 'Dedicated AI pipeline', included: false },
     ],
-    cta: 'Claim High Priest Tier',
-    ctaHref: '/auth/register?plan=scholar',
   },
-  {
-    id: 'pharaoh',
-    name: 'Pharaoh',
-    hieroglyphic: '𓋹',
-    price: { monthly: 49, annual: 39 },
+  POWER: {
+    hieroglyphic: 'ð“‹¹',
+    displayName: 'Pharaoh',
     description: 'Rule the realm of prompts',
     icon: <Crown className="w-6 h-6" />,
     color: '#F5C518',
@@ -87,13 +81,51 @@ const TIERS: PricingTier[] = [
       { text: 'White-label exports', included: true },
       { text: 'Priority support + Slack', included: true },
     ],
-    cta: 'Ascend to Pharaoh',
-    ctaHref: '/auth/register?plan=pharaoh',
   },
-];
+};
+
+// Fallback pricing shown while API loads
+const FALLBACK_PRICES: Record<string, { monthly: number; annual: number }> = {
+  FREE: { monthly: 0, annual: 0 },
+  PRO: { monthly: 19, annual: 15 },
+  POWER: { monthly: 49, annual: 39 },
+};
 
 export function PricingSection() {
   const [annual, setAnnual] = useState(false);
+  const router = useRouter();
+  const { data: plans } = useBillingPlans();
+  const currentPlanCode = usePlanCode();
+  const { startCheckout, isStartingCheckout } = useBillingActions();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+
+  const getPrices = (planCode: string) => {
+    const apiPlan = plans?.find((p) => p.plan_code === planCode);
+    if (apiPlan) {
+      const monthlyPrice = parseFloat(apiPlan.price) || 0;
+      return { monthly: monthlyPrice, annual: Math.round(monthlyPrice * 0.8) };
+    }
+    return FALLBACK_PRICES[planCode] ?? { monthly: 0, annual: 0 };
+  };
+
+  const handleCTA = (planCode: PlanCode) => {
+    if (planCode === 'FREE') {
+      router.push('/auth/register');
+      return;
+    }
+    if (!isAuthenticated) {
+      router.push(`/auth/register?plan=${planCode}`);
+      return;
+    }
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin;
+    startCheckout({
+      plan_code: planCode,
+      success_url: `${siteUrl}/billing/success`,
+      cancel_url: `${siteUrl}/billing/cancel`,
+    });
+  };
+
+  const planOrder: PlanCode[] = ['FREE', 'PRO', 'POWER'];
 
   return (
     <section className="py-24 px-4 relative overflow-hidden">
@@ -147,126 +179,164 @@ export function PricingSection() {
 
         {/* Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {TIERS.map((tier, i) => (
-            <motion.div
-              key={tier.id}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: i * 0.12, ease: [0.23, 1, 0.32, 1] }}
-              className="relative rounded-2xl overflow-hidden flex flex-col"
-              style={{
-                background: tier.popular
-                  ? `linear-gradient(160deg, ${tier.color}10 0%, rgba(13,13,13,0.95) 60%)`
-                  : 'rgba(13,13,13,0.8)',
-                border: `1px solid ${tier.popular ? tier.color + '50' : 'rgba(255,255,255,0.08)'}`,
-                boxShadow: tier.popular ? `0 0 60px ${tier.glow}` : 'none',
-              }}
-            >
-              {/* Popular badge */}
-              {tier.badge && (
-                <div
-                  className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1 rounded-full text-xs font-bold text-black"
-                  style={{ background: tier.color }}
-                >
-                  {tier.badge}
-                </div>
-              )}
+          {planOrder.map((planCode, i) => {
+            const meta = PLAN_META[planCode];
+            const prices = getPrices(planCode);
+            const isCurrent = currentPlanCode === planCode;
+            const isFree = planCode === 'FREE';
 
-              <div className="p-7 flex-1 flex flex-col">
-                {/* Tier header */}
-                <div className="flex items-start justify-between mb-6">
-                  <div>
-                    <div
-                      className="w-12 h-12 rounded-xl flex items-center justify-center mb-3"
-                      style={{ background: `${tier.color}15`, color: tier.color, border: `1px solid ${tier.color}30` }}
+            return (
+              <motion.div
+                key={planCode}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: i * 0.12, ease: [0.23, 1, 0.32, 1] }}
+                className="relative rounded-2xl overflow-hidden flex flex-col"
+                style={{
+                  background: meta.popular
+                    ? `linear-gradient(160deg, ${meta.color}10 0%, rgba(13,13,13,0.95) 60%)`
+                    : 'rgba(13,13,13,0.8)',
+                  border: `1px solid ${meta.popular ? meta.color + '50' : 'rgba(255,255,255,0.08)'}`,
+                  boxShadow: meta.popular ? `0 0 60px ${meta.glow}` : 'none',
+                }}
+              >
+                {/* Badge â€” current plan takes priority */}
+                {(isCurrent || meta.badge) && (
+                  <div
+                    className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1 rounded-full text-xs font-bold text-black"
+                    style={{ background: isCurrent ? '#22c55e' : meta.color }}
+                  >
+                    {isCurrent ? 'Current Plan' : meta.badge}
+                  </div>
+                )}
+
+                <div className="p-7 flex-1 flex flex-col">
+                  {/* Tier header */}
+                  <div className="flex items-start justify-between mb-6">
+                    <div>
+                      <div
+                        className="w-12 h-12 rounded-xl flex items-center justify-center mb-3"
+                        style={{ background: `${meta.color}15`, color: meta.color, border: `1px solid ${meta.color}30` }}
+                      >
+                        {meta.icon}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-bold text-[#F0E6D3]" style={{ fontFamily: 'Cinzel, serif' }}>
+                          {meta.displayName}
+                        </h3>
+                        <span className="text-lg" style={{ color: meta.color }}>{meta.hieroglyphic}</span>
+                      </div>
+                      <p className="text-sm text-[#9CA3AF] mt-1">{meta.description}</p>
+                    </div>
+                  </div>
+
+                  {/* Price */}
+                  <div className="mb-6">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-4xl font-bold" style={{ color: meta.color }}>
+                        ${annual ? prices.annual : prices.monthly}
+                      </span>
+                      {prices.monthly > 0 ? (
+                        <span className="text-[#9CA3AF] text-sm">/month</span>
+                      ) : (
+                        <span className="text-[#9CA3AF] text-sm">forever</span>
+                      )}
+                    </div>
+                    {annual && prices.monthly > 0 && (
+                      <p className="text-xs text-green-400 mt-1">
+                        Billed ${prices.annual * 12}/year Â· Save ${(prices.monthly - prices.annual) * 12}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Features */}
+                  <ul className="space-y-2.5 flex-1 mb-8">
+                    {meta.features.map((f, fi) => (
+                      <li key={fi} className="flex items-center gap-2.5">
+                        <div
+                          className="w-4 h-4 rounded-full flex items-center justify-center shrink-0"
+                          style={{
+                            background: f.included ? `${meta.color}20` : 'transparent',
+                            color: f.included ? meta.color : '#4B5563',
+                          }}
+                        >
+                          {f.included ? (
+                            <Check className="w-2.5 h-2.5" />
+                          ) : (
+                            <span className="w-1 h-0.5 bg-current block rounded" />
+                          )}
+                        </div>
+                        <span className="text-sm" style={{ color: f.included ? '#E5E7EB' : '#4B5563' }}>
+                          {f.text}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* CTA */}
+                  {isCurrent ? (
+                    <Link href="/billing">
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-200"
+                        style={{ background: '#22c55e22', color: '#22c55e', border: '1px solid #22c55e50' }}
+                      >
+                        Manage Plan
+                        <ArrowRight className="w-4 h-4" />
+                      </motion.button>
+                    </Link>
+                  ) : isFree ? (
+                    <Link href="/auth/register">
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-200"
+                        style={{ background: `${meta.color}12`, color: meta.color, border: `1px solid ${meta.color}35` }}
+                      >
+                        Start for Free
+                        <ArrowRight className="w-4 h-4" />
+                      </motion.button>
+                    </Link>
+                  ) : (
+                    <motion.button
+                      whileHover={{ scale: isStartingCheckout ? 1 : 1.02 }}
+                      whileTap={{ scale: isStartingCheckout ? 1 : 0.98 }}
+                      onClick={() => handleCTA(planCode)}
+                      disabled={isStartingCheckout}
+                      className="w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                      style={
+                        meta.popular
+                          ? {
+                              background: `linear-gradient(135deg, ${meta.color} 0%, #C9A227 100%)`,
+                              color: '#000',
+                              boxShadow: `0 4px 20px ${meta.glow}`,
+                            }
+                          : {
+                              background: `${meta.color}12`,
+                              color: meta.color,
+                              border: `1px solid ${meta.color}35`,
+                            }
+                      }
                     >
-                      {tier.icon}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-xl font-bold text-[#F0E6D3]" style={{ fontFamily: 'Cinzel, serif' }}>
-                        {tier.name}
-                      </h3>
-                      <span className="text-lg" style={{ color: tier.color }}>{tier.hieroglyphic}</span>
-                    </div>
-                    <p className="text-sm text-[#9CA3AF] mt-1">{tier.description}</p>
-                  </div>
-                </div>
-
-                {/* Price */}
-                <div className="mb-6">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold" style={{ color: tier.color }}>
-                      ${annual ? tier.price.annual : tier.price.monthly}
-                    </span>
-                    {tier.price.monthly > 0 && (
-                      <span className="text-[#9CA3AF] text-sm">/month</span>
-                    )}
-                    {tier.price.monthly === 0 && (
-                      <span className="text-[#9CA3AF] text-sm">forever</span>
-                    )}
-                  </div>
-                  {annual && tier.price.monthly > 0 && (
-                    <p className="text-xs text-green-400 mt-1">
-                      Billed ${tier.price.annual * 12}/year · Save ${(tier.price.monthly - tier.price.annual) * 12}
-                    </p>
+                      {isStartingCheckout ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Redirecting...
+                        </>
+                      ) : (
+                        <>
+                          {planCode === 'PRO' ? 'Claim High Priest Tier' : 'Ascend to Pharaoh'}
+                          <ArrowRight className="w-4 h-4" />
+                        </>
+                      )}
+                    </motion.button>
                   )}
                 </div>
-
-                {/* Features */}
-                <ul className="space-y-2.5 flex-1 mb-8">
-                  {tier.features.map((f, fi) => (
-                    <li key={fi} className="flex items-center gap-2.5">
-                      <div
-                        className="w-4 h-4 rounded-full flex items-center justify-center shrink-0"
-                        style={{
-                          background: f.included ? `${tier.color}20` : 'transparent',
-                          color: f.included ? tier.color : '#4B5563',
-                        }}
-                      >
-                        {f.included ? (
-                          <Check className="w-2.5 h-2.5" />
-                        ) : (
-                          <span className="w-1 h-0.5 bg-current block rounded" />
-                        )}
-                      </div>
-                      <span
-                        className="text-sm"
-                        style={{ color: f.included ? '#E5E7EB' : '#4B5563' }}
-                      >
-                        {f.text}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-
-                {/* CTA */}
-                <Link href={tier.ctaHref}>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-200"
-                    style={
-                      tier.popular
-                        ? {
-                            background: `linear-gradient(135deg, ${tier.color} 0%, #C9A227 100%)`,
-                            color: '#000',
-                            boxShadow: `0 4px 20px ${tier.glow}`,
-                          }
-                        : {
-                            background: `${tier.color}12`,
-                            color: tier.color,
-                            border: `1px solid ${tier.color}35`,
-                          }
-                    }
-                  >
-                    {tier.cta}
-                    <ArrowRight className="w-4 h-4" />
-                  </motion.button>
-                </Link>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
 
         {/* Footer note */}
@@ -277,3 +347,4 @@ export function PricingSection() {
     </section>
   );
 }
+

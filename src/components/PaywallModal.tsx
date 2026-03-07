@@ -1,34 +1,64 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Crown, Zap, X, Star, ArrowRight, Sparkles } from 'lucide-react';
-import Link from 'next/link';
+import { Crown, Zap, X, Star, ArrowRight, Sparkles, Loader2 } from 'lucide-react';
 import { usePaywallTrigger } from '@/lib/hooks/usePaywallTrigger';
+import { useCreateCheckoutSession, useBillingPlans } from '@/hooks/api/useBilling';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.prompt-temple.com';
 
 const TRIGGER_COPY = {
-  second_use: {
-    headline: 'You\'re Getting Good at This 𓊹',
-    subline: 'Unlock unlimited optimizations and 10x AI enhancement',
-    urgency: null,
-    emoji: '✨',
-  },
-  limit_reached: {
-    headline: 'Daily Scrolls Exhausted 𓏲',
-    subline: 'You\'ve used all 3 free optimizations for today. Upgrade to continue.',
+  no_credits: {
+    headline: 'Scrolls Exhausted 𓏲',
+    subline: "You've used all your AI credits for this month. Upgrade to continue optimizing.",
     urgency: 'Upgrade now — your prompts deserve better.',
     emoji: '🏛️',
+    blocking: true,
+  },
+  limit_reached: {
+    headline: 'Running Low on Credits 𓊹',
+    subline: 'Only a few AI credits remaining — upgrade for 1,000+ per month.',
+    urgency: null,
+    emoji: '✨',
+    blocking: false,
   },
   high_score: {
     headline: 'Pharaoh-Level Potential Detected 𓋹',
-    subline: 'Your optimization scored above 7.5. Unlock Pharaoh mode for 20x enhancement.',
+    subline: 'Your optimization scored above 7.5. Upgrade for unlimited 20× enhancement power.',
     urgency: null,
     emoji: '👑',
+    blocking: false,
   },
 };
 
 export function PaywallModal() {
-  const { modalOpen, modalTrigger, closeModal, usesRemaining } = usePaywallTrigger();
-  const copy = modalTrigger ? TRIGGER_COPY[modalTrigger] : TRIGGER_COPY.second_use;
+  const { modalOpen, modalTrigger, closeModal, usesRemaining, isSubscribed, entitlements } =
+    usePaywallTrigger();
+
+  const checkout = useCreateCheckoutSession();
+  const { data: plans } = useBillingPlans();
+
+  const copy =
+    (modalTrigger && TRIGGER_COPY[modalTrigger as keyof typeof TRIGGER_COPY]) ||
+    TRIGGER_COPY.limit_reached;
+
+  // Determine which plan to offer: if already PRO, upsell POWER; otherwise upsell PRO
+  const currentPlan = entitlements?.plan_code ?? 'FREE';
+  const targetPlan: 'PRO' | 'POWER' = currentPlan === 'PRO' ? 'POWER' : 'PRO';
+  const planData = plans?.find((p) => p.plan_code === targetPlan);
+  const planPrice = planData ? `$${parseFloat(planData.price).toFixed(2)}` : targetPlan === 'PRO' ? '$13.99' : '$39.00';
+  const planCredits = planData?.monthly_credits?.toLocaleString() ?? (targetPlan === 'PRO' ? '1,000' : '4,000');
+
+  const handleUpgrade = () => {
+    checkout.mutate(
+      {
+        plan_code: targetPlan,
+        success_url: `${SITE_URL}/billing/success`,
+        cancel_url: `${SITE_URL}/billing/cancel`,
+      },
+      { onSettled: closeModal }
+    );
+  };
 
   return (
     <AnimatePresence>
@@ -40,7 +70,7 @@ export function PaywallModal() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md"
-            onClick={closeModal}
+            onClick={copy.blocking ? undefined : closeModal}
           />
 
           {/* Modal */}
@@ -54,21 +84,25 @@ export function PaywallModal() {
             <div
               className="relative w-full max-w-md rounded-3xl overflow-hidden pointer-events-auto"
               style={{
-                background: 'linear-gradient(160deg, rgba(27,43,107,0.95) 0%, rgba(13,13,13,0.98) 100%)',
+                background:
+                  'linear-gradient(160deg, rgba(27,43,107,0.97) 0%, rgba(13,13,13,0.99) 100%)',
                 border: '1px solid rgba(245,197,24,0.3)',
                 boxShadow: '0 0 100px rgba(245,197,24,0.15), 0 40px 80px rgba(0,0,0,0.6)',
               }}
             >
-              {/* Top gold line */}
+              {/* Top gold accent */}
               <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#F5C518] to-transparent" />
 
-              {/* Close */}
-              <button
-                onClick={closeModal}
-                className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-[#6B7280] hover:text-white hover:bg-white/10 transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              {/* Close (only shown for non-blocking modals) */}
+              {!copy.blocking && (
+                <button
+                  onClick={closeModal}
+                  className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-[#6B7280] hover:text-white hover:bg-white/10 transition-colors"
+                  aria-label="Close"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
 
               <div className="p-8">
                 {/* Icon */}
@@ -100,19 +134,37 @@ export function PaywallModal() {
                   </p>
                 )}
 
-                {modalTrigger === 'second_use' && (
-                  <p className="text-center text-xs text-[#6B7280] mb-6">
-                    {usesRemaining} free optimization{usesRemaining !== 1 ? 's' : ''} remaining today
+                {/* Credits remaining pill */}
+                {!copy.blocking && usesRemaining > 0 && (
+                  <p className="text-center text-xs text-[#6B7280] mb-5">
+                    <span className="text-[#F5C518] font-semibold">{usesRemaining}</span> AI credit
+                    {usesRemaining !== 1 ? 's' : ''} remaining this month
                   </p>
                 )}
 
                 {/* Benefits */}
                 <div className="space-y-2.5 mb-7">
                   {[
-                    { icon: <Zap className="w-4 h-4" />, text: 'Unlimited optimizations — no daily caps', color: '#A78BFA' },
-                    { icon: <Crown className="w-4 h-4" />, text: '10x–20x AI enhancement power', color: '#F5C518' },
-                    { icon: <Star className="w-4 h-4" />, text: 'Full template library access', color: '#10B981' },
-                    { icon: <Sparkles className="w-4 h-4" />, text: 'Analytics, streaks & achievement system', color: '#60A5FA' },
+                    {
+                      icon: <Zap className="w-4 h-4" />,
+                      text: `${planCredits} AI credits / month — no daily cap`,
+                      color: '#A78BFA',
+                    },
+                    {
+                      icon: <Crown className="w-4 h-4" />,
+                      text: 'Unlimited prompt optimizations',
+                      color: '#F5C518',
+                    },
+                    {
+                      icon: <Star className="w-4 h-4" />,
+                      text: 'Premium template library access',
+                      color: '#10B981',
+                    },
+                    {
+                      icon: <Sparkles className="w-4 h-4" />,
+                      text: 'Analytics, streaks & achievement system',
+                      color: '#60A5FA',
+                    },
                   ].map((b, i) => (
                     <div key={i} className="flex items-center gap-3">
                       <div
@@ -128,28 +180,48 @@ export function PaywallModal() {
 
                 {/* CTAs */}
                 <div className="space-y-3">
-                  <Link href="/auth/register?plan=scholar" onClick={closeModal}>
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="w-full py-3.5 rounded-xl font-bold text-black flex items-center justify-center gap-2"
-                      style={{
-                        background: 'linear-gradient(135deg, #F5C518 0%, #C9A227 100%)',
-                        boxShadow: '0 4px 20px rgba(245,197,24,0.4)',
-                      }}
-                    >
-                      <Crown className="w-4 h-4" />
-                      Upgrade to High Priest — $19/mo
-                      <ArrowRight className="w-4 h-4" />
-                    </motion.button>
-                  </Link>
-
-                  <button
-                    onClick={closeModal}
-                    className="w-full py-2.5 text-sm text-[#6B7280] hover:text-[#9CA3AF] transition-colors"
+                  <motion.button
+                    whileHover={{ scale: checkout.isPending ? 1 : 1.02 }}
+                    whileTap={{ scale: checkout.isPending ? 1 : 0.98 }}
+                    onClick={handleUpgrade}
+                    disabled={checkout.isPending}
+                    className="w-full py-3.5 rounded-xl font-bold text-black flex items-center justify-center gap-2 disabled:opacity-70"
+                    style={{
+                      background: 'linear-gradient(135deg, #F5C518 0%, #C9A227 100%)',
+                      boxShadow: '0 4px 20px rgba(245,197,24,0.4)',
+                    }}
                   >
-                    Continue as Scribe (free)
-                  </button>
+                    {checkout.isPending ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Redirecting to checkout…
+                      </>
+                    ) : (
+                      <>
+                        <Crown className="w-4 h-4" />
+                        Upgrade to {targetPlan === 'PRO' ? 'Pro' : 'Power'} — {planPrice}/mo
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </motion.button>
+
+                  {!copy.blocking && (
+                    <button
+                      onClick={closeModal}
+                      className="w-full py-2.5 text-sm text-[#6B7280] hover:text-[#9CA3AF] transition-colors"
+                    >
+                      Continue with {usesRemaining} credit{usesRemaining !== 1 ? 's' : ''} left
+                    </button>
+                  )}
+
+                  {copy.blocking && (
+                    <a
+                      href="/billing"
+                      className="block w-full py-2.5 text-sm text-center text-[#6B7280] hover:text-[#9CA3AF] transition-colors"
+                    >
+                      View billing details →
+                    </a>
+                  )}
                 </div>
               </div>
             </div>

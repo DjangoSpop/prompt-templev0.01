@@ -12,6 +12,7 @@ import {
   Download,
   RefreshCw,
   Filter,
+  Lock,
 } from 'lucide-react';
 import {
   useDashboard,
@@ -19,6 +20,7 @@ import {
   useTemplatesAnalytics,
 } from '@/lib/hooks/useAnalytics';          // ← your existing hooks
 import type { DashboardData } from '@/lib/types';
+import { useEntitlements } from '@/hooks/api/useBilling';
 
 type DateRange = '1d' | '7d' | '30d' | '90d';
 type Tab = 'overview' | 'insights' | 'templates';
@@ -75,6 +77,10 @@ export default function AnalyticsView() {
   const [dateRange, setDateRange] = useState<DateRange>('7d');
   const [activeTab, setActiveTab] = useState<Tab>('overview');
 
+  /* ---------- entitlements gate ---------- */
+  const { data: entitlements, isLoading: entLoading } = useEntitlements();
+  const hasAnalyticsAccess = !entitlements || entitlements.analytics;
+
   /* ---------- data ---------- */
   const dashboardQ   = useDashboard();
   const insightsQ    = useUserInsights();
@@ -114,6 +120,36 @@ export default function AnalyticsView() {
   };
 
   /* ---------- render ---------- */
+  if (entLoading) {
+    return (
+      <div className="flex-1 bg-bg-primary flex items-center justify-center min-h-64">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!hasAnalyticsAccess) {
+    return (
+      <div className="flex-1 bg-bg-primary flex flex-col items-center justify-center min-h-64 gap-4 px-6 text-center">
+        <div className="p-4 bg-brand/10 rounded-full">
+          <Lock className="w-8 h-8 text-brand" />
+        </div>
+        <div>
+          <h2 className="text-xl font-bold text-text-primary">Analytics requires Pro or Power</h2>
+          <p className="text-text-muted text-sm mt-1 max-w-sm">
+            Upgrade your plan to unlock detailed usage analytics, insights, and template performance data.
+          </p>
+        </div>
+        <a
+          href="/billing"
+          className="px-6 py-2 bg-brand text-white rounded-lg font-medium hover:bg-brand/90 transition-colors"
+        >
+          Upgrade plan
+        </a>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 bg-bg-primary">
       {/* ------- header ------- */}

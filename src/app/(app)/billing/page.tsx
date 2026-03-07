@@ -1,8 +1,20 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { useGameStore } from "@/lib/stores/gameStore";
+import { useRouter } from "next/navigation";
+import {
+  CreditCard,
+  Crown,
+  Zap,
+  Calendar,
+  TrendingUp,
+  Activity,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  ExternalLink,
+  ChevronUp,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -15,747 +27,542 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  CreditCard,
-  Crown,
-  Zap,
-  Download,
-  Upload,
-  Users,
-  Check,
-  Calendar,
-  TrendingUp,
-  Activity,
-  Award,
-  Gift,
-  Coins,
-  RefreshCw,
-  Share,
-} from "lucide-react";
-import { toast } from "react-hot-toast";
+  useSubscription,
+  useEntitlements,
+  useBillingUsage,
+  useBillingPlans,
+  useCreateCheckoutSession,
+  useCreatePortalSession,
+} from "@/hooks/api/useBilling";
+import type { SubscriptionStatus } from "@/lib/api/typed-client";
 
-interface PricingPlan {
-  id: string;
-  name: string;
-  price: number;
-  interval: 'monthly' | 'yearly';
-  features: string[];
-  limits: {
-    templates: number | 'unlimited';
-    teamMembers: number | 'unlimited';
-    apiCalls: number | 'unlimited';
-    storage: string;
-  };
-  popular?: boolean;
-  current?: boolean;
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.prompt-temple.com";
+
+// â”€â”€ Status badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function statusVariant(status: SubscriptionStatus) {
+  return {
+    active: "secondary",
+    pending: "outline",
+    past_due: "destructive",
+    cancelled: "outline",
+    expired: "outline",
+  }[status] as "secondary" | "outline" | "destructive";
 }
 
-interface UsageStats {
-  templates: {
-    used: number;
-    limit: number | 'unlimited';
-  };
-  apiCalls: {
-    used: number;
-    limit: number | 'unlimited';
-  };
-  storage: {
-    used: number;
-    limit: number;
-  };
-  teamMembers: {
-    used: number;
-    limit: number | 'unlimited';
-  };
+function statusLabel(status: SubscriptionStatus) {
+  return {
+    active: "Active",
+    pending: "Pending",
+    past_due: "Past Due",
+    cancelled: "Cancelled",
+    expired: "Expired",
+  }[status] ?? status;
 }
 
-interface Transaction {
-  id: string;
-  date: Date;
-  description: string;
-  amount: number;
-  status: 'completed' | 'pending' | 'failed';
-  downloadUrl?: string;
+// â”€â”€ Credits bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function CreditsBar({
+  available,
+  total,
+}: {
+  available: number;
+  total: number;
+}) {
+  const pct = total > 0 ? Math.round(((total - available) / total) * 100) : 0;
+  const danger = pct >= 90;
+  const warn = pct >= 75;
+  return (
+    <div className="space-y-1">
+      <div className="flex justify-between text-sm">
+        <span className="text-muted-foreground">Credits used</span>
+        <span
+          className={
+            danger
+              ? "text-destructive font-medium"
+              : warn
+              ? "text-yellow-500 font-medium"
+              : "text-foreground font-medium"
+          }
+        >
+          {available.toLocaleString()} remaining
+        </span>
+      </div>
+      <Progress
+        value={pct}
+        className={`h-2 ${
+          danger ? "[&>div]:bg-destructive" : warn ? "[&>div]:bg-yellow-500" : ""
+        }`}
+      />
+      <div className="flex justify-between text-xs text-muted-foreground">
+        <span>{(total - available).toLocaleString()} used</span>
+        <span>{total.toLocaleString()} total / month</span>
+      </div>
+    </div>
+  );
 }
 
-const pricingPlans: PricingPlan[] = [
-  {
-    id: 'free',
-    name: 'Temple Apprentice',
-    price: 0,
-    interval: 'monthly',
-    features: [
-      '50 template uses per month',
-      '5 custom templates',
-      'Basic gamification',
-      'Community support',
-      '1GB storage'
-    ],
-    limits: {
-      templates: 50,
-      teamMembers: 1,
-      apiCalls: 1000,
-      storage: '1GB'
-    },
-    current: true
-  },
-  {
-    id: 'scribe',
-    name: 'Temple Scribe',
-    price: 3.99,
-    interval: 'monthly',
-    features: [
-      'Unlimited prompt enhancement credits',
-      'AI-powered walkthrough assistance',
-      '20 custom templates (vs 5 free)',
-      'Full Academy access — all 6 modules',
-      'AI services during onboarding walkthrough',
-      '5GB storage',
-      '5,000 API calls/month',
-      'Email support'
-    ],
-    limits: {
-      templates: 20,
-      teamMembers: 1,
-      apiCalls: 5000,
-      storage: '5GB'
-    },
-  },
-  {
-    id: 'pro',
-    name: 'Temple Guardian',
-    price: 19,
-    interval: 'monthly',
-    features: [
-      'Unlimited template uses',
-      'Advanced templates access',
-      'Team collaboration (up to 10)',
-      'Priority support',
-      'Advanced analytics',
-      '10GB storage',
-      'Custom integrations'
-    ],
-    limits: {
-      templates: 'unlimited',
-      teamMembers: 10,
-      apiCalls: 10000,
-      storage: '10GB'
-    },
-    popular: true
-  },
-  {
-    id: 'enterprise',
-    name: 'Temple Master',
-    price: 99,
-    interval: 'monthly',
-    features: [
-      'Everything in Pro',
-      'Unlimited team members',
-      'White-label solution',
-      'Dedicated support',
-      'Custom integrations',
-      'Advanced security',
-      '100GB storage',
-      'API access'
-    ],
-    limits: {
-      templates: 'unlimited',
-      teamMembers: 'unlimited',
-      apiCalls: 'unlimited',
-      storage: '100GB'
-    }
-  }
-];
-
-const mockUsage: UsageStats = {
-  templates: {
-    used: 32,
-    limit: 50
-  },
-  apiCalls: {
-    used: 650,
-    limit: 1000
-  },
-  storage: {
-    used: 0.3,
-    limit: 1
-  },
-  teamMembers: {
-    used: 1,
-    limit: 1
-  }
-};
-
-const mockTransactions: Transaction[] = [
-  {
-    id: '1',
-    date: new Date('2024-01-15'),
-    description: 'Temple Guardian - Monthly Subscription',
-    amount: 19,
-    status: 'completed',
-    downloadUrl: '/invoices/inv-001.pdf'
-  },
-  {
-    id: '2',
-    date: new Date('2023-12-15'),
-    description: 'Temple Guardian - Monthly Subscription',
-    amount: 19,
-    status: 'completed',
-    downloadUrl: '/invoices/inv-002.pdf'
-  },
-  {
-    id: '3',
-    date: new Date('2023-11-15'),
-    description: 'Temple Guardian - Monthly Subscription',
-    amount: 19,
-    status: 'completed',
-    downloadUrl: '/invoices/inv-003.pdf'
-  }
-];
-
+// â”€â”€ Main page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function BillingPage() {
-  const [selectedPlan, setSelectedPlan] = useState<string>('');
-  const [billingInterval, setBillingInterval] = useState<'monthly' | 'yearly'>('monthly');
-  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
-  const [isProcessingUpgrade, setIsProcessingUpgrade] = useState(false);
+  const router = useRouter();
 
-  const { addExperience, addNotification } = useGameStore();
+  const { data: subscription, isLoading: subLoading } = useSubscription();
+  const { data: entitlements, isLoading: entLoading } = useEntitlements();
+  const { data: usage, isLoading: usageLoading } = useBillingUsage();
+  const { data: plans } = useBillingPlans();
 
-  const currentPlan = pricingPlans.find(plan => plan.current);
-  const usage = mockUsage;
+  const checkout = useCreateCheckoutSession();
+  const portal = useCreatePortalSession();
 
-  const handleUpgrade = async (planId: string) => {
-    setSelectedPlan(planId);
-    setShowUpgradeDialog(true);
+  const [activeTab, setActiveTab] = useState("overview");
+
+  const isLoading = subLoading || entLoading;
+
+  const handleUpgrade = (planCode: "PRO" | "POWER") => {
+    checkout.mutate({
+      plan_code: planCode,
+      success_url: `${SITE_URL}/billing/success`,
+      cancel_url: `${SITE_URL}/billing/cancel`,
+    });
   };
 
-  const processUpgrade = async () => {
-    setIsProcessingUpgrade(true);
-    
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    const plan = pricingPlans.find(p => p.id === selectedPlan);
-    if (plan) {
-      toast.success(`Successfully upgraded to ${plan.name}!`);
-      addExperience(200);
-      // addNotification({
-      //   id: Date.now().toString(),
-      //   type: 'achievement',
-      //   title: 'Plan Upgraded!',
-      //   message: `Welcome to ${plan.name}! You earned 200 XP bonus.`,
-      //   read: false,
-      //   timestamp: new Date()
-      // });
-    }
-    
-    setIsProcessingUpgrade(false);
-    setShowUpgradeDialog(false);
+  const handleManageBilling = () => {
+    portal.mutate({ return_url: `${SITE_URL}/billing` });
   };
 
-  const getUsagePercentage = (used: number, limit: number | 'unlimited') => {
-    if (limit === 'unlimited') return 0;
-    return Math.min((used / limit) * 100, 100);
-  };
+  // â”€â”€ Subscription status alert â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const showAlert =
+    subscription && subscription.status !== "active";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-primary/5">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="border-b border-border bg-background/50 backdrop-blur-sm">
+      <div className="border-b border-border">
         <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-                Billing & Usage
-              </h1>
+              <h1 className="text-3xl font-bold">Billing & Credits</h1>
               <p className="text-muted-foreground mt-1">
-                Manage your subscription and track your usage
+                Manage your subscription and track AI credit usage
               </p>
             </div>
-
-            <div className="flex items-center gap-3">
-              {currentPlan && (
-                <Badge variant="secondary" className="px-4 py-2">
-                  <Crown className="h-4 w-4 mr-1" />
-                  {currentPlan.name}
-                </Badge>
-              )}
-            </div>
+            {entitlements && (
+              <Badge variant="secondary" className="px-4 py-2 gap-1.5">
+                <Crown className="h-4 w-4" />
+                {entitlements.plan_name}
+              </Badge>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-6 py-8">
-        <Tabs defaultValue="usage" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-8">
-            <TabsTrigger value="usage" className="flex items-center gap-2">
-              <Activity className="h-4 w-4" />
-              Usage
+      <div className="container mx-auto px-6 py-8 space-y-8">
+        {/* Subscription status alert */}
+        {showAlert && (
+          <div
+            className={`flex items-start gap-3 rounded-lg border p-4 ${
+              subscription.status === "past_due"
+                ? "border-destructive/50 bg-destructive/5 text-destructive"
+                : "border-yellow-500/50 bg-yellow-500/5 text-yellow-600"
+            }`}
+          >
+            <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-medium">
+                {subscription.status === "past_due"
+                  ? "Payment failed â€” update your payment method to keep access."
+                  : subscription.status === "pending"
+                  ? "Payment pending â€” complete checkout to activate your plan."
+                  : subscription.status === "cancelled"
+                  ? "Subscription cancelled. Upgrade to regain premium access."
+                  : "Your subscription has expired."}
+              </p>
+            </div>
+            {subscription.status === "past_due" && (
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={handleManageBilling}
+                disabled={portal.isPending}
+              >
+                Update payment
+              </Button>
+            )}
+          </div>
+        )}
+
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-3 mb-6">
+            <TabsTrigger value="overview" className="gap-2">
+              <Activity className="h-4 w-4" /> Overview
             </TabsTrigger>
-            <TabsTrigger value="plans" className="flex items-center gap-2">
-              <Crown className="h-4 w-4" />
-              Plans
+            <TabsTrigger value="plans" className="gap-2">
+              <Crown className="h-4 w-4" /> Plans
             </TabsTrigger>
-            <TabsTrigger value="billing" className="flex items-center gap-2">
-              <CreditCard className="h-4 w-4" />
-              Billing
-            </TabsTrigger>
-            <TabsTrigger value="rewards" className="flex items-center gap-2">
-              <Gift className="h-4 w-4" />
-              Rewards
+            <TabsTrigger value="usage" className="gap-2">
+              <TrendingUp className="h-4 w-4" /> Usage
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="usage" className="space-y-6">
-            {/* Current Plan Summary */}
-            <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-purple-500/5">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <Crown className="h-5 w-5 text-primary" />
-                      {currentPlan?.name || 'No Active Plan'}
-                    </CardTitle>
-                    <CardDescription>
-                      {currentPlan?.price === 0 ? 'Free Plan' : `$${currentPlan?.price}/${currentPlan?.interval}`}
-                    </CardDescription>
-                  </div>
-                  <Button onClick={() => handleUpgrade('pro')}>
-                    <TrendingUp className="h-4 w-4 mr-1" />
-                    Upgrade Plan
-                  </Button>
-                </div>
-              </CardHeader>
-            </Card>
-
-            {/* Usage Statistics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {/* Templates Usage */}
-              <Card className="glass-effect">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
-                        <Zap className="h-4 w-4 text-primary" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Templates</p>
-                        <p className="text-lg font-semibold">
-                          {usage.templates.used}
-                          {usage.templates.limit !== 'unlimited' && ` / ${usage.templates.limit}`}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  {usage.templates.limit !== 'unlimited' && (
-                    <Progress 
-                      value={getUsagePercentage(usage.templates.used, usage.templates.limit)}
-                      className="h-2"
-                    />
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* API Calls Usage */}
-              <Card className="glass-effect">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-experience/10 rounded-lg flex items-center justify-center">
-                        <RefreshCw className="h-4 w-4 text-experience" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">API Calls</p>
-                        <p className="text-lg font-semibold">
-                          {usage.apiCalls.used.toLocaleString()}
-                          {usage.apiCalls.limit !== 'unlimited' && ` / ${usage.apiCalls.limit.toLocaleString()}`}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  {usage.apiCalls.limit !== 'unlimited' && (
-                    <Progress 
-                      value={getUsagePercentage(usage.apiCalls.used, usage.apiCalls.limit)}
-                      className="h-2"
-                    />
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Storage Usage */}
-              <Card className="glass-effect">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-secondary/20 rounded-lg flex items-center justify-center">
-                        <Upload className="h-4 w-4 text-secondary-foreground" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Storage</p>
-                        <p className="text-lg font-semibold">
-                          {usage.storage.used}GB / {usage.storage.limit}GB
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <Progress 
-                    value={getUsagePercentage(usage.storage.used, usage.storage.limit)}
-                    className="h-2"
+          {/* â”€â”€ Overview tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+          <TabsContent value="overview" className="space-y-6">
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {[0, 1].map((i) => (
+                  <div
+                    key={i}
+                    className="h-40 rounded-xl bg-muted animate-pulse"
                   />
-                </CardContent>
-              </Card>
-
-              {/* Team Members Usage */}
-              <Card className="glass-effect">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-achievement/10 rounded-lg flex items-center justify-center">
-                        <Users className="h-4 w-4 text-achievement" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Team Members</p>
-                        <p className="text-lg font-semibold">
-                          {usage.teamMembers.used}
-                          {usage.teamMembers.limit !== 'unlimited' && ` / ${usage.teamMembers.limit}`}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  {usage.teamMembers.limit !== 'unlimited' && (
-                    <Progress 
-                      value={getUsagePercentage(usage.teamMembers.used, usage.teamMembers.limit)}
-                      className="h-2"
-                    />
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Usage Insights */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5" />
-                  Usage Insights
-                </CardTitle>
-                <CardDescription>
-                  Understand your usage patterns and optimize your plan
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="text-center p-4 bg-secondary/20 rounded-lg">
-                    <div className="text-2xl font-bold text-primary mb-1">64%</div>
-                    <div className="text-sm text-muted-foreground">Templates Used</div>
-                  </div>
-                  <div className="text-center p-4 bg-secondary/20 rounded-lg">
-                    <div className="text-2xl font-bold text-experience mb-1">23</div>
-                    <div className="text-sm text-muted-foreground">Days Left in Cycle</div>
-                  </div>
-                  <div className="text-center p-4 bg-secondary/20 rounded-lg">
-                    <div className="text-2xl font-bold text-achievement mb-1">+15%</div>
-                    <div className="text-sm text-muted-foreground">Usage vs Last Month</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="plans" className="space-y-6">
-            {/* Plan Toggle */}
-            <div className="flex justify-center mb-8">
-              <div className="flex items-center gap-4 p-1 bg-secondary/20 rounded-lg">
-                <Button
-                  variant={billingInterval === 'monthly' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setBillingInterval('monthly')}
-                >
-                  Monthly
-                </Button>
-                <Button
-                  variant={billingInterval === 'yearly' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setBillingInterval('yearly')}
-                  className="flex items-center gap-1"
-                >
-                  Yearly
-                  <Badge variant="secondary" className="text-xs">Save 20%</Badge>
-                </Button>
+                ))}
               </div>
-            </div>
-
-            {/* Pricing Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {pricingPlans.map(plan => (
-                <motion.div
-                  key={plan.id}
-                  whileHover={{ scale: 1.02 }}
-                  className={`relative ${plan.popular ? 'z-10' : ''}`}
-                >
-                  <Card className={`glass-effect h-full ${
-                    plan.popular ? 'border-primary/50 ring-2 ring-primary/20' : ''
-                  } ${plan.id === 'scribe' ? 'border-amber-400/50 ring-2 ring-amber-400/20' : ''
-                  } ${plan.current ? 'bg-primary/5' : ''}`}>
-                    {plan.popular && (
-                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                        <Badge className="bg-primary text-primary-foreground">
-                          Most Popular
-                        </Badge>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Current plan card */}
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <Crown className="h-5 w-5 text-primary" />
+                          Current Plan
+                        </CardTitle>
+                        {subscription && (
+                          <Badge variant={statusVariant(subscription.status)}>
+                            {statusLabel(subscription.status)}
+                          </Badge>
+                        )}
                       </div>
-                    )}
-                    {plan.id === 'scribe' && (
-                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                        <Badge className="bg-amber-500 text-white">
-                          📜 Entry Step
-                        </Badge>
-                      </div>
-                    )}
-                    
-                    <CardHeader className="text-center pb-4">
-                      <CardTitle className="text-xl">{plan.name}</CardTitle>
-                      <div className="text-3xl font-bold">
-                        ${billingInterval === 'yearly' ? Math.round(plan.price * 0.8 * 12) : plan.price}
-                        <span className="text-lg font-normal text-muted-foreground">
-                          /{billingInterval === 'yearly' ? 'year' : 'month'}
-                        </span>
-                      </div>
-                      {billingInterval === 'yearly' && plan.price > 0 && (
-                        <p className="text-sm text-green-600">
-                          Save ${Math.round(plan.price * 0.2 * 12)} annually
-                        </p>
-                      )}
                     </CardHeader>
-
                     <CardContent className="space-y-4">
-                      <div className="space-y-2">
-                        {plan.features.map(feature => (
-                          <div key={feature} className="flex items-center gap-2">
-                            <Check className="h-4 w-4 text-green-500" />
-                            <span className="text-sm">{feature}</span>
-                          </div>
-                        ))}
+                      <div>
+                        <p className="text-2xl font-bold">
+                          {entitlements?.plan_name ?? "â€”"}
+                        </p>
+                        {subscription?.next_billing_date && (
+                          <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+                            <Calendar className="h-3.5 w-3.5" />
+                            Renews{" "}
+                            {new Date(
+                              subscription.next_billing_date
+                            ).toLocaleDateString()}
+                          </p>
+                        )}
+                        {subscription?.days_remaining !== undefined && (
+                          <p className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5">
+                            <Clock className="h-3.5 w-3.5" />
+                            {subscription.days_remaining} days remaining
+                          </p>
+                        )}
                       </div>
 
-                      <div className="pt-4">
-                        {plan.current ? (
-                          <Button disabled className="w-full">
-                            Current Plan
+                      <div className="flex gap-2 pt-2">
+                        {subscription?.is_premium ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={handleManageBilling}
+                            disabled={portal.isPending}
+                            className="gap-1"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                            {portal.isPending ? "Openingâ€¦" : "Manage billing"}
                           </Button>
                         ) : (
-                          <Button 
-                            onClick={() => handleUpgrade(plan.id)}
-                            variant={plan.popular ? 'default' : 'outline'}
-                            className="w-full"
+                          <Button
+                            size="sm"
+                            onClick={() => setActiveTab("plans")}
+                            className="gap-1"
                           >
-                            {plan.price === 0 ? 'Downgrade' : 'Upgrade'}
+                            <ChevronUp className="h-3.5 w-3.5" />
+                            Upgrade plan
+                          </Button>
+                        )}
+                        {entitlements?.plan_code === "PRO" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleUpgrade("POWER")}
+                            disabled={checkout.isPending}
+                          >
+                            {checkout.isPending ? "â€¦" : "Upgrade to Power"}
                           </Button>
                         )}
                       </div>
                     </CardContent>
                   </Card>
-                </motion.div>
-              ))}
-            </div>
+
+                  {/* Credits card */}
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Zap className="h-5 w-5 text-primary" />
+                        AI Credits
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {entitlements ? (
+                        <>
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-3xl font-bold">
+                              {entitlements.credits_available.toLocaleString()}
+                            </span>
+                            <span className="text-muted-foreground text-sm">
+                              / {entitlements.monthly_credits.toLocaleString()} this month
+                            </span>
+                          </div>
+                          <CreditsBar
+                            available={entitlements.credits_available}
+                            total={entitlements.monthly_credits}
+                          />
+                        </>
+                      ) : (
+                        <div className="h-16 bg-muted rounded animate-pulse" />
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Feature access grid */}
+                {entitlements && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Feature Access</CardTitle>
+                      <CardDescription>
+                        What&apos;s included in your {entitlements.plan_name} plan
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                        {[
+                          {
+                            label: "Premium Templates",
+                            ok: entitlements.premium_templates,
+                          },
+                          { label: "Analytics", ok: entitlements.analytics },
+                          {
+                            label: "API Access",
+                            ok: entitlements.api_access,
+                          },
+                          {
+                            label: "Streaming AI",
+                            ok: entitlements.streaming_enabled,
+                          },
+                          { label: "Ad-Free", ok: entitlements.ads_free },
+                          {
+                            label: "Collaboration",
+                            ok: entitlements.collaboration,
+                          },
+                          {
+                            label: "Priority Support",
+                            ok: entitlements.priority_support,
+                          },
+                        ].map(({ label, ok }) => (
+                          <div
+                            key={label}
+                            className={`flex items-center gap-2 rounded-lg border p-3 text-sm ${
+                              ok
+                                ? "border-green-500/30 bg-green-500/5"
+                                : "border-border bg-muted/30 text-muted-foreground"
+                            }`}
+                          >
+                            <CheckCircle
+                              className={`h-4 w-4 shrink-0 ${
+                                ok ? "text-green-500" : "text-muted-foreground/40"
+                              }`}
+                            />
+                            {label}
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </>
+            )}
           </TabsContent>
 
-          <TabsContent value="billing" className="space-y-6">
-            {/* Payment Method */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="h-5 w-5" />
-                  Payment Method
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between p-4 border border-border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-6 bg-primary rounded flex items-center justify-center">
-                      <span className="text-xs font-bold text-primary-foreground">VISA</span>
-                    </div>
-                    <div>
-                      <p className="font-medium">•••• •••• •••• 4242</p>
-                      <p className="text-sm text-muted-foreground">Expires 12/26</p>
-                    </div>
-                  </div>
-                  <Button variant="outline">Update</Button>
-                </div>
-              </CardContent>
-            </Card>
+          {/* â”€â”€ Plans tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+          <TabsContent value="plans" className="space-y-6">
+            {!plans ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[0, 1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="h-80 rounded-xl bg-muted animate-pulse"
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {plans.map((plan) => {
+                  const isCurrent =
+                    entitlements?.plan_code === plan.plan_code;
+                  const isUpgradeable =
+                    !isCurrent && plan.plan_code !== "FREE";
 
-            {/* Billing History */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5" />
-                  Billing History
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {mockTransactions.map(transaction => (
-                    <div key={transaction.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
-                      <div>
-                        <p className="font-medium">{transaction.description}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {transaction.date.toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="text-right">
-                          <p className="font-medium">${transaction.amount}</p>
-                          <Badge 
-                            variant={
-                              transaction.status === 'completed' ? 'secondary' :
-                              transaction.status === 'pending' ? 'outline' : 'destructive'
-                            }
-                            className="text-xs"
-                          >
-                            {transaction.status}
+                  return (
+                    <Card
+                      key={plan.plan_code}
+                      className={`relative flex flex-col ${
+                        plan.is_popular
+                          ? "border-primary/60 ring-2 ring-primary/20"
+                          : ""
+                      } ${isCurrent ? "bg-muted/30" : ""}`}
+                    >
+                      {plan.is_popular && (
+                        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                          <Badge className="bg-primary text-primary-foreground">
+                            Most Popular
                           </Badge>
                         </div>
-                        {transaction.downloadUrl && (
-                          <Button variant="ghost" size="sm">
-                            <Download className="h-4 w-4" />
+                      )}
+                      <CardHeader className="pb-4">
+                        <CardTitle className="text-xl">{plan.name}</CardTitle>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-3xl font-bold">
+                            ${parseFloat(plan.price).toFixed(2) === "0.00"
+                              ? "0"
+                              : parseFloat(plan.price).toFixed(2)}
+                          </span>
+                          {plan.plan_code !== "FREE" && (
+                            <span className="text-muted-foreground text-sm">
+                              /month
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {plan.monthly_credits.toLocaleString()} AI credits /
+                          month
+                        </p>
+                      </CardHeader>
+                      <CardContent className="flex-1 flex flex-col gap-4">
+                        <ul className="space-y-2 flex-1">
+                          {plan.features_list.map((f) => (
+                            <li
+                              key={f}
+                              className="flex items-center gap-2 text-sm"
+                            >
+                              <CheckCircle className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                              {f}
+                            </li>
+                          ))}
+                        </ul>
+                        {isCurrent ? (
+                          <Button
+                            variant="outline"
+                            className="w-full"
+                            onClick={handleManageBilling}
+                            disabled={portal.isPending}
+                          >
+                            {portal.isPending ? "Openingâ€¦" : "Manage billing"}
                           </Button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                        ) : isUpgradeable ? (
+                          <Button
+                            className="w-full"
+                            onClick={() =>
+                              handleUpgrade(plan.plan_code as "PRO" | "POWER")
+                            }
+                            disabled={checkout.isPending}
+                          >
+                            {checkout.isPending ? "Redirectingâ€¦" : `Get ${plan.name}`}
+                          </Button>
+                        ) : null}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
           </TabsContent>
 
-          <TabsContent value="rewards" className="space-y-6">
-            {/* Loyalty Program */}
-            <Card className="border-achievement/20 bg-gradient-to-r from-achievement/5 to-primary/5">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Award className="h-5 w-5 text-achievement" />
-                  Temple Loyalty Program
-                </CardTitle>
-                <CardDescription>
-                  Earn coins for every action and unlock exclusive rewards
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <p className="text-2xl font-bold text-achievement">2,450 Coins</p>
-                    <p className="text-sm text-muted-foreground">Available to spend</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Coins className="h-8 w-8 text-achievement" />
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                  <div className="p-4 bg-secondary/20 rounded-lg">
-                    <h4 className="font-semibold mb-2">Earn Coins</h4>
-                    <ul className="text-sm space-y-1 text-muted-foreground">
-                      <li>• Use templates: 10 coins</li>
-                      <li>• Complete challenges: 50 coins</li>
-                      <li>• Invite friends: 100 coins</li>
-                      <li>• Monthly subscription: 200 coins</li>
-                    </ul>
-                  </div>
-                  
-                  <div className="p-4 bg-secondary/20 rounded-lg">
-                    <h4 className="font-semibold mb-2">Redeem Rewards</h4>
-                    <ul className="text-sm space-y-1 text-muted-foreground">
-                      <li>• 1 month free: 2,000 coins</li>
-                      <li>• Exclusive templates: 500 coins</li>
-                      <li>• Custom avatar: 300 coins</li>
-                      <li>• Priority support: 1,000 coins</li>
-                    </ul>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Referral Program */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  Referral Program
-                </CardTitle>
-                <CardDescription>
-                  Invite friends and earn rewards together
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-secondary/20 rounded-lg">
-                    <div>
-                      <p className="font-medium">Share your referral link</p>
-                      <p className="text-sm text-muted-foreground">
-                        You get $10, they get 20% off their first month
+          {/* â”€â”€ Usage tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+          <TabsContent value="usage" className="space-y-6">
+            {usageLoading ? (
+              <div className="h-40 rounded-xl bg-muted animate-pulse" />
+            ) : usage ? (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm text-muted-foreground font-normal">
+                        Credits consumed this period
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-3xl font-bold">
+                        {usage.credits_consumed_this_period.toLocaleString()}
                       </p>
-                    </div>
-                    <Button>
-                      <Share className="h-4 w-4 mr-1" />
-                      Share Link
-                    </Button>
-                  </div>
-                  
-                  <div className="text-center py-4">
-                    <p className="text-lg font-semibold">3 friends referred</p>
-                    <p className="text-sm text-muted-foreground">You&apos;ve earned $30 in credits</p>
-                  </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Since{" "}
+                        {new Date(usage.period_start).toLocaleDateString()}
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm text-muted-foreground font-normal">
+                        Credits remaining
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-3xl font-bold">
+                        {usage.credits_remaining.toLocaleString()}
+                      </p>
+                    </CardContent>
+                  </Card>
                 </div>
-              </CardContent>
-            </Card>
+
+                {usage.by_feature.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Activity className="h-4 w-4" />
+                        Usage by Feature
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {usage.by_feature.map((row) => (
+                          <div
+                            key={row.feature}
+                            className="flex items-center justify-between py-2 border-b border-border last:border-0"
+                          >
+                            <div>
+                              <p className="text-sm font-medium capitalize">
+                                {row.feature.replace(/_/g, " ")}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {row.call_count} call
+                                {row.call_count !== 1 ? "s" : ""} Â·{" "}
+                                {row.total_tokens_out.toLocaleString()} tokens
+                                out
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-1 text-sm font-semibold">
+                              <Zap className="h-3.5 w-3.5 text-primary" />
+                              {row.total_credits}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </>
+            ) : (
+              <Card>
+                <CardContent className="py-8 text-center">
+                  <CreditCard className="h-8 w-8 mx-auto text-muted-foreground mb-3" />
+                  <p className="text-muted-foreground text-sm">
+                    No usage data yet. Start using AI features to see your
+                    breakdown here.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
       </div>
-
-      {/* Upgrade Dialog */}
-      <Dialog open={showUpgradeDialog} onOpenChange={setShowUpgradeDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Upgrade Your Plan</DialogTitle>
-            <DialogDescription>
-              {selectedPlan && (
-                <>
-                  Upgrade to {pricingPlans.find(p => p.id === selectedPlan)?.name} and unlock powerful features.
-                </>
-              )}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="py-4">
-            <p className="text-sm text-muted-foreground mb-4">
-              You&apos;ll be charged immediately and your new features will be available right away.
-            </p>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowUpgradeDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={processUpgrade} disabled={isProcessingUpgrade}>
-              {isProcessingUpgrade ? (
-                <>
-                  <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                'Confirm Upgrade'
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
+

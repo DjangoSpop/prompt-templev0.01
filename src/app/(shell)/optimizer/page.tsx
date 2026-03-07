@@ -6,6 +6,8 @@ import { useAuth } from '@/providers/AuthProvider';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { usePromptOptimization, useAIModels, useAIUsage } from '@/hooks/api/useAI';
+import { useEntitlements } from '@/hooks/api/useBilling';
+import { toast } from 'sonner';
 import { SavePromptButton } from '@/components/optimizer/SavePromptButton';
 import { AskMeWizard } from '@/components/assistant/AskMeWizard';
 
@@ -59,6 +61,10 @@ function OptimizerPageInner() {
   const { optimize, isStreaming, output, result, error } = usePromptOptimization();
   const { data: modelsData } = useAIModels();
   const { data: usageData } = useAIUsage();
+  const { data: entitlements } = useEntitlements();
+
+  const hasCredits = !entitlements || entitlements.credits_available > 0;
+  const creditsAvailable = entitlements?.credits_available ?? null;
 
   // Group API models by provider; fall back to static list when API is empty
   const providers = useMemo(() => {
@@ -110,6 +116,13 @@ function OptimizerPageInner() {
 
   const handleOptimize = async () => {
     if (!inputPrompt.trim()) return;
+    if (!hasCredits) {
+      toast.error('You\'ve run out of credits. Upgrade your plan to continue.', {
+        action: { label: 'Upgrade', onClick: () => window.location.href = '/billing' },
+        duration: 6000,
+      });
+      return;
+    }
     setOptimizationResult(null);
     await optimize({
       original: inputPrompt,
@@ -364,10 +377,18 @@ function OptimizerPageInner() {
                 )}
               </AnimatePresence>
 
+              {creditsAvailable !== null && creditsAvailable <= 5 && (
+                <p className={`text-xs font-medium flex items-center gap-1 ${creditsAvailable === 0 ? 'text-destructive' : 'text-yellow-600'}`}>
+                  <Zap className="h-3 w-3" />
+                  {creditsAvailable === 0
+                    ? 'No credits remaining — upgrade to continue'
+                    : `${creditsAvailable} credits left this month`}
+                </p>
+              )}
               <Button
                 onClick={handleOptimize}
-                disabled={!inputPrompt.trim() || isOptimizing}
-                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                disabled={!inputPrompt.trim() || isOptimizing || !hasCredits}
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:opacity-50"
                 size="lg"
               >
                 {isOptimizing ? (
@@ -375,10 +396,15 @@ function OptimizerPageInner() {
                     <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
                     {output ? 'Streaming...' : 'Optimizing...'}
                   </>
+                ) : !hasCredits ? (
+                  <>
+                    <Zap className="w-5 h-5 mr-2" />
+                    Upgrade to Continue
+                  </>
                 ) : (
                   <>
                     <Sparkles className="w-5 h-5 mr-2" />
-                    Optimize Prompt
+                    Optimize Prompt (~5 credits)
                   </>
                 )}
               </Button>

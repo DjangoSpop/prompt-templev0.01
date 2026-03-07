@@ -1,80 +1,72 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useCallback } from 'react';
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { useEntitlements, useIsPremium } from '@/hooks/api/useBilling';
 
-interface PaywallStore {
-  freeUses: number;
-  isSubscribed: boolean;
+// --- Modal-only store (open/close state, no counters) ---
+interface PaywallModalStore {
   modalOpen: boolean;
-  modalTrigger: 'second_use' | 'limit_reached' | 'high_score' | null;
-  increment: () => void;
-  setSubscribed: (v: boolean) => void;
-  openModal: (trigger: PaywallStore['modalTrigger']) => void;
+  modalTrigger: 'limit_reached' | 'high_score' | 'no_credits' | null;
+  openModal: (trigger: PaywallModalStore['modalTrigger']) => void;
   closeModal: () => void;
 }
 
-export const usePaywallStore = create<PaywallStore>()(
-  persist(
-    (set) => ({
-      freeUses: 0,
-      isSubscribed: false,
-      modalOpen: false,
-      modalTrigger: null,
-      increment: () => set((s) => ({ freeUses: s.freeUses + 1 })),
-      setSubscribed: (v) => set({ isSubscribed: v }),
-      openModal: (trigger) => set({ modalOpen: true, modalTrigger: trigger }),
-      closeModal: () => set({ modalOpen: false, modalTrigger: null }),
-    }),
-    { name: 'prompttemple_paywall' }
-  )
-);
-
-export const FREE_DAILY_LIMIT = 3;
+export const usePaywallStore = create<PaywallModalStore>()((set) => ({
+  modalOpen: false,
+  modalTrigger: null,
+  openModal: (trigger) => set({ modalOpen: true, modalTrigger: trigger }),
+  closeModal: () => set({ modalOpen: false, modalTrigger: null }),
+}));
 
 export function usePaywallTrigger() {
-  const { freeUses, isSubscribed, increment, openModal, closeModal, modalOpen, modalTrigger } =
-    usePaywallStore();
+  const { modalOpen, modalTrigger, openModal, closeModal } = usePaywallStore();
+
+  // Real subscription status from the billing API
+  const isPremium = useIsPremium();
+  const { data: entitlements } = useEntitlements();
+
+  const creditsAvailable = entitlements?.credits_available ?? null;
+  const isSubscribed = isPremium;
+  // Legacy: show count down for FREE users
+  const usesRemaining = creditsAvailable ?? 0;
+  const isCapped = !isSubscribed && creditsAvailable !== null && creditsAvailable <= 0;
 
   /**
-   * Call this after every successful optimization.
-   * Returns `true` if the user can proceed, `false` if paywalled.
+   * Call before every optimization attempt.
+   * Returns `true` if the user can proceed, `false` if they should be gated.
    */
   const checkAndTrigger = useCallback((): boolean => {
     if (isSubscribed) return true;
 
-    increment();
-    const newCount = freeUses + 1;
+    // If entitlements are still loading, optimistically allow
+    if (creditsAvailable === null) return true;
 
-    if (newCount === 2) {
-      // Soft nudge on 2nd use
-      setTimeout(() => openModal('second_use'), 800);
-      return true;
-    }
-
-    if (newCount > FREE_DAILY_LIMIT) {
-      openModal('limit_reached');
+    if (creditsAvailable <= 0) {
+      openModal('no_credits');
       return false;
     }
 
+    // Soft nudge when only 5 or fewer credits remain (acts like the old "second_use" trigger)
+    if (creditsAvailable <= 5) {
+      setTimeout(() => openModal('limit_reached'), 800);
+      return true; // Still allow the action
+    }
+
     return true;
-  }, [freeUses, isSubscribed, increment, openModal]);
+  }, [isSubscribed, creditsAvailable, openModal]);
 
   /**
-   * Call this when a wow score > 7.5 is achieved to show share + upsell.
+   * Trigger high-score upsell modal after a great result.
    */
   const triggerOnHighScore = useCallback(
     (score: number) => {
-      if (score >= 7.5 && !isSubscribed && freeUses >= 2) {
+      if (score >= 7.5 && !isSubscribed) {
         setTimeout(() => openModal('high_score'), 1500);
       }
     },
-    [isSubscribed, freeUses, openModal]
+    [isSubscribed, openModal]
   );
-
-  const usesRemaining = Math.max(0, FREE_DAILY_LIMIT - freeUses);
 
   return {
     checkAndTrigger,
@@ -82,9 +74,10 @@ export function usePaywallTrigger() {
     closeModal,
     modalOpen,
     modalTrigger,
-    freeUses,
     usesRemaining,
     isSubscribed,
-    isCapped: !isSubscribed && freeUses >= FREE_DAILY_LIMIT,
+    isCapped,
+    creditsAvailable,
+    entitlements,
   };
 }

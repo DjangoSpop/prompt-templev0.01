@@ -76,8 +76,9 @@ class ApiClient {
       } catch {
         if (raw) message = raw;
       }
-      const err = new Error(message) as Error & { status: number };
+      const err = new Error(message) as Error & { status: number; code?: string };
       err.status = response.status;
+      if (response.status === 402) err.code = 'INSUFFICIENT_CREDITS';
       throw err;
     }
 
@@ -804,6 +805,46 @@ class ApiClient {
       body: JSON.stringify(event),
     });
   }
+
+  // ============================================
+  // Billing Methods
+  // ============================================
+
+  async getBillingPlans(): Promise<{ plans: BillingPlan[] }> {
+    return this.request<{ plans: BillingPlan[] }>('/api/v2/billing/plans/');
+  }
+
+  async getSubscription(): Promise<{ subscription: SubscriptionState }> {
+    return this.request<{ subscription: SubscriptionState }>('/api/v2/billing/me/subscription/');
+  }
+
+  async getEntitlements(): Promise<{ entitlements: Entitlements }> {
+    return this.request<{ entitlements: Entitlements }>('/api/v2/billing/me/entitlements/');
+  }
+
+  async getBillingUsage(): Promise<{ usage: UsageSummary }> {
+    return this.request<{ usage: UsageSummary }>('/api/v2/billing/me/usage/');
+  }
+
+  async createCheckoutSession(
+    planCode: 'PRO' | 'POWER',
+    opts?: { success_url?: string; cancel_url?: string }
+  ): Promise<CheckoutSessionResponse> {
+    return this.request<CheckoutSessionResponse>(
+      `/api/v2/billing/checkout-session/${planCode}/`,
+      {
+        method: 'POST',
+        body: JSON.stringify(opts ?? {}),
+      }
+    );
+  }
+
+  async createPortalSession(returnUrl?: string): Promise<BillingPortalResponse> {
+    return this.request<BillingPortalResponse>('/api/v2/billing/portal/', {
+      method: 'POST',
+      body: JSON.stringify({ return_url: returnUrl }),
+    });
+  }
 }
 
 // ============================================
@@ -881,6 +922,103 @@ export interface AskMeFinalResult {
   explanation?: string;
   title?: string;
   category?: string;
+}
+
+// ============================================
+// Billing Type Definitions (matches backend guide exactly)
+// ============================================
+
+export type PlanCode = 'FREE' | 'PRO' | 'POWER';
+export type SubscriptionStatus = 'active' | 'pending' | 'cancelled' | 'expired' | 'past_due';
+
+export interface BillingPlan {
+  id: string;
+  plan_code: PlanCode;
+  name: string;
+  price: string;
+  currency: string;
+  billing_interval: string;
+  monthly_credits: number;
+  max_requests_per_hour: number;
+  max_requests_per_day: number;
+  max_input_tokens: number;
+  max_output_tokens: number;
+  allowed_models: string[];
+  daily_template_limit: number;
+  daily_copy_limit: number;
+  premium_templates_access: boolean;
+  ads_free: boolean;
+  priority_support: boolean;
+  analytics_access: boolean;
+  api_access: boolean;
+  collaboration_features: boolean;
+  stripe_price_id: string;
+  is_popular: boolean;
+  features_list: string[];
+}
+
+export interface Entitlements {
+  plan_code: PlanCode;
+  plan_name: string;
+  credits_balance: number;
+  credits_available: number;
+  monthly_credits: number;
+  max_requests_per_hour: number;
+  max_requests_per_day: number;
+  max_input_tokens: number;
+  max_output_tokens: number;
+  allowed_models: string[];
+  daily_template_limit: number;
+  daily_copy_limit: number;
+  premium_templates: boolean;
+  ads_free: boolean;
+  priority_support: boolean;
+  analytics: boolean;
+  api_access: boolean;
+  collaboration: boolean;
+  streaming_enabled: boolean;
+}
+
+export interface SubscriptionState {
+  id: string;
+  status: SubscriptionStatus;
+  is_active: boolean;
+  is_premium: boolean;
+  plan: BillingPlan;
+  credits_balance: number;
+  credits_reserved: number;
+  credits_available: number;
+  credits_refilled_at: string;
+  current_period_start: string;
+  current_period_end: string;
+  next_billing_date: string;
+  days_remaining: number;
+  auto_renew: boolean;
+  stripe_customer_id?: string;
+}
+
+export interface FeatureUsageLine {
+  feature: string;
+  total_credits: number;
+  total_tokens_out: number;
+  call_count: number;
+}
+
+export interface UsageSummary {
+  period_start: string;
+  credits_consumed_this_period: number;
+  credits_remaining: number;
+  by_feature: FeatureUsageLine[];
+}
+
+export interface CheckoutSessionResponse {
+  checkout_url: string;
+  plan_code: PlanCode;
+  plan_name: string;
+}
+
+export interface BillingPortalResponse {
+  portal_url: string;
 }
 
 // Export singleton instance
