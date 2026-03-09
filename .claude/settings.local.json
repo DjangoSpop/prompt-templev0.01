@@ -25,4 +25,11 @@
     "deny": [],
     "ask": []
   }
+  {
+  "env": {
+    "ANTHROPIC_AUTH_TOKEN": "20b0829bcb234d0b8c073245bad18bc0",
+    "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
+    "API_TIMEOUT_MS": "3000000"
+  }
+}
 }

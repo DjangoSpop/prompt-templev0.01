@@ -421,11 +421,26 @@ export const selectLessonCompleted = (moduleId: string, lessonId: string) => (st
   state.moduleProgress[moduleId]?.lessonsCompleted.includes(lessonId) || false;
 
 export const selectOverallProgress = (state: AcademyState) => {
-  const totalModules = 5;
+  const totalModules = 6;
   const completedCount = state.completedModules.length;
   return Math.round((completedCount / totalModules) * 100);
 };
 
 export const selectCanGenerateCertificate = (state: AcademyState) => {
-  return state.completedModules.length === 5 && !state.certificateGenerated;
+  const requiredModules = ['module-1', 'module-2', 'module-3', 'module-4', 'module-5', 'module-6'];
+  const allCompleted = requiredModules.every((m) => state.completedModules.includes(m));
+  return allCompleted && !state.certificateGenerated;
+};
+
+export const selectIsCourseComplete = (state: AcademyState) => {
+  const requiredModules = ['module-1', 'module-2', 'module-3', 'module-4', 'module-5', 'module-6'];
+  return requiredModules.every((m) => state.completedModules.includes(m));
+};
+
+export const selectAverageQuizScore = (state: AcademyState) => {
+  const scores = Object.values(state.moduleProgress)
+    .map((p) => p.quizScore)
+    .filter((s): s is number => s !== null);
+  if (scores.length === 0) return 0;
+  return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
 };

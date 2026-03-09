@@ -12,10 +12,11 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, XCircle, Award, RefreshCw, Share2 } from 'lucide-react';
-import { useAcademyStore } from '@/lib/stores/academyStore';
+import { CheckCircle, XCircle, Award, RefreshCw, Share2, GraduationCap } from 'lucide-react';
+import { useAcademyStore, selectIsCourseComplete } from '@/lib/stores/academyStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
+import Link from 'next/link';
 
 interface QuizEngineProps {
   quiz: Quiz;
@@ -273,9 +274,10 @@ interface QuizResultsProps {
 }
 
 function QuizResults({ score, passingScore, passed, xpReward, moduleId, onRetry }: QuizResultsProps) {
+  const isCourseComplete = useAcademyStore(selectIsCourseComplete);
+
   useEffect(() => {
     if (passed) {
-      // Trigger another confetti burst after a delay
       setTimeout(() => {
         confetti({
           particleCount: 50,
@@ -365,6 +367,30 @@ function QuizResults({ score, passingScore, passed, xpReward, moduleId, onRetry 
           </motion.div>
         )}
 
+        {/* Course Completion CTA */}
+        {passed && isCourseComplete && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="mb-8 p-6 bg-gradient-to-r from-royal-gold-500/10 to-nile-teal-500/10 border border-royal-gold-500/40 rounded-xl"
+          >
+            <GraduationCap className="w-10 h-10 text-royal-gold-400 mx-auto mb-3" />
+            <h3 className="text-xl font-bold text-royal-gold-400 mb-2">
+              All Modules Complete!
+            </h3>
+            <p className="text-desert-sand-300 text-sm mb-4">
+              You&apos;ve mastered all 6 modules. Claim your professional certificate now!
+            </p>
+            <Link href="/academy/completion">
+              <Button className="bg-gradient-to-r from-royal-gold-500 to-royal-gold-600 hover:from-royal-gold-600 hover:to-royal-gold-700 text-obsidian-950 font-semibold px-8">
+                <Award className="w-4 h-4 mr-2" />
+                Claim Your Certificate
+              </Button>
+            </Link>
+          </motion.div>
+        )}
+
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           {!passed && (
@@ -378,7 +404,7 @@ function QuizResults({ score, passingScore, passed, xpReward, moduleId, onRetry 
             </Button>
           )}
 
-          {passed && (
+          {passed && !isCourseComplete && (
             <>
               <Button
                 variant="outline"
@@ -388,12 +414,25 @@ function QuizResults({ score, passingScore, passed, xpReward, moduleId, onRetry 
                 Share Achievement
               </Button>
 
-              <Button
-                className="bg-gradient-to-r from-royal-gold-500 to-royal-gold-600 hover:from-royal-gold-600 hover:to-royal-gold-700"
-              >
-                Next Module →
-              </Button>
+              <Link href="/academy">
+                <Button
+                  className="bg-gradient-to-r from-royal-gold-500 to-royal-gold-600 hover:from-royal-gold-600 hover:to-royal-gold-700"
+                >
+                  Next Module →
+                </Button>
+              </Link>
             </>
+          )}
+
+          {passed && isCourseComplete && (
+            <Link href="/academy">
+              <Button
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                Back to Academy
+              </Button>
+            </Link>
           )}
         </div>
       </Card>

@@ -189,6 +189,7 @@ export default function SeoSpecGeneratorPage() {
   const [isComplete, setIsComplete] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(true);
+  const [creditInfo, setCreditInfo] = useState<{ consumed: number; remaining: number } | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const outputRef = useRef<HTMLDivElement>(null);
 
@@ -204,6 +205,7 @@ export default function SeoSpecGeneratorPage() {
     setError(null);
     setShowForm(true);
     setIsGenerating(false);
+    setCreditInfo(null);
   };
 
   const handleGenerate = async () => {
@@ -212,11 +214,17 @@ export default function SeoSpecGeneratorPage() {
       return;
     }
 
+    if (!isAuthenticated) {
+      toast.error('Please sign in to generate SEO specifications');
+      return;
+    }
+
     setError(null);
     setGeneratedSpec('');
     setIsComplete(false);
     setIsGenerating(true);
     setShowForm(false);
+    setCreditInfo(null);
 
     // Scroll to output
     setTimeout(() => outputRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
@@ -226,20 +234,74 @@ export default function SeoSpecGeneratorPage() {
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
 
-      const response = await fetch('/api/seo-spec/generate', {
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL
+        || process.env.NEXT_PUBLIC_API_BASE_URL
+        || 'https://api.prompt-temple.com';
+
+      const response = await fetch(`${API_BASE}/api/v2/ai/seo-spec/generate/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Accept: 'text/event-stream',
+          Accept: 'application/json, text/event-stream',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify(input),
+        body: JSON.stringify({
+          session_id: `seo_spec_${Date.now()}`,
+          product: {
+            name: input.productName,
+            description: [
+              input.productType && `Product Type: ${input.productType}`,
+              input.targetAudience && `Target Audience: ${input.targetAudience}`,
+              input.targetMarket && `Target Market: ${input.targetMarket}`,
+              input.primaryLanguage && `Primary Language: ${input.primaryLanguage}`,
+              input.mainFeatures && `Main Features: ${input.mainFeatures}`,
+              input.primaryBusinessGoal && `Business Goal: ${input.primaryBusinessGoal}`,
+              input.primaryKeywords && `Primary Keywords: ${input.primaryKeywords}`,
+              input.secondaryKeywords && `Secondary Keywords: ${input.secondaryKeywords}`,
+              input.contentStrategy && `Content Strategy: ${input.contentStrategy}`,
+              input.techStack && `Tech Stack: ${input.techStack}`,
+              input.specialConstraints && `Special Constraints: ${input.specialConstraints}`,
+            ].filter(Boolean).join('\n'),
+            competitors: input.competitors
+              ? input.competitors.split(/[,\n]+/).map(c => c.trim()).filter(Boolean)
+              : [],
+          },
+          options: {
+            tone: 'professional',
+            depth: 'comprehensive',
+            locale: input.primaryLanguage || 'en-US',
+          },
+        }),
         signal: abortRef.current.signal,
       });
 
       if (!response.ok) {
-        const errText = await response.text().catch(() => 'Generation failed');
-        throw new Error(errText || `HTTP ${response.status}`);
+        const errText = await response.text().catch(() => '');
+        let errorMessage = `HTTP ${response.status}`;
+
+        try {
+          const errJson = JSON.parse(errText);
+          if (errJson.error === 'rate_limit_exceeded') {
+            errorMessage = 'Rate limit exceeded. Please wait a moment and try again.';
+          } else if (errJson.error === 'insufficient_credits') {
+            errorMessage = `Insufficient credits. You have ${errJson.credits_available ?? 0} credits but need ${errJson.credits_required ?? 10}.`;
+          } else if (errJson.error === 'no_subscription') {
+            errorMessage = 'No active subscription found. Please subscribe to use this feature.';
+          } else if (errJson.error === 'model_not_allowed') {
+            errorMessage = 'Your current plan does not support this feature. Please upgrade.';
+          } else if (errJson.error === 'validation_error') {
+            const details = errJson.detail;
+            errorMessage = details
+              ? `Validation error: ${Object.values(details).flat().join(', ')}`
+              : 'Invalid input. Please check your form fields.';
+          } else {
+            errorMessage = errJson.detail || errJson.error || errorMessage;
+          }
+        } catch {
+          errorMessage = errText || errorMessage;
+        }
+
+        throw new Error(errorMessage);
       }
 
       if (!response.body) throw new Error('No response stream');
@@ -259,33 +321,64 @@ export default function SeoSpecGeneratorPage() {
 
         for (const line of lines) {
           if (!line.trim() || line.startsWith(':')) continue;
+
+          // Handle named SSE events (e.g. "event: seo_spec_complete")
+          if (line.startsWith('event: ')) continue;
+
           if (line === 'data: [DONE]') {
             setIsComplete(true);
             setIsGenerating(false);
             return;
           }
+
           if (line.startsWith('data: ')) {
             const raw = line.slice(6).trim();
             try {
               const parsed = JSON.parse(raw);
+
               // OpenAI-compatible streaming token
               const delta = parsed?.choices?.[0]?.delta?.content;
               if (delta) {
                 accumulated += delta;
                 setGeneratedSpec(accumulated);
               }
+
+              // Backend completion event with credit info
+              if (parsed?.session_id && parsed?.credits_consumed !== undefined) {
+                setCreditInfo({
+                  consumed: parsed.credits_consumed,
+                  remaining: parsed.credits_remaining ?? 0,
+                });
+                setIsComplete(true);
+                setIsGenerating(false);
+                return;
+              }
+
               // Stream complete signal
               if (parsed?.stream_complete || parsed?.done) {
                 setIsComplete(true);
                 setIsGenerating(false);
                 return;
               }
-              // Error from backend
+
+              // Error from backend stream
               if (parsed?.error) {
-                throw new Error(String(parsed.error));
+                throw new Error(
+                  parsed.error === 'upstream_error'
+                    ? 'AI service returned an error. Please try again.'
+                    : parsed.error === 'upstream_timeout'
+                      ? 'AI service timed out. Please try again.'
+                      : parsed.error === 'upstream_unavailable'
+                        ? 'AI service is currently unavailable. Please try again later.'
+                        : String(parsed.error),
+                );
               }
             } catch (parseErr) {
-              // Non-JSON line — ignore
+              // Re-throw if it's our own error, otherwise ignore non-JSON lines
+              if (parseErr instanceof Error && parseErr.message !== 'Unexpected token') {
+                // Check if it's a JSON.parse error or our thrown error
+                if (!(parseErr instanceof SyntaxError)) throw parseErr;
+              }
             }
           }
         }
@@ -693,6 +786,11 @@ export default function SeoSpecGeneratorPage() {
                         <Badge className="text-xs bg-white/5 text-gray-400 border-white/10">
                           <BarChart3 className="mr-1 h-3 w-3" />
                           {wordCount.toLocaleString()} words
+                        </Badge>
+                      )}
+                      {creditInfo && (
+                        <Badge className="text-xs bg-amber-400/10 text-amber-300 border-amber-400/20">
+                          {creditInfo.consumed} credits used · {creditInfo.remaining} remaining
                         </Badge>
                       )}
                     </div>
