@@ -63,8 +63,8 @@ function OptimizerPageInner() {
   const { data: usageData } = useAIUsage();
   const { data: entitlements } = useEntitlements();
 
-  const hasCredits = !entitlements || entitlements.credits_available > 0;
-  const creditsAvailable = entitlements?.credits_available ?? null;
+  const hasCredits = !entitlements || entitlements.credits_balance > 0;
+  const creditsAvailable = entitlements?.credits_balance ?? null;
 
   // Group API models by provider; fall back to static list when API is empty
   const providers = useMemo(() => {

@@ -307,7 +307,7 @@ function EnhancedChatInterface() {
       }
 
       // Credits pre-check — warn before the round-trip
-      if (entitlements && entitlements.credits_available <= 0) {
+      if (entitlements && entitlements.credits_balance <= 0) {
         toast.error('You\'ve run out of credits. Upgrade to continue chatting.', {
           duration: 5000,
         });

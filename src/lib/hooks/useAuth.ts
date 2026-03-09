@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import { authService } from '../api/auth';
+import { useCreditsStore } from '@/store/credits';
 import type { components } from '../../types/api';
 
 type UserProfile = components['schemas']['UserProfile'];
@@ -82,6 +83,11 @@ export const useAuth = () => {
       // Force user profile refetch to get latest data from server
       if (isNowAuthenticated) {
         console.log('🔄 Refetching user profile after OAuth...');
+        
+        // 🔥 CRITICAL: Force refetch of entitlements and billing data to sync fresh credits
+        queryClient.invalidateQueries({ queryKey: ['billing', 'entitlements'] });
+        queryClient.invalidateQueries({ queryKey: ['billing', 'usage'] });
+        
         refetchUser();
       }
     };
@@ -120,19 +126,36 @@ export const useAuth = () => {
     mutationFn: (credentials: LoginCredentials) => authService.login(credentials),
     onSuccess: (data) => {
       console.log('🎉 Login mutation success, updating query cache with user:', data.user.username);
-      
+
       // Immediately update the auth profile cache
       queryClient.setQueryData(['auth', 'profile'], data.user);
-      
+
+      // CRITICAL: Seed the credit store from the login response IMMEDIATELY.
+      // billing.credits_balance is the backend's actual remaining balance.
+      // This avoids showing stale/null credits while React Query fetches entitlements.
+      const creditsStore = useCreditsStore.getState();
+      if (data.billing && typeof data.billing.credits_balance === 'number') {
+        const balance = data.billing.credits_balance;
+        creditsStore.syncFromHeaders(balance, null, balance <= 10);
+        if (data.billing.plan_code) {
+          creditsStore.setPlan(data.billing.plan_code);
+        }
+        console.log('💰 Credits seeded from login response:', balance, data.billing.plan_code);
+      }
+
       // Force auth state update immediately
       setAuthState({
         isAuthenticated: true,
         lastCheck: Date.now()
       });
-      
+
+      // Force refetch of entitlements and billing usage to get full details
+      queryClient.invalidateQueries({ queryKey: ['billing', 'entitlements'] });
+      queryClient.invalidateQueries({ queryKey: ['billing', 'usage'] });
+
       // Ensure all auth-related queries are invalidated and refetched
       queryClient.invalidateQueries({ queryKey: ['auth'] });
-      
+
       // Trigger a small delay to ensure proper state propagation
       setTimeout(() => {
         refetchUser();
@@ -156,10 +179,26 @@ export const useAuth = () => {
 
       // Mark as authenticated only when the backend returned valid tokens
       if (data.tokens?.access) {
+        // CRITICAL: Seed credits from register response before any async queries
+        const creditsStore = useCreditsStore.getState();
+        if (data.billing && typeof data.billing.credits_balance === 'number') {
+          const balance = data.billing.credits_balance;
+          creditsStore.syncFromHeaders(balance, null, balance <= 10);
+          if (data.billing.plan_code) {
+            creditsStore.setPlan(data.billing.plan_code);
+          }
+          console.log('💰 Credits seeded from register response:', balance, data.billing.plan_code);
+        }
+
         setAuthState({
           isAuthenticated: true,
           lastCheck: Date.now()
         });
+
+        // Force refetch of entitlements and billing usage to get full details
+        queryClient.invalidateQueries({ queryKey: ['billing', 'entitlements'] });
+        queryClient.invalidateQueries({ queryKey: ['billing', 'usage'] });
+
         queryClient.invalidateQueries({ queryKey: ['auth'] });
         setTimeout(() => {
           refetchUser();
@@ -175,7 +214,12 @@ export const useAuth = () => {
   const logoutMutation = useMutation({
     mutationFn: () => authService.logout(),
     onSuccess: () => {
-      console.log('🚪 Logout successful, clearing query cache');
+      console.log('🚪 Logout successful, clearing query cache and credits');
+      
+      // 🔥 CRITICAL: Reset credits store to prevent stale credits on re-login
+      const creditsStore = useCreditsStore.getState();
+      creditsStore.reset();
+      creditsStore.clearPersisted();
       
       // Force auth state update immediately
       setAuthState({
@@ -191,6 +235,12 @@ export const useAuth = () => {
     },
     onError: (error) => {
       console.error('❌ Logout failed:', error);
+      
+      // 🔥 CRITICAL: Still reset credits even on logout failure
+      const creditsStore = useCreditsStore.getState();
+      creditsStore.reset();
+      creditsStore.clearPersisted();
+      
       // Clear cache anyway on logout failure
       queryClient.clear();
       

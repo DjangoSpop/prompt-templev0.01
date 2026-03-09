@@ -16,6 +16,9 @@ import { PromptLibraryModals } from "@/components/prompt/PromptLibraryModals";
 import { FastNavWidget } from "@/components/navbar/FastNavWidget";
 import { KeyboardShortcutsProvider } from "@/components/shortcuts/KeyboardShortcutsProvider";
 import { InstallBanner } from "@/components/pwa/InstallBanner";
+import { GlobalCreditBanner } from "@/components/credits/GlobalCreditBanner";
+import { InsufficientCreditsModal } from "@/components/credits/InsufficientCreditsModal";
+import { DailyRefillToast } from "@/components/credits/DailyRefillToast";
 
 export const metadata: Metadata = {
   title: "PromptTemple — Transform Any Prompt Into a Pharaoh-Level Masterpiece",
@@ -90,6 +93,9 @@ export default function RootLayout({
                         <PromptLibraryModals />
                         <KeyboardShortcutsProvider />
                         <InstallBanner />
+                        <GlobalCreditBanner />
+                        <InsufficientCreditsModal />
+                        <DailyRefillToast />
                       </ClientOnly>
                     </TooltipProvider>
                   </AnalyticsProvider>

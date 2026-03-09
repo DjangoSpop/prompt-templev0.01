@@ -5,6 +5,7 @@
 
 import { components, operations } from '@/lib/types/api';
 import { useAuthStore } from '@/store/user';
+import { useCreditsStore } from '@/store/credits';
 import type {
   SavedPrompt,
   PaginatedSavedPrompts,
@@ -15,6 +16,8 @@ import type {
 
 // Re-export types for convenience - using actual schema names from api.d.ts
 export type TemplateList = components['schemas']['TemplateList'];
+/** Alias for backward compatibility with older code importing Template */
+export type Template = TemplateList;
 export type TemplateDetail = components['schemas']['TemplateDetail'];
 export type TemplateCategory = components['schemas']['TemplateCategory'];
 export type UserProfile = components['schemas']['UserProfile'];
@@ -26,6 +29,16 @@ export type PaginatedResponse<T> = {
   previous: string | null;
   results: T[];
 };
+
+export interface UserStats {
+  total_prompts?: number;
+  total_templates_used?: number;
+  total_credits_used?: number;
+  credits_remaining?: number;
+  streak_days?: number;
+  rank?: string;
+  [key: string]: unknown;
+}
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.prompt-temple.com';
 
@@ -84,6 +97,25 @@ class ApiClient {
 
     if (response.status === 204) {
       return {} as T;
+    }
+
+    // Extract credit headers and sync to credits store (client-side only)
+    if (typeof window !== 'undefined') {
+      const remaining = response.headers.get('X-Credits-Remaining');
+      const used = response.headers.get('X-Credits-Used');
+      const low = response.headers.get('X-Low-Credits');
+      const balance = response.headers.get('X-Credits-Balance');
+      const reserved = response.headers.get('X-Credits-Reserved');
+      
+      if (remaining !== null || low !== null || balance !== null) {
+        useCreditsStore.getState().syncFromHeaders(
+          remaining !== null ? Number(remaining) : null,
+          used !== null ? Number(used) : null,
+          low === 'true',
+          balance !== null ? Number(balance) : null,
+          reserved !== null ? Number(reserved) : null
+        );
+      }
     }
 
     return response.json();
@@ -251,6 +283,56 @@ class ApiClient {
     });
   }
 
+  // ============================================
+  // Smart Template AI Actions
+  // ============================================
+
+  async templateSmartFill(
+    id: string,
+    variables: Record<string, string>
+  ): Promise<SmartFillResult> {
+    return this.request<SmartFillResult>(`/api/v2/templates/${id}/smart-fill/`, {
+      method: 'POST',
+      body: JSON.stringify({ variables }),
+    });
+  }
+
+  async recommendTemplates(intent: string, context?: string): Promise<TemplateRecommendation[]> {
+    const result = await this.request<{ recommendations: TemplateRecommendation[] }>(
+      '/api/v2/templates/recommend/',
+      {
+        method: 'POST',
+        body: JSON.stringify({ intent, context }),
+      }
+    );
+    return result.recommendations ?? [];
+  }
+
+  async templateVariations(id: string, count?: number): Promise<TemplateVariation[]> {
+    const result = await this.request<{ variations: TemplateVariation[] }>(
+      `/api/v2/templates/${id}/variations/`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ count: count ?? 4 }),
+      }
+    );
+    return result.variations ?? [];
+  }
+
+  // ============================================
+  // Cost Preview
+  // ============================================
+
+  async getCostPreview(
+    feature: string,
+    params?: Record<string, unknown>
+  ): Promise<CostPreviewResult> {
+    return this.request<CostPreviewResult>('/api/v2/billing/cost-preview/', {
+      method: 'POST',
+      body: JSON.stringify({ feature, params }),
+    });
+  }
+
   async getTemplateAnalytics(id?: string): Promise<any> {
     if (id) return this.request(`/api/v2/templates/${id}/analytics/`);
     return this.request('/api/v2/analytics/template-analytics/');
@@ -299,15 +381,27 @@ class ApiClient {
     return this.request('/api/v2/ai/usage/');
   }
 
+  async getAIDashboard(): Promise<AIDashboardData> {
+    return this.request<AIDashboardData>('/api/v2/ai/dashboard/');
+  }
+
   async getAIQuotas(): Promise<any> {
     return this.request('/api/v2/ai/quotas/');
   }
 
-  async getAISuggestions(data: any): Promise<any> {
-    return this.request('/api/v2/ai/suggestions/', {
-      method: 'POST',
-      body: JSON.stringify(data),
+  async getAISuggestions(data: { prompt?: string; q?: string; model?: string; [key: string]: any }): Promise<any> {
+    const params = new URLSearchParams();
+    const text = data.prompt ?? data.q ?? '';
+    if (text) params.set('prompt', text);
+    if (data.model) params.set('model', data.model);
+    // Forward any other scalar params
+    Object.entries(data).forEach(([k, v]) => {
+      if (k !== 'prompt' && k !== 'q' && k !== 'model' && v !== undefined && v !== null) {
+        params.set(k, String(v));
+      }
     });
+    const qs = params.toString();
+    return this.request(`/api/v2/ai/suggestions/${qs ? `?${qs}` : ''}`);
   }
 
   // Chat Methods (with streaming support)
@@ -398,56 +492,84 @@ class ApiClient {
   }
 
   // ============================================
+  // Core / App Config / Notifications
+  // ============================================
+
+  async getAppConfig(): Promise<Record<string, unknown>> {
+    return this.request('/api/v2/core/config/');
+  }
+
+  async getNotifications(): Promise<{ results: AppNotification[]; count: number }> {
+    return this.request('/api/v2/core/notifications/');
+  }
+
+  async markNotificationRead(notificationId: string): Promise<void> {
+    await this.request('/api/v2/core/notifications/read/', {
+      method: 'POST',
+      body: JSON.stringify({ notification_id: notificationId }),
+    });
+  }
+
+  async healthCheck(): Promise<{ status: string }> {
+    return this.request('/health/');
+  }
+
+  async getStatus(): Promise<{ status: string; [key: string]: unknown }> {
+    return this.request('/api/v2/status/');
+  }
+
+  async trackEvent(event: { event_type: string; data?: Record<string, unknown> }): Promise<void> {
+    await this.request('/api/v2/analytics/track/', {
+      method: 'POST',
+      body: JSON.stringify(event),
+    }).catch(() => {/* fire-and-forget: never block UI for analytics */});
+  }
+
+  // ============================================
   // AskMe — Guided Prompt Builder
   // ============================================
 
   async askmeStart(data: { intent: string; context?: string }): Promise<AskMeSession> {
-    // Use `any` to handle the raw server shape before normalisation
-    const raw = await this.request<any>('/api/v2/ai/askme/start/', {
+    // Server returns the session shape directly — no field remapping needed.
+    return this.request<AskMeSession>('/api/v2/ai/askme/start/', {
       method: 'POST',
       body: JSON.stringify(data),
     });
-    // Server returns questions with 'qid' / 'title' / 'kind' — normalise to frontend types
-    const questions: AskMeQuestion[] = (raw.questions ?? []).map((q: any) => ({
-      id: q.qid ?? q.id ?? '',
-      question: q.title ?? q.question ?? '',
-      type: q.kind ?? q.type,
-      options: Array.isArray(q.options) && q.options.length ? q.options : undefined,
-      help_text: q.help_text,
-    }));
-    return { ...raw, questions } as AskMeSession;
   }
 
   async askmeAnswer(data: {
     session_id: string;
-    question_id: string;
+    /** The question's qid exactly as returned by the server */
+    qid: string;
     answer: string;
-  }): Promise<AskMeAnswerResponse> {
-    const raw = await this.request<any>('/api/v2/ai/askme/answer/', {
+  }): Promise<AskMeSession> {
+    // Server returns the same session shape as /start/ with updated is_answered flags.
+    return this.request<AskMeSession>('/api/v2/ai/askme/answer/', {
       method: 'POST',
-      // Server expects 'qid', not 'question_id'
       body: JSON.stringify({
         session_id: data.session_id,
-        qid: data.question_id,
+        qid: data.qid,
         answer: data.answer,
       }),
     });
-    // Normalise next_question if the server returns it with 'qid'/'title' shape
-    if (raw.next_question) {
-      const nq = raw.next_question;
-      raw.next_question = {
-        id: nq.qid ?? nq.id ?? '',
-        question: nq.title ?? nq.question ?? '',
-        type: nq.kind ?? nq.type,
-        options: Array.isArray(nq.options) && nq.options.length ? nq.options : undefined,
-        help_text: nq.help_text,
-      } satisfies AskMeQuestion;
-    }
-    return raw as AskMeAnswerResponse;
   }
 
   async askmeFinalize(data: { session_id: string }): Promise<AskMeFinalResult> {
     return this.request<AskMeFinalResult>('/api/v2/ai/askme/finalize/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  /**
+   * Recommended single-call endpoint: records all answers, deducts 3 credits atomically,
+   * generates the final prompt, saves to PromptHistory, and returns everything in one shot.
+   */
+  async askmeSubmitAll(data: {
+    session_id: string;
+    answers: Array<{ qid: string; value: string }>;
+  }): Promise<AskMeSubmitAllResult> {
+    return this.request<AskMeSubmitAllResult>('/api/v2/ai/askme/submit-all/', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -477,19 +599,9 @@ class ApiClient {
     });
   }
 
-  // Health Check
-  async healthCheck(): Promise<any> {
-    return this.request('/health/');
-  }
-
   // Performance Metrics
   async getPerformanceMetrics(): Promise<any> {
     return this.request('/api/v2/metrics/performance/');
-  }
-
-  // Status
-  async getStatus(): Promise<any> {
-    return this.request('/api/v2/status/');
   }
 
   // ============================================
@@ -879,49 +991,144 @@ export interface AgentOptimizeResult {
   optimized: string;
   citations: AgentOptimizeCitation[];
   diff_summary: string;
-  usage: { tokens_in: number; tokens_out: number };
+  usage: { tokens_in: number; tokens_out: number; credits_consumed?: number };
   run_id: string;
   processing_time_ms: number;
+  /** Credits consumed by this optimization call */
+  credits_consumed?: number;
+  /** Which mode was used */
+  mode?: 'fast' | 'deep';
+  /** Whether result came from cache */
+  from_cache?: boolean;
+  /** Confidence score 0–10 */
+  confidence_score?: number;
+  /** Named improvement dimensions */
+  improvements?: {
+    clarity?: number;
+    specificity?: number;
+    effectiveness?: number;
+    overall?: number;
+  };
 }
 
 // ============================================
 // AskMe Type Definitions
 // ============================================
 
+/** Raw question shape as returned by the server. No re-mapping. */
 export interface AskMeQuestion {
-  /** Normalised from server field 'qid' */
-  id: string;
-  /** Normalised from server field 'title' */
-  question: string;
-  /** Normalised from server field 'kind' (e.g. 'long_text' | 'choice') */
-  type?: string;
-  /** Available choices when type === 'choice' */
-  options?: string[];
+  qid: string;
+  title: string;
   help_text?: string;
+  /** 'long_text' | 'short_text' | 'choice' | 'boolean' */
+  kind: string;
+  options: string[];
+  variable: string;
+  required: boolean;
+  suggested: string;
+  /** True when this question was already answered (e.g. from the initial intent) */
+  is_answered: boolean;
+  /** Current answer value — empty string when not answered */
+  answer: string;
 }
 
+/** Shape returned by /askme/start/ and /askme/answer/ */
 export interface AskMeSession {
   session_id: string;
-  goal: string;
   questions: AskMeQuestion[];
-  status: 'active' | 'complete' | 'finalized';
-  created_at: string;
+  /** True when the backend has enough info to generate the final prompt */
+  good_enough_to_run: boolean;
+  preview_prompt: string | null;
 }
 
-export interface AskMeAnswerResponse {
-  session_id: string;
-  next_question?: AskMeQuestion;
-  is_complete: boolean;
-  answered_count?: number;
-  total_questions?: number;
-}
+/** @deprecated Use AskMeSession — the answer endpoint now returns the full session */
+export interface AskMeAnswerResponse extends AskMeSession {}
 
 export interface AskMeFinalResult {
   session_id: string;
+  /** The generated prompt content */
   prompt: string;
   explanation?: string;
   title?: string;
   category?: string;
+  /** The user's original stated intent */
+  original_intent?: string;
+  /** 0–100 completeness of spec coverage */
+  spec_completeness?: number;
+  /** Overall quality score 0–10 */
+  quality_score?: number;
+  /** Character count of the optimized prompt */
+  optimized_length?: number;
+  /** Credits consumed by this finalize call */
+  credits_used?: number;
+}
+
+/**
+ * Response shape from POST /api/v2/ai/askme/submit-all/
+ * One call records all answers, generates the prompt, and saves to PromptHistory.
+ */
+export interface AskMeSubmitAllResult {
+  session_id: string;
+  /** The final generated prompt */
+  prompt: string;
+  /** ID of the auto-saved PromptHistory record — link user to /library */
+  prompt_history_id?: string;
+  comparison?: {
+    original_intent?: string;
+    improvement_ratio?: number;
+    quality_indicators?: string[];
+    spec_completeness?: number;
+  };
+  metadata?: {
+    spec?: Record<string, unknown>;
+    variables_used?: string[];
+    completion_percentage?: number;
+  };
+  /** Fields also present on AskMeFinalResult for UI compatibility */
+  explanation?: string;
+  title?: string;
+  category?: string;
+  original_intent?: string;
+  spec_completeness?: number;
+  quality_score?: number;
+  optimized_length?: number;
+  credits_used?: number;
+}
+
+// ============================================
+// AI Dashboard Type Definitions
+// ============================================
+
+export interface AIDashboardDailyUsage {
+  date: string;
+  credits_used: number;
+  api_calls: number;
+  tokens_generated: number;
+}
+
+export interface AIDashboardFeatureUsage {
+  feature: string;
+  credits_used: number;
+  call_count: number;
+  percentage: number;
+}
+
+export interface AIDashboardData {
+  credits_remaining: number;
+  credits_total: number;
+  api_calls_this_month: number;
+  avg_latency_ms: number;
+  tokens_generated: number;
+  daily_usage: AIDashboardDailyUsage[];
+  feature_breakdown: AIDashboardFeatureUsage[];
+  roi: {
+    direct_api_cost: number;
+    temple_cost: number;
+    savings_percentage: number;
+  };
+  plan_code: string;
+  plan_name: string;
+  credits_refresh_date: string;
 }
 
 // ============================================
@@ -1019,6 +1226,66 @@ export interface CheckoutSessionResponse {
 
 export interface BillingPortalResponse {
   portal_url: string;
+}
+
+// ============================================
+// Smart Template Type Definitions
+// ============================================
+
+export interface SmartFillResult {
+  filled_prompt: string;
+  suggestions: Record<string, string[]>;
+  credits_used?: number;
+}
+
+export interface TemplateRecommendation {
+  template_id: string;
+  title: string;
+  relevance_score: number;
+  reason: string;
+  category?: string;
+}
+
+export interface TemplateVariation {
+  title: string;
+  content: string;
+  difference_summary: string;
+}
+
+// ============================================
+// Cost Preview Type
+// ============================================
+
+export interface CostPreviewResult {
+  estimated_credits: number;
+  description: string;
+  feature: string;
+}
+
+// ============================================
+// Core / Notification Types
+// ============================================
+
+export interface AppNotification {
+  id: string;
+  type: string;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+  data?: Record<string, unknown>;
+}
+
+// ============================================
+// App Config / Notifications / Core
+// ============================================
+
+export interface AppNotification {
+  id: string;
+  type: string;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+  data?: Record<string, unknown>;
 }
 
 // Export singleton instance

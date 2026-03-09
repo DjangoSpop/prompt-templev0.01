@@ -9,18 +9,23 @@ import {
   BarChart3,
   BookOpen,
   Bot,
+  BrainCircuit,
   ChevronLeft,
   ChevronRight,
   Crown,
+  Database,
   Download,
   Globe,
   HelpCircle,
   History,
   Home,
+  Layers,
   Library,
   Menu,
   MessageSquare,
+  Moon,
   Sparkles,
+  Sun,
   TrendingUp,
   X,
   Zap,
@@ -41,8 +46,10 @@ import {
 } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/providers/AuthProvider';
+import { useTheme } from '@/providers/ThemeProvider';
 import { useRouter } from 'next/navigation';
 import Eyehorus from '../pharaonic/Eyehorus';
+import { CreditBadge } from '@/components/credits/CreditBadge';
 
 // Navigation items configuration
 interface NavItem {
@@ -109,6 +116,15 @@ const navigationItems: NavItem[] = [
     category: 'main',
   },
   {
+    id: 'usage',
+    label: 'Usage Dashboard',
+    href: '/usage',
+    icon: BarChart3,
+    description: 'Credits, ROI & subscription',
+    badge: 'New',
+    category: 'main',
+  },
+  {
     id: 'history',
     label: 'History',
     href: '/history',
@@ -127,11 +143,20 @@ const navigationItems: NavItem[] = [
   //   category: 'tools',
   // },
   {
+    id: 'playground',
+    label: 'AI Playground',
+    href: '/playground',
+    icon: Layers,
+    description: 'All AI services — chat, RAG, optimize, generate',
+    badge: 'New',
+    category: 'tools',
+  },
+  {
     id: 'optimizer',
     label: 'Optimizer',
     href: '/optimizer',
     icon: Zap,
-    description: 'AI prompt optimization',
+    description: 'SSE streaming prompt optimization',
     badge: 'Pro',
     category: 'tools',
   },
@@ -142,6 +167,55 @@ const navigationItems: NavItem[] = [
     icon: Bot,
     description: 'Build prompts with AI questions',
     badge: 'New',
+    category: 'tools',
+  },
+  {
+    id: 'assistant',
+    label: 'AI Assistant',
+    href: '/assistant',
+    icon: Sparkles,
+    description: 'Thread-based AI conversations',
+    category: 'tools',
+  },
+  {
+    id: 'askme',
+    label: 'AskMe Wizard',
+    href: '/askme',
+    icon: BrainCircuit,
+    description: 'AI guides you to the perfect prompt',
+    badge: 'New',
+    category: 'tools',
+  },
+  {
+    id: 'agent-optimize',
+    label: 'Deep Optimize',
+    href: '/playground?tab=agent',
+    icon: Database,
+    description: 'RAG-powered deep prompt optimization',
+    category: 'tools',
+  },
+  {
+    id: 'orchestrate',
+    label: 'Orchestrate',
+    href: '/orchestrate',
+    icon: Network,
+    description: 'Intent detection + template flow',
+    category: 'tools',
+  },
+  {
+    id: 'conversations',
+    label: 'Conversations',
+    href: '/threads',
+    icon: MessageSquare,
+    description: 'Your AI conversation threads',
+    category: 'tools',
+  },
+  {
+    id: 'rag',
+    label: 'RAG Knowledge',
+    href: '/rag',
+    icon: Database,
+    description: 'Knowledge retrieval with AI answers',
     category: 'tools',
   },
   {
@@ -256,6 +330,7 @@ export function AppSidebar({ className }: AppSidebarProps) {
   const router = useRouter();
   const { isCollapsed, toggleCollapsed, isOpen, close } = useSidebarStore();
   const { user, isAuthenticated, logout, isLoading } = useAuth();
+  const { resolvedTheme, setTheme } = useTheme();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -492,6 +567,13 @@ export function AppSidebar({ className }: AppSidebarProps) {
 
         {/* Footer */}
         <div className="border-t border-royal-gold-500/20 p-3">
+          {/* Credit Badge */}
+          {isAuthenticated && (
+            <div className={cn('mb-3', isCollapsed ? 'flex justify-center' : '')}>
+              <CreditBadge compact={isCollapsed} />
+            </div>
+          )}
+
           {/* User Profile Section */}
           {isAuthenticated && user && !isCollapsed && (
             <div className="mb-3 rounded-lg bg-gradient-to-r from-royal-gold-500/10 to-royal-gold-500/5 p-3">
@@ -628,6 +710,40 @@ export function AppSidebar({ className }: AppSidebarProps) {
           )}
 
           <Separator className="my-3 bg-royal-gold-500/20" />
+
+          {/* Theme Toggle */}
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+                aria-label={`Switch to ${resolvedTheme === 'dark' ? 'light' : 'dark'} mode`}
+                className={cn(
+                  'w-full text-desert-sand-300 hover:text-royal-gold-300 hover:bg-royal-gold-500/10',
+                  isCollapsed ? 'justify-center px-2' : 'justify-start gap-3 px-3'
+                )}
+              >
+                <span className="relative flex h-5 w-5 flex-shrink-0 items-center justify-center">
+                  <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                  <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                </span>
+                {!isCollapsed && (
+                  <span className="text-sm font-medium">
+                    {resolvedTheme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                  </span>
+                )}
+              </Button>
+            </TooltipTrigger>
+            {isCollapsed && (
+              <TooltipContent
+                side="right"
+                className="border-royal-gold-500/30 bg-obsidian-900 text-desert-sand-100"
+              >
+                {resolvedTheme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+              </TooltipContent>
+            )}
+          </Tooltip>
 
           {/* Collapse Toggle */}
           <Button

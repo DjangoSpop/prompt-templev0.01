@@ -610,9 +610,6 @@ export default function WorkspacePage() {
       });
       return response.json();
     },
-    onSuccess: (data) => {
-      setConversations(data.results || []);
-    },
   });
 
   // Fetch folders
@@ -626,10 +623,16 @@ export default function WorkspacePage() {
       });
       return response.json();
     },
-    onSuccess: (data) => {
-      setFolders(data.results || []);
-    },
   });
+
+  // Sync query results into store
+  useEffect(() => {
+    if (conversationsData) setConversations((conversationsData as any).results || []);
+  }, [conversationsData, setConversations]);
+
+  useEffect(() => {
+    if (foldersData) setFolders((foldersData as any).results || []);
+  }, [foldersData, setFolders]);
 
   // Filter and sort conversations
   const filteredConversations = useMemo(() => {

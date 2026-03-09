@@ -21,12 +21,12 @@ export class TemplateService {
 
   // Create a new template
   static async createTemplate(templateData: TemplateCreateUpdate): Promise<TemplateDetail> {
-    return apiClient.createTemplate(templateData);
+    return apiClient.createTemplate(templateData as any);
   }
 
   // Update an existing template
   static async updateTemplate(id: string, templateData: Partial<TemplateCreateUpdate>): Promise<TemplateDetail> {
-    return apiClient.updateTemplate(id, templateData);
+    return apiClient.updateTemplate(id, templateData as any);
   }
 
   // Delete a template

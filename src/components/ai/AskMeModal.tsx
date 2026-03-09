@@ -5,10 +5,12 @@
  * Walks the user through a multi-step Q&A powered by DeepSeek
  * to generate a high-quality, personalized prompt.
  *
- * Flow: goal → questions → finalize → result → save
+ * Flow: goal → questions (local collection) → submit-all → result
+ * Cost: 2 credits (start) + 3 credits (submit-all) = 5 total
  */
 
 import React, { useState, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import {
   Dialog,
   DialogContent,
@@ -24,16 +26,19 @@ import {
   ChevronRight,
   RotateCcw,
   Copy,
-  Save,
   Loader2,
   CheckCircle2,
   MessageSquare,
   Wand2,
+  ExternalLink,
+  AlertCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useStartAskMe, useAnswerAskMe, useFinalizeAskMe } from '@/hooks/api/useAskMe';
-import { useCreateSavedPrompt } from '@/hooks/api/useSavedPrompts';
-import type { AskMeSession, AskMeFinalResult } from '@/lib/api/typed-client';
+import { useStartAskMe, useSubmitAllAskMe } from '@/hooks/api/useAskMe';
+import { handleApiError } from '@/lib/errors/handle-api-error';
+import { CostPreviewPill } from '@/components/credits/CostPreviewPill';
+import { useCreditsStore } from '@/store/credits';
+import type { AskMeSession, AskMeSubmitAllResult } from '@/lib/api/typed-client';
 
 // ============================================
 // Types
@@ -103,14 +108,19 @@ export function AskMeModal({ open, onOpenChange }: AskMeModalProps) {
   const [context, setContext] = useState('');
   const [session, setSession] = useState<AskMeSession | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [firstUserQuestionIndex, setFirstUserQuestionIndex] = useState(0);
   const [currentAnswer, setCurrentAnswer] = useState('');
-  const [finalResult, setFinalResult] = useState<AskMeFinalResult | null>(null);
-  const [saved, setSaved] = useState(false);
+
+  // Local answer collection — no per-answer API cost
+  const [localAnswers, setLocalAnswers] = useState<Map<string, string>>(new Map());
+  const [missingQids, setMissingQids] = useState<string[]>([]);
+
+  const [finalResult, setFinalResult] = useState<AskMeSubmitAllResult | null>(null);
 
   const startMutation = useStartAskMe();
-  const answerMutation = useAnswerAskMe();
-  const finalizeMutation = useFinalizeAskMe();
-  const createPrompt = useCreateSavedPrompt();
+  const submitAllMutation = useSubmitAllAskMe();
+  const deductOptimistic = useCreditsStore((s) => s.deductOptimistic);
+  const refundOptimistic = useCreditsStore((s) => s.refundOptimistic);
 
   // ---- Reset ----
   const reset = useCallback(() => {
@@ -120,8 +130,9 @@ export function AskMeModal({ open, onOpenChange }: AskMeModalProps) {
     setSession(null);
     setCurrentQuestionIndex(0);
     setCurrentAnswer('');
+    setLocalAnswers(new Map());
+    setMissingQids([]);
     setFinalResult(null);
-    setSaved(false);
   }, []);
 
   const handleOpenChange = (open: boolean) => {
@@ -135,73 +146,103 @@ export function AskMeModal({ open, onOpenChange }: AskMeModalProps) {
       toast.error('Please describe what you want this prompt to do');
       return;
     }
-    const result = await startMutation.mutateAsync({
-      intent: goal.trim(),
-      context: context.trim() || undefined,
-    });
-    setSession(result);
-    setCurrentQuestionIndex(0);
-    setCurrentAnswer('');
-    setStep('questions');
+    try {
+      const result = await startMutation.mutateAsync({
+        intent: goal.trim(),
+        context: context.trim() || undefined,
+      });
+      setSession(result);
+      const firstUnanswered = result.questions.findIndex((q) => !q.is_answered);
+      const startIdx = firstUnanswered >= 0 ? firstUnanswered : 0;
+      setCurrentQuestionIndex(startIdx);
+      setFirstUserQuestionIndex(startIdx);
+      setCurrentAnswer('');
+      setStep('questions');
+    } catch (err) {
+      handleApiError(err as Error, 'askme_start');
+    }
   };
 
-  // ---- Step 2: Answer a question ----
-  const handleAnswer = async () => {
+  // ---- Step 2: Store answer locally and advance ----
+  const handleAnswer = () => {
     if (!session || !currentAnswer.trim()) {
       toast.error('Please provide an answer before continuing');
       return;
     }
     const currentQ = session.questions[currentQuestionIndex];
-    const response = await answerMutation.mutateAsync({
-      session_id: session.session_id,
-      question_id: currentQ.id,
-      answer: currentAnswer.trim(),
-    });
+    const newAnswers = new Map(localAnswers);
+    newAnswers.set(currentQ.qid, currentAnswer.trim());
+    setLocalAnswers(newAnswers);
+    setMissingQids((prev) => prev.filter((id) => id !== currentQ.qid));
 
-    const isLastQuestion = currentQuestionIndex >= session.questions.length - 1;
-    if (response.is_complete || isLastQuestion) {
-      setStep('building');
-      await handleFinalize(session.session_id);
-    } else if (response.next_question) {
-      // Backend sent a new follow-up question — add it
-      setSession((prev) =>
-        prev
-          ? {
-              ...prev,
-              questions: [...prev.questions, response.next_question!],
-            }
-          : prev
-      );
-      setCurrentQuestionIndex((i) => i + 1);
+    const nextIdx = currentQuestionIndex + 1;
+    if (nextIdx < session.questions.length) {
+      setCurrentQuestionIndex(nextIdx);
       setCurrentAnswer('');
     } else {
-      setCurrentQuestionIndex((i) => i + 1);
+      // All questions answered — proceed to submit-all
       setCurrentAnswer('');
+      handleSubmitAll(newAnswers);
     }
   };
 
-  // ---- Step 3: Finalize ----
-  const handleFinalize = async (sessionId?: string) => {
-    const sid = sessionId ?? session?.session_id;
-    if (!sid) return;
-    const result = await finalizeMutation.mutateAsync({ session_id: sid });
-    setFinalResult(result);
-    setStep('result');
-  };
+  // ---- Step 3: Submit all answers at once ----
+  const handleSubmitAll = async (answers?: Map<string, string>) => {
+    if (!session) return;
+    const answersMap = answers ?? localAnswers;
 
-  // ---- Step 4: Save to library ----
-  const handleSave = async () => {
-    if (!finalResult) return;
-    await createPrompt.mutateAsync({
-      title: finalResult.title || goal.slice(0, 80) || 'AI-Generated Prompt',
-      content: finalResult.prompt,
-      description: finalResult.explanation,
-      category: finalResult.category || 'General',
-      tags: ['ai-generated', 'askme'],
-      source: 'manual',
-    });
-    setSaved(true);
-    setTimeout(() => onOpenChange(false), 800);
+    // Check all required questions answered
+    const missingRequired = session.questions
+      .slice(firstUserQuestionIndex)
+      .filter((q) => q.required && !answersMap.has(q.qid))
+      .map((q) => q.qid);
+
+    if (missingRequired.length > 0) {
+      setMissingQids(missingRequired);
+      toast.error('Please answer all required questions.');
+      return;
+    }
+
+    deductOptimistic(3);
+    setStep('building');
+
+    const answersList = Array.from(answersMap.entries()).map(([qid, value]) => ({ qid, value }));
+
+    try {
+      const result = await submitAllMutation.mutateAsync({
+        session_id: session.session_id,
+        answers: answersList,
+      });
+      setFinalResult(result);
+      setStep('result');
+    } catch (err: unknown) {
+      const apiErr = err as { status?: number; data?: Record<string, unknown> };
+
+      // 409 — already finalized
+      if (apiErr?.status === 409) {
+        const existing = apiErr?.data ?? {};
+        if (existing.prompt) {
+          setFinalResult({ session_id: session.session_id, ...(existing as Partial<AskMeSubmitAllResult>) } as AskMeSubmitAllResult);
+          setStep('result');
+          toast.info('Session already completed — showing your existing prompt.');
+          return;
+        }
+      }
+
+      // 400 — missing required qids from server
+      if (apiErr?.status === 400) {
+        const missing = (apiErr?.data as { missing_qids?: string[] })?.missing_qids;
+        if (missing?.length) setMissingQids(missing);
+        refundOptimistic(3);
+        setStep('questions');
+        toast.error('Some required questions are missing. Please review and try again.');
+        return;
+      }
+
+      refundOptimistic(3);
+      setStep('questions');
+      handleApiError(err as Error, 'askme_submit_all');
+    }
   };
 
   const handleCopy = () => {
@@ -260,38 +301,54 @@ export function AskMeModal({ open, onOpenChange }: AskMeModalProps) {
 
   const renderQuestions = () => {
     if (!session) return null;
-    const total = session.questions.length;
     const current = session.questions[currentQuestionIndex];
     if (!current) return null;
 
-    const isChoice = current.type === 'choice' && Array.isArray(current.options) && current.options.length > 0;
+    const userQuestionNumber = currentQuestionIndex - firstUserQuestionIndex + 1;
+    const totalUserQuestions = session.questions.length - firstUserQuestionIndex;
+    const isLastUserQuestion = currentQuestionIndex >= session.questions.length - 1;
+    const isMissing = missingQids.includes(current.qid);
+
+    const isChoice = current.kind === 'choice' && Array.isArray(current.options) && current.options.length > 0;
 
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <Badge variant="outline" className="text-xs">
             <MessageSquare className="h-3 w-3 mr-1" />
-            Question {currentQuestionIndex + 1} of {total}
+            Question {userQuestionNumber} of {totalUserQuestions}
           </Badge>
           <div className="w-24 h-1.5 rounded-full bg-muted overflow-hidden">
-            <div
-              className="h-full bg-primary rounded-full transition-all"
-              style={{ width: `${((currentQuestionIndex + 1) / total) * 100}%` }}
+            <motion.div
+              className="h-full bg-primary rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${(userQuestionNumber / totalUserQuestions) * 100}%` }}
+              transition={{ duration: 0.3 }}
             />
           </div>
         </div>
 
-        <div className="rounded-lg border bg-muted/30 p-4">
-          <p className="text-sm font-medium leading-relaxed">{current.question}</p>
+        {missingQids.length > 0 && (
+          <div className="flex items-start gap-2 p-3 rounded-lg border border-red-300 bg-red-50 dark:bg-red-950/30 dark:border-red-800 text-sm text-red-700 dark:text-red-300">
+            <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+            <span>Please answer all required questions before generating.</span>
+          </div>
+        )}
+
+        <div className={`rounded-lg border p-4 ${isMissing ? 'border-red-400 bg-red-50/50 dark:bg-red-950/20' : 'bg-muted/30'}`}>
+          <p className="text-sm font-medium leading-relaxed">{current.title}</p>
           {current.help_text && (
             <p className="text-xs text-muted-foreground mt-1">{current.help_text}</p>
+          )}
+          {current.required && (
+            <span className="text-xs text-red-500 mt-1 block">Required</span>
           )}
         </div>
 
         <div>
           {isChoice ? (
             <div className="flex flex-col gap-2">
-              {current.options!.map((opt) => (
+              {current.options.map((opt) => (
                 <button
                   key={opt}
                   type="button"
@@ -329,35 +386,44 @@ export function AskMeModal({ open, onOpenChange }: AskMeModalProps) {
             variant="outline"
             size="sm"
             onClick={() => {
-              if (currentQuestionIndex === 0) {
+              if (currentQuestionIndex <= firstUserQuestionIndex) {
                 setStep('goal');
                 setSession(null);
               } else {
+                // Go back: remove last answer from the map
+                const prevQ = session.questions[currentQuestionIndex - 1];
+                if (prevQ) {
+                  setLocalAnswers((prev) => {
+                    const next = new Map(prev);
+                    next.delete(prevQ.qid);
+                    return next;
+                  });
+                }
                 setCurrentQuestionIndex((i) => i - 1);
                 setCurrentAnswer('');
               }
             }}
-            disabled={answerMutation.isPending}
           >
             ← Back
           </Button>
           <Button
             onClick={handleAnswer}
-            disabled={!currentAnswer.trim() || answerMutation.isPending}
+            disabled={!currentAnswer.trim() || submitAllMutation.isPending}
             className="flex-1 flex items-center gap-2"
           >
-            {answerMutation.isPending ? (
+            {submitAllMutation.isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <ChevronRight className="h-4 w-4" />
             )}
-            {answerMutation.isPending
-              ? 'Processing…'
-              : currentQuestionIndex >= total - 1
-              ? 'Build My Prompt →'
-              : 'Next Question →'}
+            {isLastUserQuestion ? 'Build My Prompt →' : 'Next Question →'}
           </Button>
         </div>
+        {isLastUserQuestion && (
+          <div className="flex justify-center">
+            <CostPreviewPill feature="askme_submit_all" size="sm" />
+          </div>
+        )}
       </div>
     );
   };
@@ -387,16 +453,79 @@ export function AskMeModal({ open, onOpenChange }: AskMeModalProps) {
 
   const renderResult = () => {
     if (!finalResult) return null;
+    const specCompleteness =
+      finalResult.comparison?.spec_completeness ?? finalResult.spec_completeness;
+    const originalIntent =
+      finalResult.comparison?.original_intent ?? finalResult.original_intent;
+
     return (
       <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
-          <p className="font-semibold text-sm">Your prompt is ready!</p>
+        {/* Header */}
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
+            <p className="font-semibold text-sm">Your prompt is ready!</p>
+          </div>
+          <div className="flex items-center gap-2">
+            {finalResult.quality_score != null && (
+              <Badge
+                className={`text-xs ${
+                  finalResult.quality_score >= 8
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                    : finalResult.quality_score >= 5
+                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400'
+                    : 'bg-red-100 text-red-800'
+                }`}
+              >
+                ✦ {finalResult.quality_score.toFixed(1)}/10
+              </Badge>
+            )}
+            {finalResult.credits_used != null && (
+              <Badge variant="outline" className="text-xs">
+                {finalResult.credits_used} credit{finalResult.credits_used !== 1 ? 's' : ''}
+              </Badge>
+            )}
+            {/* Auto-saved badge */}
+            <Badge className="text-xs bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+              <CheckCircle2 className="h-3 w-3 mr-1" />
+              Saved
+            </Badge>
+          </div>
         </div>
 
         {finalResult.title && (
           <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
             {finalResult.title}
+          </p>
+        )}
+
+        {/* Spec completeness */}
+        {specCompleteness != null && (
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Spec coverage</span>
+              <span>{specCompleteness}%</span>
+            </div>
+            <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+              <motion.div
+                className={`h-full rounded-full ${
+                  specCompleteness >= 80
+                    ? 'bg-green-500'
+                    : specCompleteness >= 50
+                    ? 'bg-amber-500'
+                    : 'bg-red-500'
+                }`}
+                initial={{ width: 0 }}
+                animate={{ width: `${specCompleteness}%` }}
+                transition={{ duration: 0.5 }}
+              />
+            </div>
+          </div>
+        )}
+
+        {originalIntent && (
+          <p className="text-xs text-muted-foreground italic">
+            &ldquo;{originalIntent}&rdquo;
           </p>
         )}
 
@@ -417,28 +546,20 @@ export function AskMeModal({ open, onOpenChange }: AskMeModalProps) {
             <Copy className="h-3.5 w-3.5" />
             Copy
           </Button>
-          <Button
-            onClick={handleSave}
-            disabled={createPrompt.isPending || saved}
-            className="flex-1 flex items-center gap-2"
-          >
-            {saved ? (
-              <>
-                <CheckCircle2 className="h-4 w-4" />
-                Saved!
-              </>
-            ) : createPrompt.isPending ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Saving…
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4" />
-                Save to Library
-              </>
-            )}
-          </Button>
+          {finalResult.prompt_history_id ? (
+            <a
+              href="/library"
+              className="flex-1 inline-flex items-center justify-center gap-2 rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              View in Library
+            </a>
+          ) : (
+            <div className="flex-1 inline-flex items-center justify-center gap-2 rounded-md bg-muted px-3 py-2 text-sm font-medium text-muted-foreground">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              Saved to Library
+            </div>
+          )}
           <Button variant="ghost" size="sm" onClick={reset} title="Start over">
             <RotateCcw className="h-3.5 w-3.5" />
           </Button>

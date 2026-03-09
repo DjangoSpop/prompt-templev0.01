@@ -2,6 +2,7 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
 import type { components } from '../../types/api';
 import { env, apiConfig } from '../config/env';
 import { logger, monitor } from './logger';
+import { useCreditsStore } from '@/store/credits';
 
 export class ApiError extends Error {
   constructor(
@@ -257,7 +258,28 @@ export class BaseApiClient {
 
 
     this.axiosInstance.interceptors.response.use(
-      (response) => response,
+      (response) => {
+        // Extract credit headers from every successful response and sync to store.
+        // This keeps the credit balance up-to-date after any API call (AI, templates, etc.)
+        if (typeof window !== 'undefined' && response.headers) {
+          const remaining = response.headers['x-credits-remaining'];
+          const used = response.headers['x-credits-used'];
+          const low = response.headers['x-low-credits'];
+          const balance = response.headers['x-credits-balance'];
+          const reserved = response.headers['x-credits-reserved'];
+
+          if (remaining != null || low != null || balance != null) {
+            useCreditsStore.getState().syncFromHeaders(
+              remaining != null ? Number(remaining) : null,
+              used != null ? Number(used) : null,
+              low === 'true',
+              balance != null ? Number(balance) : null,
+              reserved != null ? Number(reserved) : null,
+            );
+          }
+        }
+        return response;
+      },
       async (error: AxiosError) => {
         const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
         

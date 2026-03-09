@@ -37,6 +37,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { CreditBadge } from '@/components/credits/CreditBadge';
 
 // --- Types & Interfaces ---
 
@@ -765,8 +766,12 @@ export function TempleNavbarEnhanced() {
                     <CommandPaletteTrigger onClick={() => {}} />
                     
                     <div className="h-6 w-px bg-stone-200 dark:bg-stone-800 hidden md:block" />
-                    
-                    <button className="relative p-2 text-stone-500 hover:text-stone-900 dark:hover:text-stone-100 rounded-full transition-colors hidden md:block hover:bg-stone-100 dark:hover:bg-stone-800">
+
+                    <div className="hidden md:block">
+                      <CreditBadge />
+                    </div>
+
+                    <button type="button" title="Notifications" className="relative p-2 text-stone-500 hover:text-stone-900 dark:hover:text-stone-100 rounded-full transition-colors hidden md:block hover:bg-stone-100 dark:hover:bg-stone-800">
                       <Bell className="h-5 w-5" />
                       <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-stone-950"></span>
                     </button>

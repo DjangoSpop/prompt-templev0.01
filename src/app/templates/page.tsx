@@ -4,8 +4,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/providers/AuthProvider';
 import { apiClient } from '@/lib/api-client';
-import { TemplateList, TemplateCategory, PaginatedResponse, TemplateSearch } from '@/lib/types';
+import { TemplateList, TemplateDetail, TemplateCategory, PaginatedResponse, TemplateSearch } from '@/lib/types';
 import { EnhancedTemplateDetailModal } from '@/components/templates/EnhancedTemplateDetailModal';
+import { AISearchBar } from '@/components/templates/AISearchBar';
 import { PyramidGrid } from '@/components/pharaonic/PyramidGrid';
 import { NefertitiBackground } from '@/components/pharaonic/NefertitiIcon';
 import { StepTracker } from '@/components/onboarding/StepTracker';
@@ -47,8 +48,8 @@ export default function TemplatesPage() {
   const { user } = useAuth();
   const [templates, setTemplates] = useState<TemplateList[]>([]);
   const [categories, setCategories] = useState<TemplateCategory[]>([]);
-  const [featuredTemplates, setFeaturedTemplates] = useState<TemplateList[]>([]);
-  const [trendingTemplates, setTrendingTemplates] = useState<TemplateList[]>([]);
+  const [featuredTemplates, setFeaturedTemplates] = useState<TemplateDetail[]>([]);
+  const [trendingTemplates, setTrendingTemplates] = useState<TemplateDetail[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [searchQuery, setSearchQuery] = useState('');
@@ -238,7 +239,7 @@ export default function TemplatesPage() {
           try {
             await apiClient.trackEvent({
               event_type: 'template_duplicated',
-              properties: {
+              data: {
                 template_id: template.id,
                 original_title: template.title,
               },
@@ -259,7 +260,7 @@ export default function TemplatesPage() {
           try {
             await apiClient.trackEvent({
               event_type: 'template_favorited',
-              properties: {
+              data: {
                 template_id: template.id,
               },
             });
@@ -661,16 +662,11 @@ export default function TemplatesPage() {
       <Card className="temple-card p-6 mb-6 pyramid-elevation">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 lg:space-x-4">
           <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary h-4 w-4" />
-              <input
-                type="text"
-                placeholder="Search the sacred scrolls..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-primary/30 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-secondary/50 text-hieroglyph placeholder-muted-foreground"
-              />
-            </div>
+            <AISearchBar
+              onKeywordSearch={(q) => setSearchQuery(q)}
+              placeholder="Search the sacred scrolls…"
+              className="w-full"
+            />
           </div>
 
           <div className="flex flex-wrap items-center space-x-4">

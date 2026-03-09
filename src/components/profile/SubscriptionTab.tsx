@@ -145,13 +145,13 @@ export const SubscriptionTab: React.FC = () => {
               <div className="flex items-center justify-between text-sm">
                 <span className="font-medium">Credits Available</span>
                 <span className="text-muted-foreground">
-                  {entitlements.credits_available} / {entitlements.monthly_credits}
+                  {entitlements.credits_balance} / {entitlements.monthly_credits}
                 </span>
               </div>
               <Progress
                 value={
                   entitlements.monthly_credits > 0
-                    ? (entitlements.credits_available / entitlements.monthly_credits) * 100
+                    ? (entitlements.credits_balance / entitlements.monthly_credits) * 100
                     : 0
                 }
               />

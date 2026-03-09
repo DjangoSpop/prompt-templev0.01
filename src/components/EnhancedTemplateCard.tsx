@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Star, Crown, Users, Eye, Copy } from 'lucide-react';
+import { Star, Crown, Users, Eye, Copy, Wand2 } from 'lucide-react';
 import type { TemplateList, TemplateDetail } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 
@@ -9,9 +9,12 @@ interface TemplateCardProps {
   template: TemplateList | TemplateDetail;
   viewMode: 'grid' | 'list';
   onSelect?: (template: TemplateList | TemplateDetail) => void;
+  onSmartFill?: (templateId: string) => void;
+  relevanceScore?: number;
+  isAIRecommended?: boolean;
 }
 
-export function EnhancedTemplateCard({ template, viewMode }: TemplateCardProps) {
+export function EnhancedTemplateCard({ template, viewMode, onSmartFill, relevanceScore, isAIRecommended }: TemplateCardProps) {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -109,6 +112,16 @@ export function EnhancedTemplateCard({ template, viewMode }: TemplateCardProps) 
             >
               {isLoading ? 'Loading...' : 'Use Template'}
             </button>
+            {onSmartFill && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onSmartFill(template.id); }}
+                className="px-4 py-2 flex items-center justify-center gap-1.5 border border-primary/40 text-primary rounded-md hover:bg-primary/5 transition-colors text-sm"
+                title="AI Fill — auto-fill variables with AI"
+              >
+                <Wand2 className="w-3.5 h-3.5" />
+                AI Fill
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -126,9 +139,19 @@ export function EnhancedTemplateCard({ template, viewMode }: TemplateCardProps) 
           <h3 className="font-semibold text-lg text-gray-900 line-clamp-2">
             {template.title || 'Untitled'}
           </h3>
-          {isFeatured() && (
-            <Crown className="w-5 h-5 text-yellow-500 flex-shrink-0 ml-2" />
-          )}
+          <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+            {isAIRecommended && (
+              <span className="text-[10px] font-semibold bg-primary/10 text-primary px-1.5 py-0.5 rounded">Smart</span>
+            )}
+            {relevanceScore !== undefined && (
+              <span className="text-[10px] font-semibold bg-green-100 text-green-700 px-1.5 py-0.5 rounded">
+                {Math.round(relevanceScore * 100)}% match
+              </span>
+            )}
+            {isFeatured() && (
+              <Crown className="w-5 h-5 text-yellow-500" />
+            )}
+          </div>
         </div>
         
         <p className="text-gray-600 text-sm mb-4 line-clamp-3">
@@ -188,6 +211,15 @@ export function EnhancedTemplateCard({ template, viewMode }: TemplateCardProps) 
             >
               {isLoading ? '...' : 'Use'}
             </button>
+            {onSmartFill && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onSmartFill(template.id); }}
+                className="p-1.5 flex items-center gap-1 border border-primary/40 text-primary rounded text-sm hover:bg-primary/5 transition-colors"
+                title="AI Fill — auto-fill variables with AI"
+              >
+                <Wand2 className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         </div>
       </div>

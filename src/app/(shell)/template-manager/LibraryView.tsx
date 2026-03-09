@@ -8,8 +8,7 @@ const TemplateEditor = dynamic(() => import('@/components/TemplateEditor'), { ss
 import { useTemplates, useFeaturedTemplates, useMyTemplates } from '@/lib/hooks/useTemplates';
 import { useTemplateActions } from '@/lib/hooks/useTemplates';
 import { useCategories } from '@/lib/hooks/useCategories'; // Assuming this hook exists
-import { Template, TemplateList, TemplateDetail, TemplateCategory, PaginatedResponse, TemplateSearch, Category } from '@/lib/types';
-import { apiClient } from '@/lib/api-client';
+import type { AppTemplate } from '@/lib/types/adapters';
 import { CategoryChips } from '@/components/CategoryChips';
 import { SearchBar } from '@/components/SearchBar';
 
@@ -25,7 +24,7 @@ interface TemplateSearchParams {
 export default function LibraryView() {
   // State for search and filters
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState('featured');
@@ -46,7 +45,7 @@ export default function LibraryView() {
     isFetchingNextPage 
   } = useTemplates({
     search: searchQuery,
-    category: selectedCategory ? Number(selectedCategory) : undefined,
+    category: selectedCategory ?? undefined,
     ordering: sortBy === 'rating' ? '-average_rating' : 
               sortBy === 'usage' ? '-usage_count' : 
               sortBy === 'newest' ? '-created_at' : '',
@@ -58,9 +57,10 @@ export default function LibraryView() {
   const categories = categoriesResponse?.results ?? [];
 
   const { 
-    featuredTemplates, 
+    data: featuredTemplatesData, 
     isLoading: featuredLoading 
   } = useFeaturedTemplates();
+  const featuredTemplates = featuredTemplatesData ?? [];
 
   const templateActions = useTemplateActions();
 
@@ -72,8 +72,8 @@ export default function LibraryView() {
   };
 
   // Handle category selection
-  const handleCategorySelect = (categoryId: string) => {
-    setSelectedCategory(categoryId === selectedCategory ? '' : categoryId);
+  const handleCategorySelect = (categoryId: number | null) => {
+    setSelectedCategory(categoryId === selectedCategory ? null : categoryId);
   };
 
   // Template CRUD handlers
@@ -92,7 +92,7 @@ export default function LibraryView() {
     setEditingTemplate(undefined);
   };
 
-  const handleTemplateAction = async (action: string, template: Template) => {
+  const handleTemplateAction = async (action: string, template: AppTemplate) => {
     try {
       switch (action) {
         case 'edit':
@@ -121,22 +121,22 @@ export default function LibraryView() {
   };
 
   // Action handlers
-  const handleUseTemplate = (template: Template | TemplateList | TemplateDetail) => {
+  const handleUseTemplate = (template: AppTemplate | { id?: string; title?: string; [key: string]: unknown }) => {
     // TODO: Navigate to template editor with this template
-    console.log('Using template:', template.name || (template as any).title);
+    console.log('Using template:', (template as any).title ?? (template as any).name);
   };
 
-  const handleSaveTemplate = (template: Template) => {
+  const handleSaveTemplate = (template: AppTemplate | { id?: string; title?: string; [key: string]: unknown }) => {
     // TODO: Save template to user's collection
-    console.log('Saving template:', template.name || (template as any).title);
+    console.log('Saving template:', (template as any).title ?? (template as any).name);
   };
 
   const handleRateTemplate = (templateId: string, rating: number) => {
-    templateActions.rateTemplate(templateId, { rating });
+    templateActions.rateTemplate({ id: templateId, rating: { rating } });
   };
 
   // Filter templates based on additional filters (rating, type)
-  const filteredTemplates = templates.filter((template: Template) => {
+  const filteredTemplates = templates.filter((template: AppTemplate) => {
     // Rating filter
     if (ratingFilter && template.rating && template.rating < parseInt(ratingFilter)) {
       return false;
@@ -192,8 +192,8 @@ export default function LibraryView() {
         <div className="flex items-center space-x-2">
           <Star className="w-5 h-5 text-yellow" />
           <h1 className="text-text-primary font-semibold">
-            {searchQuery ? `Search: "${searchQuery}"` : selectedCategory ? 
-              (categories.find(c => c.id?.toString() === selectedCategory)?.name || 'Category') : 
+            {searchQuery ? `Search: "${searchQuery}"` : selectedCategory !== null ? 
+              (categories.find(c => c.id === selectedCategory)?.name || 'Category') : 
               'Template Library'}
           </h1>
         </div>
@@ -315,12 +315,12 @@ export default function LibraryView() {
                 ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
                 : 'space-y-4'
             }>
-              {filteredTemplates.map((template: Template) => (
+              {filteredTemplates.map((template: AppTemplate) => (
                 <TemplateCard
                   key={template.id}
-                  template={template}
+                  template={template as any}
                   viewMode={viewMode}
-                  onSelect={handleUseTemplate}
+                  onSelect={handleUseTemplate as any}
                 />
               ))}
             </div>

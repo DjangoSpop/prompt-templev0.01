@@ -18,7 +18,9 @@
       "Bash(git stash:*)",
       "Bash(npm audit:*)",
       "Bash(python3:*)",
-      "Bash(npm run build)"
+      "Bash(npm run build)",
+      "Bash(npx next build --no-lint)",
+      "Bash(xargs grep -l \"SSE\\\\|streaming\\\\|EventSource\\\\|fetch.*stream\")"
     ],
     "deny": [],
     "ask": []

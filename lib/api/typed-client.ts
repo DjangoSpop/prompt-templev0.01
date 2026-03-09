@@ -7,14 +7,25 @@ import { components, operations } from '@/lib/types/api';
 import { useAuthStore } from '@/store/user';
 
 // Re-export types for convenience
-export type Template = components['schemas']['Template'];
+// 'Template' is an alias for TemplateList for backward compatibility
+export type Template = components['schemas']['TemplateList'];
 export type TemplateList = components['schemas']['TemplateList'];
 export type TemplateDetail = components['schemas']['TemplateDetail'];
 export type TemplateCategory = components['schemas']['TemplateCategory'];
 export type UserProfile = components['schemas']['UserProfile'];
-export type UserStats = components['schemas']['UserStats'];
-export type LoginResponse = components['schemas']['TokenObtainPairResponse'];
-export type RegisterResponse = components['schemas']['UserRegistrationResponse'];
+// Local fallback types for schemas not present in OpenAPI spec
+export type UserStats = {
+  total_prompts?: number;
+  total_optimizations?: number;
+  total_templates_used?: number;
+  credits_remaining?: number;
+  credits_used?: number;
+  streak_days?: number;
+  member_since?: string;
+  [key: string]: unknown;
+};
+export type LoginResponse = { access: string; refresh: string };
+export type RegisterResponse = { access?: string; refresh?: string; user?: UserProfile };
 export type PaginatedResponse<T> = {
   count: number;
   next: string | null;
@@ -169,15 +180,15 @@ class ApiClient {
     return this.request<TemplateDetail>(`/api/v2/templates/${id}/`);
   }
 
-  async createTemplate(data: components['schemas']['TemplateCreate']): Promise<Template> {
-    return this.request<Template>('/api/v2/templates/', {
+  async createTemplate(data: components['schemas']['TemplateCreateUpdateRequest']): Promise<TemplateDetail> {
+    return this.request<TemplateDetail>('/api/v2/templates/', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async updateTemplate(id: string, data: Partial<components['schemas']['TemplateUpdate']>): Promise<Template> {
-    return this.request<Template>(`/api/v2/templates/${id}/`, {
+  async updateTemplate(id: string, data: Partial<components['schemas']['PatchedTemplateCreateUpdateRequest']>): Promise<TemplateDetail> {
+    return this.request<TemplateDetail>(`/api/v2/templates/${id}/`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     });
@@ -201,8 +212,8 @@ class ApiClient {
     return this.request<TemplateList[]>('/api/v2/templates/my_templates/');
   }
 
-  async duplicateTemplate(id: string): Promise<Template> {
-    return this.request<Template>(`/api/v2/templates/${id}/duplicate/`, {
+  async duplicateTemplate(id: string): Promise<TemplateDetail> {
+    return this.request<TemplateDetail>(`/api/v2/templates/${id}/duplicate/`, {
       method: 'POST',
     });
   }
@@ -233,8 +244,16 @@ class ApiClient {
     });
   }
 
-  async getTemplateAnalytics(id: string): Promise<any> {
-    return this.request(`/api/v2/templates/${id}/analytics/`);
+  async getTemplateAnalytics(id?: string): Promise<any> {
+    if (id) return this.request(`/api/v2/templates/${id}/analytics/`);
+    return this.request('/api/v2/analytics/template-analytics/');
+  }
+
+  async trackEvent(event: { event_type: string; data?: Record<string, unknown> }): Promise<void> {
+    await this.request('/api/v2/analytics/track/', {
+      method: 'POST',
+      body: JSON.stringify(event),
+    });
   }
 
   // Category Methods
@@ -284,11 +303,18 @@ class ApiClient {
     return this.request('/api/v2/ai/quotas/');
   }
 
-  async getAISuggestions(data: any): Promise<any> {
-    return this.request('/api/v2/ai/suggestions/', {
-      method: 'POST',
-      body: JSON.stringify(data),
+  async getAISuggestions(data: { prompt?: string; q?: string; model?: string; [key: string]: any }): Promise<any> {
+    const params = new URLSearchParams();
+    const text = data.prompt ?? data.q ?? '';
+    if (text) params.set('prompt', text);
+    if (data.model) params.set('model', data.model);
+    Object.entries(data).forEach(([k, v]) => {
+      if (k !== 'prompt' && k !== 'q' && k !== 'model' && v !== undefined && v !== null) {
+        params.set(k, String(v));
+      }
     });
+    const qs = params.toString();
+    return this.request(`/api/v2/ai/suggestions/${qs ? `?${qs}` : ''}`);
   }
 
   // Chat Methods (with streaming support)
@@ -443,10 +469,6 @@ class ApiClient {
 
   async getUserInsights(): Promise<any> {
     return this.request('/api/v2/analytics/user-insights/');
-  }
-
-  async getTemplateAnalytics(): Promise<any> {
-    return this.request('/api/v2/analytics/template-analytics/');
   }
 
   async getRecommendations(): Promise<any> {

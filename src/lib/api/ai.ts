@@ -1,4 +1,5 @@
 import { BaseApiClient } from './base';
+import { useCreditsStore } from '@/store/credits';
 
 // ============================================================
 // Core provider / model types (existing)
@@ -157,6 +158,9 @@ export interface DeepSeekStreamCallbacks {
 // ============================================================
 
 export class AIService extends BaseApiClient {
+  // Track current SSE event type for multi-line events
+  private lastSSEEvent: string | null = null;
+
   // ----------------------------------------------------------
   // Existing REST methods
   // ----------------------------------------------------------
@@ -260,6 +264,17 @@ export class AIService extends BaseApiClient {
       });
     }
 
+    // Handle rate limiting (429) before further processing
+    if (response.status === 429) {
+      const retryAfter = response.headers.get('Retry-After');
+      const err = new Error(
+        `Rate limited: retry after ${retryAfter ?? '60'} seconds`
+      ) as any;
+      err.status = 429;
+      err.retryAfter = retryAfter ? parseInt(retryAfter) : 60;
+      throw err;
+    }
+
     return response;
   }
 
@@ -295,6 +310,60 @@ export class AIService extends BaseApiClient {
       }
     } finally {
       reader.releaseLock();
+    }
+  }
+
+  /**
+   * Parse SSE-formatted lines to extract event name and JSON data
+   * Handles format:
+   * event: meta
+   * data: {...}
+   */
+  private parseSSELine(
+    line: string
+  ): { eventType?: string; data?: any } | null {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith(':')) return null; // ignore blanks/comments
+
+    if (trimmed.startsWith('event: ')) {
+      return { eventType: trimmed.slice(7).trim() };
+    }
+
+    if (trimmed.startsWith('data: ')) {
+      const raw = trimmed.slice(6).trim();
+      if (raw === '[DONE]') {
+        return { data: { stream_complete: true } };
+      }
+      try {
+        return { data: JSON.parse(raw) };
+      } catch {
+        return null;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Sync credit headers from SSE response to credits store
+   * Called after stream starts to ensure X-Credits-* headers are captured
+   */
+  private syncCreditHeadersFromResponse(response: Response): void {
+    if (typeof window === 'undefined') return;
+
+    const remaining = response.headers.get('X-Credits-Remaining');
+    const balance = response.headers.get('X-Credits-Balance');
+    const reserved = response.headers.get('X-Credits-Reserved');
+    const low = response.headers.get('X-Low-Credits');
+
+    if (remaining !== null || balance !== null) {
+      useCreditsStore.getState().syncFromHeaders(
+        remaining !== null ? Number(remaining) : null,
+        null, // credits_consumed comes from stream_complete event
+        low === 'true',
+        balance !== null ? Number(balance) : null,
+        reserved !== null ? Number(reserved) : null
+      );
     }
   }
 
@@ -349,11 +418,29 @@ export class AIService extends BaseApiClient {
       response = await this.fetchSSE(url, body, signal);
     } catch (err: any) {
       if (err?.name === 'AbortError') return;
+      
+      // Handle rate limiting
+      if (err?.status === 429) {
+        const retryAfter = err?.retryAfter ?? 60;
+        callbacks.onError?.(`Rate limited. Please try again in ${retryAfter} seconds.`);
+        return;
+      }
+      
       callbacks.onError?.(err?.message ?? 'Network error');
       return;
     }
 
     if (!response.ok) {
+      // Handle 402 Insufficient Credits
+      if (response.status === 402) {
+        const errData = await response.json().catch(() => ({}));
+        callbacks.onError?.(
+          `Insufficient credits: need ${(errData as any).credits_required ?? '?'}, ` +
+          `have ${(errData as any).credits_available ?? '?'}`
+        );
+        return;
+      }
+
       const errData = await response.json().catch(() => ({}));
       callbacks.onError?.(
         (errData as any).detail ?? (errData as any).error ?? `HTTP ${response.status}`,
@@ -361,6 +448,10 @@ export class AIService extends BaseApiClient {
       return;
     }
 
+    // Sync credit headers from response
+    this.syncCreditHeadersFromResponse(response);
+
+    this.lastSSEEvent = null; // Reset event tracking
     const onLine = (line: string) =>
       this.handleOptimizationLine(line, callbacks);
 
@@ -379,60 +470,62 @@ export class AIService extends BaseApiClient {
     line: string,
     callbacks: OptimizeStreamCallbacks,
   ): void {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith(':')) return; // ignore blank / comments
+    const parsed = this.parseSSELine(line);
+    if (!parsed) return;
 
-    // Named events — currently only logged; add special handling if needed
-    if (trimmed.startsWith('event: ')) return;
+    // Track the current event type
+    if (parsed.eventType) {
+      this.lastSSEEvent = parsed.eventType;
+      return; // Will process data in next line
+    }
 
-    if (trimmed.startsWith('data: ')) {
-      const raw = trimmed.slice(6).trim();
-      if (raw === '[DONE]') {
-        callbacks.onComplete?.();
-        return;
+    if (!parsed.data) return;
+    const data = parsed.data;
+
+    // Progress heartbeat: { step, message }
+    if (data.step && data.message) {
+      callbacks.onProgress?.(String(data.step), String(data.message));
+      return;
+    }
+
+    // Template opportunity sidecar
+    if (data.template_opportunity) {
+      callbacks.onResult?.({ optimized: '', template_opportunity: data.template_opportunity });
+      return;
+    }
+
+    // Full optimisation result
+    if (data.optimized) {
+      callbacks.onResult?.(data as OptimizeStreamResult);
+      return;
+    }
+
+    // OpenAI-compatible streaming token
+    const delta = data?.choices?.[0]?.delta?.content;
+    if (delta) {
+      callbacks.onToken?.(delta);
+      return;
+    }
+
+    // Stream complete — extract credits_consumed from event
+    if (data.stream_complete || this.lastSSEEvent === 'stream_complete') {
+      if (data.credits_consumed !== undefined) {
+        // Sync the actual credits consumed to store
+        useCreditsStore.getState().syncFromHeaders(
+          null,
+          data.credits_consumed,
+          false
+        );
       }
-      try {
-        const parsed = JSON.parse(raw);
+      callbacks.onComplete?.();
+      this.lastSSEEvent = null;
+      return;
+    }
 
-        // Progress heartbeat: { step, message }
-        if (parsed.step && parsed.message) {
-          callbacks.onProgress?.(String(parsed.step), String(parsed.message));
-          return;
-        }
-
-        // Template opportunity sidecar
-        if (parsed.template_opportunity) {
-          // Surface inside result so caller can handle it
-          callbacks.onResult?.({ optimized: '', template_opportunity: parsed.template_opportunity });
-          return;
-        }
-
-        // Full optimisation result
-        if (parsed.optimized) {
-          callbacks.onResult?.(parsed as OptimizeStreamResult);
-          return;
-        }
-
-        // OpenAI-compatible streaming token
-        const delta = parsed?.choices?.[0]?.delta?.content;
-        if (delta) {
-          callbacks.onToken?.(delta);
-          return;
-        }
-
-        // Stream complete signal from backend
-        if (parsed.stream_complete) {
-          callbacks.onComplete?.();
-          return;
-        }
-
-        // Backend-reported error
-        if (parsed.error) {
-          callbacks.onError?.(String(parsed.error));
-        }
-      } catch {
-        // Non-JSON SSE data — silently ignore
-      }
+    // Backend-reported error
+    if (data.error) {
+      callbacks.onError?.(String(data.error));
+      return;
     }
   }
 
@@ -499,11 +592,29 @@ export class AIService extends BaseApiClient {
       response = await this.fetchSSE(url, body, signal);
     } catch (err: any) {
       if (err?.name === 'AbortError') return;
+      
+      // Handle rate limiting
+      if (err?.status === 429) {
+        const retryAfter = err?.retryAfter ?? 60;
+        callbacks.onError?.(`Rate limited. Please try again in ${retryAfter} seconds.`);
+        return;
+      }
+      
       callbacks.onError?.(err?.message ?? 'Network error');
       return;
     }
 
     if (!response.ok) {
+      // Handle 402 Insufficient Credits
+      if (response.status === 402) {
+        const errData = await response.json().catch(() => ({}));
+        callbacks.onError?.(
+          `Insufficient credits: need ${(errData as any).credits_required ?? '?'}, ` +
+          `have ${(errData as any).credits_available ?? '?'}`
+        );
+        return;
+      }
+
       const errData = await response.json().catch(() => ({}));
       callbacks.onError?.(
         (errData as any).detail ?? (errData as any).error ?? `HTTP ${response.status}`,
@@ -511,47 +622,57 @@ export class AIService extends BaseApiClient {
       return;
     }
 
+    // Sync credit headers from response
+    this.syncCreditHeadersFromResponse(response);
+
     let accumulated = '';
     let streamStarted = false;
+    let creditsConsumed = 0;
+    this.lastSSEEvent = null;
 
     const onLine = (line: string) => {
-      const trimmed = line.trim();
-      if (!trimmed || trimmed.startsWith(':')) return;
-      if (trimmed.startsWith('event: ')) return;
+      const parsed = this.parseSSELine(line);
+      if (!parsed) return;
 
-      if (trimmed.startsWith('data: ')) {
-        const raw = trimmed.slice(6).trim();
-        if (raw === '[DONE]') {
-          callbacks.onStreamComplete?.(accumulated);
-          return;
+      // Track event type
+      if (parsed.eventType) {
+        this.lastSSEEvent = parsed.eventType;
+        return;
+      }
+
+      if (!parsed.data) return;
+      const data = parsed.data;
+
+      if (data.stream_start && !streamStarted) {
+        streamStarted = true;
+        callbacks.onStreamStart?.(data);
+        return;
+      }
+
+      // Stream complete — extract credits_consumed
+      if (data.stream_complete || this.lastSSEEvent === 'stream_complete') {
+        if (data.credits_consumed !== undefined) {
+          creditsConsumed = data.credits_consumed;
+          useCreditsStore.getState().syncFromHeaders(
+            null,
+            creditsConsumed,
+            false
+          );
         }
-        try {
-          const parsed = JSON.parse(raw);
+        callbacks.onStreamComplete?.(accumulated, data);
+        this.lastSSEEvent = null;
+        return;
+      }
 
-          if (parsed.stream_start && !streamStarted) {
-            streamStarted = true;
-            callbacks.onStreamStart?.(parsed);
-            return;
-          }
+      if (data.error) {
+        callbacks.onError?.(String(data.error));
+        return;
+      }
 
-          if (parsed.stream_complete) {
-            callbacks.onStreamComplete?.(accumulated, parsed);
-            return;
-          }
-
-          if (parsed.error) {
-            callbacks.onError?.(String(parsed.error));
-            return;
-          }
-
-          const delta = parsed?.choices?.[0]?.delta?.content;
-          if (delta) {
-            accumulated += delta;
-            callbacks.onToken?.(delta);
-          }
-        } catch {
-          // ignore
-        }
+      const delta = data?.choices?.[0]?.delta?.content;
+      if (delta) {
+        accumulated += delta;
+        callbacks.onToken?.(delta);
       }
     };
 

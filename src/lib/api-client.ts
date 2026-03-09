@@ -501,6 +501,17 @@ class ApiClient {
     return this.request<string[]>('/api/v2/templates/search_suggestions/');
   }
 
+  async duplicateTemplate(id: string): Promise<TemplateDetail> {
+    return this.request<TemplateDetail>(`/api/v2/templates/${id}/duplicate/`, {
+      method: 'POST',
+    });
+  }
+
+  async getTemplateAnalytics(id?: string): Promise<any> {
+    const url = id ? `/api/v2/templates/${id}/analytics/` : '/api/v2/templates/analytics/';
+    return this.request<any>(url);
+  }
+
 
   async rateTemplate(id: string, rating: number, review?: string): Promise<TemplateDetail> {
     return this.request<TemplateDetail>(`/api/v2/templates/${id}/rate_template/`, {

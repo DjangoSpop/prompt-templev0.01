@@ -60,6 +60,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'react-hot-toast';
+import { SmartFillPanel } from '@/components/templates/SmartFillPanel';
+import { VariationsDrawer } from '@/components/templates/VariationsDrawer';
+import { CostPreviewPill } from '@/components/credits/CostPreviewPill';
 import { 
   Copy, 
   Eye, 
@@ -774,6 +777,10 @@ export function EnhancedTemplateDetailModal({
   const [copySuccess, setCopySuccess] = useState(false);
   const [mobileTab, setMobileTab] = useState<'fill' | 'preview'>('fill');
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // AI Actions state
+  const [smartFillOpen, setSmartFillOpen] = useState(false);
+  const [variationsOpen, setVariationsOpen] = useState(false);
 
   // Generate final prompt with ALL variables properly replaced - ROBUST version
   const finalPrompt = useMemo(() => {
@@ -1602,6 +1609,33 @@ export function EnhancedTemplateDetailModal({
               )}
             </div>
 
+            {/* AI Actions Bar */}
+            {templateDetail && (
+              <div className="px-3 py-2 border-t border-border bg-muted/20 flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-medium text-muted-foreground mr-1">AI Actions:</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs h-7 px-2.5 flex items-center gap-1.5"
+                  onClick={() => setSmartFillOpen(true)}
+                >
+                  <Wand2 className="h-3 w-3" />
+                  Smart Fill
+                  <CostPreviewPill feature="template_smart_fill" size="sm" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs h-7 px-2.5 flex items-center gap-1.5"
+                  onClick={() => setVariationsOpen(true)}
+                >
+                  <Sparkles className="h-3 w-3" />
+                  Variations
+                  <CostPreviewPill feature="template_variations" size="sm" />
+                </Button>
+              </div>
+            )}
+
             {/* Floating Action Bar */}
             <motion.div 
               className="sticky bottom-0 p-3 border-t border-border bg-background/95 backdrop-blur-sm"
@@ -1691,6 +1725,31 @@ export function EnhancedTemplateDetailModal({
             onSave={(value) => handleQuickSave(activeVariable.key, value)}
             onNext={handleNextFromModal}
             hasNext={activeVariableIndex < (templateDetail?.variables?.length || 0) - 1}
+          />
+        )}
+
+        {/* AI Actions — Smart Fill */}
+        {templateDetail && (
+          <SmartFillPanel
+            open={smartFillOpen}
+            onOpenChange={setSmartFillOpen}
+            templateId={template.id}
+            templateTitle={templateDetail.title ?? template.title ?? undefined}
+            templatePreview={templateDetail.description ?? undefined}
+            variables={variables}
+            onApply={(suggestions) => {
+              setVariables((prev) => ({ ...prev, ...suggestions }));
+            }}
+          />
+        )}
+
+        {/* AI Actions — Variations */}
+        {templateDetail && (
+          <VariationsDrawer
+            open={variationsOpen}
+            onOpenChange={setVariationsOpen}
+            templateId={template.id}
+            templateTitle={templateDetail.title ?? template.title ?? 'Template'}
           />
         )}
       </DialogContent>

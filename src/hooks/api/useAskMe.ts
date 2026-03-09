@@ -50,7 +50,7 @@ export function useStartAskMe() {
 
 export function useAnswerAskMe() {
   return useMutation({
-    mutationFn: (data: { session_id: string; question_id: string; answer: string }) =>
+    mutationFn: (data: { session_id: string; qid: string; answer: string }) =>
       apiClient.askmeAnswer(data),
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to submit answer');
@@ -64,6 +64,27 @@ export function useFinalizeAskMe() {
       apiClient.askmeFinalize(data),
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to build prompt');
+    },
+  });
+}
+
+/**
+ * Recommended single-call flow: records all answers, deducts 3 credits atomically,
+ * generates + saves the prompt, returns everything. Use instead of answer ×N + finalize.
+ */
+export function useSubmitAllAskMe() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: { session_id: string; answers: Array<{ qid: string; value: string }> }) =>
+      apiClient.askmeSubmitAll(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: askMeKeys.sessions() });
+    },
+    onError: (error: Error & { status?: number }) => {
+      // 409 = already finalized — component handles it, no toast noise
+      if (error?.status === 409) return;
+      toast.error(error.message || 'Failed to generate prompt');
     },
   });
 }

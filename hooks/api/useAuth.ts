@@ -76,7 +76,7 @@ export function useRegister() {
   const setProfile = useAuthStore((state) => state.setProfile);
 
   return useMutation({
-    mutationFn: (data: components['schemas']['UserRegistration']) =>
+    mutationFn: (data: components['schemas']['UserRegistrationRequest']) =>
       apiClient.register(data),
     onSuccess: async (data) => {
       // Fetch and set profile if tokens were returned

@@ -11,10 +11,19 @@ interface LoginCredentials {
   password: string;
 }
 
+/** Billing snapshot returned by login/register endpoints */
+export interface BillingSnapshot {
+  credits_balance: number;
+  plan_code?: string;
+  monthly_credits?: number;
+}
+
 interface LoginResponse {
   access: string;
   refresh: string;
   user: UserProfile;
+  /** Billing data from backend — single source of truth for credits on login */
+  billing?: BillingSnapshot;
 }
 
 interface TokenPair {
@@ -77,7 +86,7 @@ export class AuthService extends BaseApiClient {
     };
   }
 
-  async register(userData: UserRegistration): Promise<{ user: UserProfile; tokens: TokenPair }> {
+  async register(userData: UserRegistration): Promise<{ user: UserProfile; tokens: TokenPair; billing?: BillingSnapshot }> {
     if (isDevelopment() && features.mockApi) {
       console.log('Mock registration:', userData);
       const mockResponse = await this.mockAuth();
@@ -108,16 +117,20 @@ export class AuthService extends BaseApiClient {
           : raw.access && raw.refresh
             ? { access: raw.access, refresh: raw.refresh }
             : null;
+      // Capture billing snapshot if present
+      const billing: BillingSnapshot | undefined = raw.billing ?? undefined;
 
       console.log('✅ Registration response received:', {
         hasTokens: !!tokens,
         hasUser: !!(user as any)?.username,
         username: (user as any)?.username ?? (raw as any)?.username,
+        hasBilling: !!billing,
+        creditsBalance: billing?.credits_balance,
       });
 
       if (tokens) {
         this.saveTokensToStorage(tokens);
-        this.emitEvent('login', { user, tokens });
+        this.emitEvent('login', { user, tokens, billing });
         console.log('🎉 Registration successful, tokens saved and login event emitted');
       } else {
         // Backend created the account but did not issue tokens (user must log in)
@@ -125,7 +138,7 @@ export class AuthService extends BaseApiClient {
       }
 
       // Return empty-string tokens so callers can detect "no auto-login" without crashing
-      return { user, tokens: tokens ?? { access: '', refresh: '' } };
+      return { user, tokens: tokens ?? { access: '', refresh: '' }, billing };
     } catch (error: any) {
       console.error('❌ Registration failed:', error?.response?.status, error?.response?.data);
 
@@ -165,22 +178,26 @@ export class AuthService extends BaseApiClient {
       console.log('🔐 Attempting login for:', credentials.username);
       
       // Use same endpoint format as registration
-      const response = await this.request<{ user: UserProfile; tokens: TokenPair }>('/api/v2/auth/login/', {
+      // The backend may return { user, tokens, billing } — capture billing for credit init
+      const response = await this.request<{ user: UserProfile; tokens: TokenPair; billing?: BillingSnapshot }>('/api/v2/auth/login/', {
         method: 'POST',
         data: credentials,
       });
-      
+
       console.log('✅ Login response received:', {
         hasTokens: !!response.tokens,
         hasUser: !!response.user,
-        username: response.user?.username
+        username: response.user?.username,
+        hasBilling: !!response.billing,
+        creditsBalance: response.billing?.credits_balance,
       });
-      
+
       // Create proper response matching LoginResponse interface
       const convertedResponse: LoginResponse = {
         access: response.tokens.access,
         refresh: response.tokens.refresh,
-        user: response.user
+        user: response.user,
+        billing: response.billing,
       };
       
       // CRITICAL: Save tokens immediately using same method as registration

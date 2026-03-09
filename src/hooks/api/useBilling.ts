@@ -75,7 +75,11 @@ export function useEntitlements() {
   });
 }
 
-/** Returns the unwrapped usage summary. Refetches every 5 min. */
+/**
+ * Returns the unwrapped usage summary — authoritative credit balance.
+ * Always refetches on mount so the balance is fresh after login/navigation.
+ * Continues to poll every 2 min to stay in sync with in-flight operations.
+ */
 export function useBillingUsage() {
   return useQuery<UsageSummary>({
     queryKey: billingKeys.usage(),
@@ -83,9 +87,10 @@ export function useBillingUsage() {
       const res = await apiClient.getBillingUsage();
       return res.usage;
     },
-    staleTime: 1 * 60 * 1000,
+    staleTime: 0,          // always consider stale — backend is ground truth
     gcTime: 5 * 60 * 1000,
-    refetchInterval: 5 * 60 * 1000,
+    refetchOnMount: true,  // fetch fresh whenever a component mounts
+    refetchInterval: 2 * 60 * 1000, // poll every 2 min to pick up server-side changes
     retry: 1,
   });
 }
@@ -203,7 +208,11 @@ export interface FeatureAccessResult {
  * All other keys are looked up in FEATURE_KEY_MAP.
  */
 export function useFeatureAccess(feature: string): FeatureAccessResult {
-  const { data: entitlements, isLoading } = useEntitlements();
+  const { data: entitlements, isLoading: entLoading } = useEntitlements();
+  const { data: usage, isLoading: usageLoading } = useBillingUsage();
+
+  // For credit-gated features, wait for the usage endpoint (source of truth)
+  const isLoading = entLoading || (feature === 'ai_generation' || feature === 'credits' ? usageLoading : false);
 
   if (isLoading) {
     return { hasAccess: false, isLoading: true };
@@ -217,7 +226,10 @@ export function useFeatureAccess(feature: string): FeatureAccessResult {
 
   if (feature === 'ai_generation' || feature === 'credits') {
     const limit = entitlements.monthly_credits;
-    const remaining = entitlements.credits_available;
+    // CRITICAL: Use usage.credits_remaining (actual backend balance) as the
+    // source of truth. Fall back to entitlements.credits_balance (actual balance),
+    // NEVER entitlements.credits_available (can reflect the plan cap, e.g. 4000).
+    const remaining = usage?.credits_remaining ?? entitlements.credits_balance ?? 0;
     const used = Math.max(0, limit - remaining);
     return {
       hasAccess: remaining > 0,

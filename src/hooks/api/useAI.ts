@@ -15,6 +15,8 @@ import {
 import { toast } from 'sonner';
 import { billingKeys } from '@/hooks/api/useBilling';
 import { useRouter } from 'next/navigation';
+import { withCreditDeduction, getCreditCost } from '@/lib/api/helpers/credit-costs';
+import { useCreditsStore } from '@/store/credits';
 
 // Shared 402 error handler — shows toast with link to /billing
 function handle402(router: ReturnType<typeof useRouter>) {
@@ -85,8 +87,10 @@ export function useGenerateWithAI() {
   const queryClient = useQueryClient();
   const router = useRouter();
   return useMutation({
-    mutationFn: (data: any) => apiClient.generateWithAI(data),
+    mutationFn: (data: any) =>
+      withCreditDeduction('default', undefined, async () => apiClient.generateWithAI(data)),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: billingKeys.usage() });
       queryClient.invalidateQueries({ queryKey: billingKeys.entitlements() });
     },
     onError: (error: Error & { status?: number }) => {
@@ -103,8 +107,10 @@ export function useAISuggestions() {
   const queryClient = useQueryClient();
   const router = useRouter();
   return useMutation({
-    mutationFn: (data: any) => apiClient.getAISuggestions(data),
+    mutationFn: (data: any) =>
+      withCreditDeduction('default', undefined, async () => apiClient.getAISuggestions(data)),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: billingKeys.usage() });
       queryClient.invalidateQueries({ queryKey: billingKeys.entitlements() });
     },
     onError: (error: Error & { status?: number }) => {
@@ -141,6 +147,7 @@ export function useStreamChat() {
       return chunks;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: billingKeys.usage() });
       queryClient.invalidateQueries({ queryKey: billingKeys.entitlements() });
     },
     onError: (error: Error & { status?: number }) => {
@@ -155,21 +162,41 @@ export function useStreamChat() {
 
 // RAG Hooks
 export function useRAGRetrieve() {
+  const queryClient = useQueryClient();
+  const router = useRouter();
   return useMutation({
     mutationFn: ({ query, options }: { query: string; options?: any }) =>
-      apiClient.ragRetrieve(query, options),
-    onError: (error: Error) => {
-      toast.error(error.message || 'RAG retrieval failed');
+      withCreditDeduction('default', undefined, async () => apiClient.ragRetrieve(query, options)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: billingKeys.usage() });
+      queryClient.invalidateQueries({ queryKey: billingKeys.entitlements() });
+    },
+    onError: (error: Error & { status?: number }) => {
+      if (error.status === 402) {
+        handle402(router);
+      } else {
+        toast.error(error.message || 'RAG retrieval failed');
+      }
     },
   });
 }
 
 export function useRAGAnswer() {
+  const queryClient = useQueryClient();
+  const router = useRouter();
   return useMutation({
     mutationFn: ({ query, context }: { query: string; context?: any }) =>
-      apiClient.ragAnswer(query, context),
-    onError: (error: Error) => {
-      toast.error(error.message || 'RAG answer generation failed');
+      withCreditDeduction('default', undefined, async () => apiClient.ragAnswer(query, context)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: billingKeys.usage() });
+      queryClient.invalidateQueries({ queryKey: billingKeys.entitlements() });
+    },
+    onError: (error: Error & { status?: number }) => {
+      if (error.status === 402) {
+        handle402(router);
+      } else {
+        toast.error(error.message || 'RAG answer generation failed');
+      }
     },
   });
 }
@@ -183,8 +210,10 @@ export function useOptimizeWithAgent() {
     Error & { status?: number },
     { session_id: string; original: string; mode?: 'fast' | 'deep'; context?: Record<string, unknown>; budget?: { tokens_in?: number; tokens_out?: number; max_credits?: number } }
   >({
-    mutationFn: (data) => apiClient.optimizeWithAgent(data),
+    mutationFn: (data) =>
+      withCreditDeduction('optimizer', data.mode, async () => apiClient.optimizeWithAgent(data)),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: billingKeys.usage() });
       queryClient.invalidateQueries({ queryKey: billingKeys.entitlements() });
     },
     onError: (error) => {
@@ -240,41 +269,66 @@ export function usePromptOptimization() {
     abortRef.current?.abort();
     abortRef.current = new AbortController();
 
+    const creditsStore = useCreditsStore.getState();
+    const cost = getCreditCost('optimizer', request.mode);
+
+    // Check credits before starting
+    if (creditsStore.creditsAvailable < cost) {
+      setState(prev => ({ ...prev, error: `Insufficient credits: need ${cost}, have ${creditsStore.creditsAvailable}` }));
+      handle402(router);
+      return;
+    }
+
+    // Optimistically deduct credits
+    creditsStore.deductOptimistic(cost);
+
     setState({ isStreaming: true, output: '', progress: null, result: null, error: null });
 
-    await aiService.optimizePromptStream(
-      request,
-      {
-        onProgress: (step, message) =>
-          setState(prev => ({ ...prev, progress: { step, message } })),
+    try {
+      await aiService.optimizePromptStream(
+        request,
+        {
+          onProgress: (step, message) =>
+            setState(prev => ({ ...prev, progress: { step, message } })),
 
-        onToken: (content) =>
-          setState(prev => ({ ...prev, output: prev.output + content })),
+          onToken: (content) =>
+            setState(prev => ({ ...prev, output: prev.output + content })),
 
-        onResult: (data) =>
-          setState(prev => ({
-            ...prev,
-            result: data,
-            output: data.optimized || prev.output,
-          })),
+          onResult: (data) =>
+            setState(prev => ({
+              ...prev,
+              result: data,
+              output: data.optimized || prev.output,
+            })),
 
-        onError: (err) => {
-          setState(prev => ({ ...prev, isStreaming: false, error: err }));
-          if (err.includes('402') || err.toLowerCase().includes('credit')) {
-            handle402(router);
-          } else {
-            toast.error(err);
-          }
+          onError: (err) => {
+            setState(prev => ({ ...prev, isStreaming: false, error: err }));
+            // Refund optimistic deduction on error
+            if (err.includes('402') || err.includes('429')) {
+              creditsStore.refundOptimistic(cost);
+            }
+            if (err.includes('402') || err.toLowerCase().includes('credit')) {
+              handle402(router);
+            } else {
+              toast.error(err);
+            }
+          },
+
+          onComplete: () => {
+            setState(prev => ({ ...prev, isStreaming: false }));
+            // Refresh credit balance after optimization (headers will sync actual consumed)
+            queryClient.invalidateQueries({ queryKey: billingKeys.usage() });
+            queryClient.invalidateQueries({ queryKey: billingKeys.entitlements() });
+          },
         },
-
-        onComplete: () => {
-          setState(prev => ({ ...prev, isStreaming: false }));
-          // Refresh credit balance after optimization
-          queryClient.invalidateQueries({ queryKey: billingKeys.entitlements() });
-        },
-      },
-      abortRef.current.signal,
-    );
+        abortRef.current.signal,
+      );
+    } catch (error: any) {
+      if (error?.name !== 'AbortError') {
+        // Refund on error
+        creditsStore.refundOptimistic(cost);
+      }
+    }
   }, [queryClient, router]);
 
   const cancel = useCallback(() => {
@@ -319,31 +373,56 @@ export function useDeepSeekStream() {
     abortRef.current?.abort();
     abortRef.current = new AbortController();
 
+    const creditsStore = useCreditsStore.getState();
+    const estimatedCost = 5; // Default estimate for DeepSeek; actual will sync from stream_complete
+
+    // Check credits before starting
+    if (creditsStore.creditsAvailable < estimatedCost) {
+      setState({ isStreaming: false, output: '', error: 'Insufficient credits for this operation' });
+      handle402(router);
+      return;
+    }
+
+    // Optimistically deduct estimated credits
+    creditsStore.deductOptimistic(estimatedCost);
+
     setState({ isStreaming: true, output: '', error: null });
 
-    await aiService.deepseekStream(
-      request,
-      {
-        onToken: (content) =>
-          setState(prev => ({ ...prev, output: prev.output + content })),
+    try {
+      await aiService.deepseekStream(
+        request,
+        {
+          onToken: (content) =>
+            setState(prev => ({ ...prev, output: prev.output + content })),
 
-        onStreamComplete: (fullContent) => {
-          setState({ isStreaming: false, output: fullContent, error: null });
-          // Refresh credit balance after stream completes
-          queryClient.invalidateQueries({ queryKey: billingKeys.entitlements() });
-        },
+          onStreamComplete: (fullContent) => {
+            setState({ isStreaming: false, output: fullContent, error: null });
+            // Refresh credit balance after stream completes (actual consumed synced from headers)
+            queryClient.invalidateQueries({ queryKey: billingKeys.usage() });
+            queryClient.invalidateQueries({ queryKey: billingKeys.entitlements() });
+          },
 
-        onError: (err) => {
-          setState(prev => ({ ...prev, isStreaming: false, error: err }));
-          if (err.includes('402') || err.toLowerCase().includes('credit')) {
-            handle402(router);
-          } else {
-            toast.error(err);
-          }
+          onError: (err) => {
+            setState(prev => ({ ...prev, isStreaming: false, error: err }));
+            // Refund optimistic deduction on error
+            if (err.includes('402') || err.includes('429')) {
+              creditsStore.refundOptimistic(estimatedCost);
+            }
+            if (err.includes('402') || err.toLowerCase().includes('credit')) {
+              handle402(router);
+            } else {
+              toast.error(err);
+            }
+          },
         },
-      },
-      abortRef.current.signal,
-    );
+        abortRef.current.signal,
+      );
+    } catch (error: any) {
+      if (error?.name !== 'AbortError') {
+        // Refund on error
+        creditsStore.refundOptimistic(estimatedCost);
+      }
+    }
   }, [queryClient, router]);
 
   const cancel = useCallback(() => {

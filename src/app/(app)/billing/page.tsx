@@ -35,6 +35,7 @@ import {
   useCreatePortalSession,
 } from "@/hooks/api/useBilling";
 import type { SubscriptionStatus } from "@/lib/api/typed-client";
+import { useCreditsStore } from "@/store/credits";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.prompt-temple.com";
@@ -69,8 +70,8 @@ function CreditsBar({
   total: number;
 }) {
   const pct = total > 0 ? Math.round(((total - available) / total) * 100) : 0;
-  const danger = pct >= 90;
-  const warn = pct >= 75;
+  const danger = pct > 85;
+  const warn = pct >= 60 && pct <= 85;
   return (
     <div className="space-y-1">
       <div className="flex justify-between text-sm">
@@ -80,7 +81,7 @@ function CreditsBar({
             danger
               ? "text-destructive font-medium"
               : warn
-              ? "text-yellow-500 font-medium"
+              ? "text-amber-500 font-medium"
               : "text-foreground font-medium"
           }
         >
@@ -90,7 +91,11 @@ function CreditsBar({
       <Progress
         value={pct}
         className={`h-2 ${
-          danger ? "[&>div]:bg-destructive" : warn ? "[&>div]:bg-yellow-500" : ""
+          danger
+            ? "[&>div]:bg-destructive"
+            : warn
+            ? "[&>div]:bg-amber-500"
+            : "[&>div]:bg-green-500"
         }`}
       />
       <div className="flex justify-between text-xs text-muted-foreground">
@@ -112,6 +117,10 @@ export default function BillingPage() {
 
   const checkout = useCreateCheckoutSession();
   const portal = useCreatePortalSession();
+
+  // Use live credit values from Zustand store for real-time updates
+  const creditsAvailable = useCreditsStore((state) => state.creditsAvailable);
+  const creditsRemaining = useCreditsStore((state) => state.creditsRemaining);
 
   const [activeTab, setActiveTab] = useState("overview");
 
@@ -303,14 +312,14 @@ export default function BillingPage() {
                         <>
                           <div className="flex items-baseline gap-2">
                             <span className="text-3xl font-bold">
-                              {entitlements.credits_available.toLocaleString()}
+                              {creditsAvailable.toLocaleString()}
                             </span>
                             <span className="text-muted-foreground text-sm">
                               / {entitlements.monthly_credits.toLocaleString()} this month
                             </span>
                           </div>
                           <CreditsBar
-                            available={entitlements.credits_available}
+                            available={creditsAvailable}
                             total={entitlements.monthly_credits}
                           />
                         </>

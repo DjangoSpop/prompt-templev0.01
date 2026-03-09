@@ -22,7 +22,8 @@ import {
 import { cn } from '@/lib/utils';
 
 export function NotificationCenter() {
-  const { data: notifications = [], isLoading } = useNotifications();
+  const { data: notificationsData, isLoading } = useNotifications();
+  const notifications = notificationsData?.results ?? [];
   const { mutate: markAsRead } = useMarkNotificationRead();
   const [open, setOpen] = useState(false);
 

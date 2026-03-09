@@ -218,7 +218,7 @@ export function CreditsWidgetConnected({ className = '', compact = false }: Cred
 
   if (!entitlements) return null;
 
-  const used = entitlements.monthly_credits - entitlements.credits_available;
+  const used = entitlements.monthly_credits - entitlements.credits_balance;
   const pct = entitlements.monthly_credits > 0
     ? Math.round((used / entitlements.monthly_credits) * 100)
     : 0;
@@ -238,7 +238,7 @@ export function CreditsWidgetConnected({ className = '', compact = false }: Cred
           </div>
           <div className="text-right">
             <div className="text-sm font-medium text-text-primary">
-              {entitlements.credits_available.toLocaleString()} / {entitlements.monthly_credits.toLocaleString()}
+              {entitlements.credits_balance.toLocaleString()} / {entitlements.monthly_credits.toLocaleString()}
             </div>
             <div className="text-xs text-text-muted">remaining this month</div>
           </div>
@@ -267,7 +267,7 @@ export function CreditsWidgetConnected({ className = '', compact = false }: Cred
       <div className="p-6 space-y-4">
         <div className="flex items-baseline gap-2">
           <span className="text-3xl font-bold text-text-primary">
-            {entitlements.credits_available.toLocaleString()}
+            {entitlements.credits_balance.toLocaleString()}
           </span>
           <span className="text-text-muted text-sm">
             / {entitlements.monthly_credits.toLocaleString()} this month

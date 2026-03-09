@@ -125,7 +125,7 @@ export function useCreateTemplate() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: components['schemas']['TemplateCreate']) =>
+    mutationFn: (data: components['schemas']['TemplateCreateUpdateRequest']) =>
       apiClient.createTemplate(data),
     onSuccess: (data) => {
       // Invalidate and refetch
@@ -145,7 +145,7 @@ export function useUpdateTemplate() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<components['schemas']['TemplateUpdate']> }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<components['schemas']['PatchedTemplateCreateUpdateRequest']> }) =>
       apiClient.updateTemplate(id, data),
     onSuccess: (data, variables) => {
       // Update cache
