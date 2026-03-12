@@ -58,6 +58,12 @@ const mainNavItems: NavItem[] = [
     icon: LayoutDashboard,
   },
   {
+    title: "Multi-AI Broadcast",
+    href: "/broadcast",
+    icon: Zap,
+    badge: "New",
+  },
+  {
     title: "Prompt Optimizer",
     href: "/optimization",
     icon: Brain,

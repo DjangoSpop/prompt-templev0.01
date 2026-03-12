@@ -104,9 +104,6 @@ export default function RegisterPage() {
         last_name: formData.last_name.trim(),
         password: formData.password,
         password_confirm: formData.password_confirm,
-        bio: formData.bio,
-        theme_preference: formData.theme_preference,
-        language_preference: formData.language_preference,
       });
       router.push('/auth/login?registered=true');
     } catch (err: unknown) {

@@ -21,7 +21,11 @@ import type {
   PromptIteration,
   PaginatedSavedPrompts,
   SavedPromptStats,
+  InteractionType,
 } from '@/types/saved-prompts';
+
+// Re-export for component convenience
+export type { InteractionType };
 
 // ============================================
 // Query Keys
@@ -266,15 +270,15 @@ export function useCreateIteration() {
       promptId: string;
       data: CreateIterationRequest;
     }) => apiClient.createPromptIteration(promptId, data),
-    onSuccess: (data: PromptIteration, variables) => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({
         queryKey: savedPromptKeys.iterations(variables.promptId),
       });
       queryClient.invalidateQueries({
         queryKey: savedPromptKeys.detail(variables.promptId),
       });
-      store.addIteration(variables.promptId, data);
-      toast.success(`Iteration v${data.version} created`);
+      store.addIteration(variables.promptId, data as PromptIteration);
+      toast.success(`Iteration #${(data as PromptIteration).iteration_number} created`);
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to create iteration');

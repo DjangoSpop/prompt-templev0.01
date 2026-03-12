@@ -393,23 +393,14 @@ export class AIService extends BaseApiClient {
     callbacks: OptimizeStreamCallbacks,
     signal?: AbortSignal,
   ): Promise<void> {
-    // POST /api/v2/ai/deepseek/stream/ — DeepSeek SSE proxy (the optimization/stream/ path does not exist)
-    const url = `${this.baseUrl}/api/v2/ai/deepseek/stream/`;
-
-    const systemPrompt =
-      'You are an expert AI prompt engineer. ' +
-      'Analyze the user\'s prompt and rewrite it to be clearer, more specific, and more effective for AI models. ' +
-      'Respond with ONLY the improved prompt text — no preamble, no explanations, no markdown fences.';
+    // POST directly to the backend — same pattern as deepseekStream and optimizePrompt
+    const url = `${this.baseUrl}/api/v2/ai/optimization/stream/`;
 
     const body = {
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: `Optimize this prompt:\n\n${request.original}` },
-      ],
-      model: request.model ?? 'deepseek-chat',
-      stream: true,
-      temperature: request.temperature ?? 0.7,
-      max_tokens: request.max_tokens ?? 2048,
+      original: request.original,
+      mode: request.mode ?? 'fast',
+      provider: 'auto',
+      context: request.context ?? {},
       session_id: request.session_id ?? `optimize_${Date.now()}`,
     };
 
@@ -418,14 +409,14 @@ export class AIService extends BaseApiClient {
       response = await this.fetchSSE(url, body, signal);
     } catch (err: any) {
       if (err?.name === 'AbortError') return;
-      
+
       // Handle rate limiting
       if (err?.status === 429) {
         const retryAfter = err?.retryAfter ?? 60;
         callbacks.onError?.(`Rate limited. Please try again in ${retryAfter} seconds.`);
         return;
       }
-      
+
       callbacks.onError?.(err?.message ?? 'Network error');
       return;
     }
@@ -448,17 +439,21 @@ export class AIService extends BaseApiClient {
       return;
     }
 
-    // Sync credit headers from response
-    this.syncCreditHeadersFromResponse(response);
+    // Guard against onComplete being called twice (once from event: complete, once from stream end)
+    let completeFired = false;
+    const safeComplete = () => {
+      if (!completeFired) {
+        completeFired = true;
+        callbacks.onComplete?.();
+      }
+    };
 
     this.lastSSEEvent = null; // Reset event tracking
     const onLine = (line: string) =>
-      this.handleOptimizationLine(line, callbacks);
+      this.handleOptimizationLine(line, callbacks, safeComplete);
 
     try {
-      await this.consumeSSEStream(response, onLine, () =>
-        callbacks.onComplete?.(),
-      );
+      await this.consumeSSEStream(response, onLine, safeComplete);
     } catch (err: any) {
       if (err?.name !== 'AbortError') {
         callbacks.onError?.(err?.message ?? 'Stream error');
@@ -469,6 +464,7 @@ export class AIService extends BaseApiClient {
   private handleOptimizationLine(
     line: string,
     callbacks: OptimizeStreamCallbacks,
+    safeComplete: () => void,
   ): void {
     const parsed = this.parseSSELine(line);
     if (!parsed) return;
@@ -476,11 +472,42 @@ export class AIService extends BaseApiClient {
     // Track the current event type
     if (parsed.eventType) {
       this.lastSSEEvent = parsed.eventType;
-      return; // Will process data in next line
+      return;
     }
 
     if (!parsed.data) return;
     const data = parsed.data;
+
+    // Consume the event name immediately so it doesn't bleed into next line
+    const ev = this.lastSSEEvent;
+    this.lastSSEEvent = null;
+
+    // --- Named-event dispatch (real backend format) ---
+    if (ev === 'meta') {
+      callbacks.onProgress?.('meta', String(data.status ?? 'connected'));
+      return;
+    }
+
+    if (ev === 'token') {
+      if (data.text) callbacks.onToken?.(data.text);
+      return;
+    }
+
+    if (ev === 'complete') {
+      callbacks.onResult?.(data as OptimizeStreamResult);
+      if (data.credits_consumed !== undefined) {
+        useCreditsStore.getState().syncFromHeaders(null, data.credits_consumed, false);
+      }
+      safeComplete();
+      return;
+    }
+
+    if (ev === 'error') {
+      callbacks.onError?.(String(data.error ?? 'Stream error'));
+      return;
+    }
+
+    // --- Fallback: bare data lines without a named event (OpenAI-compat or legacy) ---
 
     // Progress heartbeat: { step, message }
     if (data.step && data.message) {
@@ -494,7 +521,7 @@ export class AIService extends BaseApiClient {
       return;
     }
 
-    // Full optimisation result
+    // Full optimisation result (bare data line)
     if (data.optimized) {
       callbacks.onResult?.(data as OptimizeStreamResult);
       return;
@@ -507,22 +534,16 @@ export class AIService extends BaseApiClient {
       return;
     }
 
-    // Stream complete — extract credits_consumed from event
-    if (data.stream_complete || this.lastSSEEvent === 'stream_complete') {
+    // Legacy stream_complete event
+    if (data.stream_complete) {
       if (data.credits_consumed !== undefined) {
-        // Sync the actual credits consumed to store
-        useCreditsStore.getState().syncFromHeaders(
-          null,
-          data.credits_consumed,
-          false
-        );
+        useCreditsStore.getState().syncFromHeaders(null, data.credits_consumed, false);
       }
-      callbacks.onComplete?.();
-      this.lastSSEEvent = null;
+      safeComplete();
       return;
     }
 
-    // Backend-reported error
+    // Backend-reported error (bare data line)
     if (data.error) {
       callbacks.onError?.(String(data.error));
       return;

@@ -42,40 +42,70 @@ export interface PromptMetadata {
 
 // ============================================
 // Prompt Iteration / Version Types
+// Field names match the API response exactly (see FRONTEND_INTEGRATION.md §6)
 // ============================================
 
 export interface PromptIteration {
   id: string;
-  prompt_id: string;
-  version: number;
-  content: string;
-  change_description: string;
-  change_type: IterationChangeType;
-  diff_summary?: string;
-  performance_metrics?: IterationMetrics;
-  created_by: string;
+  /** The saved-prompt UUID this iteration belongs to */
+  parent_prompt: string;
+  /** UUID of the prior iteration in the chain (null for the first) */
+  previous_iteration: string | null;
+  /** Auto-incremented by the server — do NOT send in requests */
+  iteration_number: number;
+  /** The versioned prompt text */
+  prompt_text: string;
+  /** How this version was produced */
+  interaction_type: InteractionType;
+  /** Human-readable summary of what changed */
+  changes_summary?: string;
+  /** Optional semantic label e.g. "v1.1" */
+  version_tag?: string;
+  /** Raw AI response text (if produced via optimization) */
+  ai_response?: string;
+  /** Model that produced this iteration */
+  response_model?: string;
+  /** Tokens consumed */
+  tokens_input?: number;
+  tokens_output?: number;
+  response_time_ms?: number;
+  credits_spent?: number;
+  user_rating?: number;
+  feedback_notes?: string;
+  /** Character delta vs previous iteration — auto-computed by server */
+  diff_size?: number;
+  parameters?: Record<string, unknown>;
+  tags?: string[];
+  metadata?: Record<string, unknown>;
+  /** True when this is the active/HEAD version */
+  is_active: boolean;
+  is_bookmarked: boolean;
+  /** Total versions in the chain (read-only) */
+  iteration_chain_length?: number;
+  has_next_iteration?: boolean;
   created_at: string;
+  updated_at: string;
 }
 
-export type IterationChangeType =
-  | 'initial'
-  | 'refinement'
+/**
+ * Interaction type values accepted by the API for creating iterations.
+ * Maps to the server-side `interaction_type` field.
+ */
+export type InteractionType =
+  | 'manual'
   | 'optimization'
-  | 'expansion'
-  | 'simplification'
-  | 'tone_change'
-  | 'format_change'
-  | 'variable_update'
-  | 'ai_suggested'
-  | 'manual_edit';
+  | 'refinement'
+  | 'extension'
+  | 'correction'
+  | 'experiment';
 
-export interface IterationMetrics {
-  tokens_before?: number;
-  tokens_after?: number;
-  quality_score_before?: number;
-  quality_score_after?: number;
-  user_rating?: number;
-  a_b_test_results?: Record<string, unknown>;
+/** @deprecated Use InteractionType */
+export type IterationChangeType = InteractionType;
+
+/** Shape of GET /saved-prompts/{id}/iterations/ */
+export interface IterationsResponse {
+  iterations: PromptIteration[];
+  count: number;
 }
 
 // ============================================
@@ -123,10 +153,24 @@ export interface UpdatePromptRequest {
 }
 
 export interface CreateIterationRequest {
-  content: string;
-  change_description: string;
-  change_type: IterationChangeType;
-  performance_metrics?: Partial<IterationMetrics>;
+  /** Required: the new version text */
+  prompt_text: string;
+  /** UUID of the previous iteration — MUST be sent to maintain the version chain */
+  previous_iteration?: string | null;
+  interaction_type?: InteractionType;
+  changes_summary?: string;
+  version_tag?: string;
+  ai_response?: string;
+  response_model?: string;
+  tokens_input?: number;
+  tokens_output?: number;
+  response_time_ms?: number;
+  credits_spent?: number;
+  user_rating?: number;
+  feedback_notes?: string;
+  parameters?: Record<string, unknown>;
+  tags?: string[];
+  metadata?: Record<string, unknown>;
 }
 
 export interface SavedPromptFilters {
@@ -200,13 +244,11 @@ export const PROMPT_CATEGORIES = [
 
 export type PromptCategory = (typeof PROMPT_CATEGORIES)[number];
 
-export const ITERATION_CHANGE_TYPES: { value: IterationChangeType; label: string; description: string }[] = [
+export const ITERATION_CHANGE_TYPES: { value: InteractionType; label: string; description: string }[] = [
+  { value: 'manual', label: 'Manual Edit', description: 'Free-form manual changes' },
   { value: 'refinement', label: 'Refinement', description: 'Fine-tune wording and clarity' },
   { value: 'optimization', label: 'Optimization', description: 'Improve for better AI responses' },
-  { value: 'expansion', label: 'Expansion', description: 'Add more detail or context' },
-  { value: 'simplification', label: 'Simplification', description: 'Make shorter and more concise' },
-  { value: 'tone_change', label: 'Tone Change', description: 'Adjust the tone or style' },
-  { value: 'format_change', label: 'Format Change', description: 'Change the output format' },
-  { value: 'variable_update', label: 'Variable Update', description: 'Modify template variables' },
-  { value: 'manual_edit', label: 'Manual Edit', description: 'Free-form manual changes' },
+  { value: 'extension', label: 'Extension', description: 'Add more detail or context' },
+  { value: 'correction', label: 'Correction', description: 'Fix an error or inaccuracy' },
+  { value: 'experiment', label: 'Experiment', description: 'Try an experimental variation' },
 ];

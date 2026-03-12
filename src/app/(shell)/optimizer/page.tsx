@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { usePromptOptimization, useAIModels, useAIUsage } from '@/hooks/api/useAI';
 import { useEntitlements } from '@/hooks/api/useBilling';
+import { useCreditsStore } from '@/store/credits';
 import { toast } from 'sonner';
 import { SavePromptButton } from '@/components/optimizer/SavePromptButton';
 import { AskMeWizard } from '@/components/assistant/AskMeWizard';
@@ -23,7 +24,8 @@ import {
   ArrowRight,
   Settings,
   RotateCcw,
-  Save
+  Save,
+  Wand2,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { OptimizationResult } from '@/hooks/useStreamingChat';
@@ -47,6 +49,10 @@ function OptimizerPageInner() {
   const [selectedModel, setSelectedModel] = useState('deepseek-chat');
   const [optimizationResult, setOptimizationResult] = useState<OptimizationResult | null>(null);
   const [optimizationHistory, setOptimizationHistory] = useState<OptimizationResult[]>([]);
+  const [optimizationMode, setOptimizationMode] = useState<'fast' | 'deep'>('fast');
+  const [iterationCount, setIterationCount] = useState(1);
+  const [isEnhancing, setIsEnhancing] = useState(false);
+  const [enhancedPreview, setEnhancedPreview] = useState<string>('');
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
   const [optimizationSettings, setOptimizationSettings] = useState({
     focus: 'clarity',
@@ -63,8 +69,8 @@ function OptimizerPageInner() {
   const { data: usageData } = useAIUsage();
   const { data: entitlements } = useEntitlements();
 
-  const hasCredits = !entitlements || entitlements.credits_balance > 0;
-  const creditsAvailable = entitlements?.credits_balance ?? null;
+  const { creditsAvailable, creditsRemaining, isLowCredits, isDepleted } = useCreditsStore();
+  const hasCredits = creditsRemaining === null || creditsAvailable > 0;
 
   // Group API models by provider; fall back to static list when API is empty
   const providers = useMemo(() => {
@@ -99,6 +105,11 @@ function OptimizerPageInner() {
     }
   }, [result]);
 
+  // Stream enhance output into preview panel (not the textarea)
+  useEffect(() => {
+    if (isEnhancing && output) setEnhancedPreview(output);
+  }, [isEnhancing, output]);
+
   // Fallback: if backend sends only token stream (no final result blob), build result from accumulated output
   useEffect(() => {
     if (!isStreaming && output && !result && !optimizationResult) {
@@ -123,16 +134,73 @@ function OptimizerPageInner() {
       });
       return;
     }
+    setIterationCount(1);
     setOptimizationResult(null);
     await optimize({
       original: inputPrompt,
       session_id: `optimize_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
       model: selectedModel,
-      mode: 'fast',
+      mode: optimizationMode,
       context: {
         focus: optimizationSettings.focus,
         target_audience: optimizationSettings.targetAudience,
         include_examples: optimizationSettings.includeExamples,
+      },
+    });
+  };
+
+  const handleEnhance = async () => {
+    if (!inputPrompt.trim() || isEnhancing || isOptimizing) return;
+    if (!hasCredits) {
+      toast.error('You\'ve run out of credits. Upgrade your plan to continue.', {
+        action: { label: 'Upgrade', onClick: () => window.location.href = '/billing' },
+        duration: 6000,
+      });
+      return;
+    }
+    // Keep original text intact — stream into preview panel instead
+    setEnhancedPreview('');
+    setIsEnhancing(true);
+    try {
+      await optimize({
+        original: inputPrompt,
+        session_id: `enhance_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        mode: 'fast',
+        context: {
+          focus: optimizationSettings.focus,
+          target_audience: optimizationSettings.targetAudience,
+        },
+      });
+    } finally {
+      setIsEnhancing(false);
+    }
+  };
+
+  const handleAcceptEnhancement = () => {
+    if (enhancedPreview) {
+      setInputPrompt(enhancedPreview);
+      setEnhancedPreview('');
+      toast.success('Prompt enhanced');
+    }
+  };
+
+  const handleDiscardEnhancement = () => {
+    setEnhancedPreview('');
+  };
+
+  const handleEnhanceFurther = async () => {
+    if (!optimizationResult || isOptimizing) return;
+    const nextInput = optimizationResult.optimized_prompt;
+    setInputPrompt(nextInput);
+    setIterationCount(prev => prev + 1);
+    setOptimizationResult(null);
+    await optimize({
+      original: nextInput,
+      session_id: `iterate_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      mode: optimizationMode,
+      context: {
+        focus: optimizationSettings.focus,
+        target_audience: optimizationSettings.targetAudience,
       },
     });
   };
@@ -239,6 +307,91 @@ function OptimizerPageInner() {
                 placeholder="Enter your prompt here... For example: 'Write a professional email to request a meeting with the marketing team.'"
                 className="w-full h-40 p-4 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white"
               />
+
+              {/* Enhance button row */}
+              <div className="flex justify-end -mt-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={!inputPrompt.trim() || isOptimizing || isEnhancing || !!enhancedPreview}
+                  onClick={handleEnhance}
+                  className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 text-xs gap-1"
+                >
+                  {isEnhancing
+                    ? <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Enhancing…</>
+                    : <><Wand2 className="w-3.5 h-3.5" /> Enhance (3 credits)</>}
+                </Button>
+              </div>
+
+              {/* AI enhance preview panel — appears while streaming or after completion */}
+              <AnimatePresence>
+                {(isEnhancing || enhancedPreview) && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="rounded-lg border border-purple-200 bg-purple-50/40 dark:bg-purple-900/10 dark:border-purple-800 overflow-hidden"
+                  >
+                    {/* Header */}
+                    <div className="flex items-center justify-between px-3 py-2 border-b border-purple-200 dark:border-purple-800">
+                      <span className="text-xs font-medium text-purple-700 dark:text-purple-300 flex items-center gap-1.5">
+                        <Wand2 className="w-3.5 h-3.5" />
+                        {isEnhancing ? 'AI is enhancing your prompt…' : 'AI suggestion ready'}
+                      </span>
+                      {!isEnhancing && enhancedPreview && (
+                        <div className="flex items-center gap-1.5">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            onClick={handleDiscardEnhancement}
+                            className="h-6 px-2 text-xs text-muted-foreground hover:text-red-600"
+                          >
+                            Discard
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={handleAcceptEnhancement}
+                            className="h-6 px-3 text-xs bg-purple-600 hover:bg-purple-700 text-white"
+                          >
+                            <CheckCircle className="w-3 h-3 mr-1" /> Accept
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                    {/* Streaming / final text */}
+                    <pre className="px-3 py-2.5 text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap font-mono leading-relaxed max-h-52 overflow-y-auto">
+                      {enhancedPreview || output}
+                      {isEnhancing && <span className="animate-pulse text-purple-500">▋</span>}
+                    </pre>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Fast / Deep mode selector */}
+              <div className="flex gap-2">
+                {(['fast', 'deep'] as const).map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setOptimizationMode(m)}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                      optimizationMode === m
+                        ? m === 'fast'
+                          ? 'bg-purple-600 text-white border-purple-600'
+                          : 'bg-indigo-600 text-white border-indigo-600'
+                        : 'border-gray-300 text-gray-600 hover:border-purple-400 dark:border-gray-600 dark:text-gray-300'
+                    }`}
+                  >
+                    {m === 'fast'
+                      ? <Zap className="w-3.5 h-3.5" />
+                      : <Sparkles className="w-3.5 h-3.5" />}
+                    {m === 'fast' ? 'Fast (3 credits)' : 'Deep (8 credits)'}
+                  </button>
+                ))}
+              </div>
 
               {/* Model Selection */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -377,12 +530,12 @@ function OptimizerPageInner() {
                 )}
               </AnimatePresence>
 
-              {creditsAvailable !== null && creditsAvailable <= 5 && (
-                <p className={`text-xs font-medium flex items-center gap-1 ${creditsAvailable === 0 ? 'text-destructive' : 'text-yellow-600'}`}>
+              {isLowCredits && (
+                <p className={`text-xs font-medium flex items-center gap-1 ${isDepleted ? 'text-destructive' : 'text-yellow-600'}`}>
                   <Zap className="h-3 w-3" />
-                  {creditsAvailable === 0
+                  {isDepleted
                     ? 'No credits remaining — upgrade to continue'
-                    : `${creditsAvailable} credits left this month`}
+                    : `${creditsAvailable} credits left`}
                 </p>
               )}
               <Button
@@ -403,8 +556,10 @@ function OptimizerPageInner() {
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-5 h-5 mr-2" />
-                    Optimize Prompt (~5 credits)
+                    {optimizationMode === 'deep'
+                      ? <Sparkles className="w-5 h-5 mr-2" />
+                      : <Zap className="w-5 h-5 mr-2" />}
+                    {optimizationMode === 'deep' ? 'Deep Optimize (8 credits)' : 'Optimize (3 credits)'}
                   </>
                 )}
               </Button>
@@ -509,6 +664,23 @@ function OptimizerPageInner() {
                       </div>
                     ))}
                   </div>
+                </div>
+
+                {/* Iteration re-enhancement */}
+                <div className="pt-4 border-t flex items-center justify-between">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    {iterationCount > 1 ? `Iteration ${iterationCount}` : 'First result'}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={isOptimizing}
+                    onClick={handleEnhanceFurther}
+                    className="gap-2 text-purple-600 border-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Enhance further ({optimizationMode === 'deep' ? 8 : 3} credits)
+                  </Button>
                 </div>
 
               </div>

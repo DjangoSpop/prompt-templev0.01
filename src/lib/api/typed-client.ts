@@ -11,6 +11,8 @@ import type {
   PaginatedSavedPrompts,
   SavedPromptStats,
   PromptIteration,
+  IterationsResponse,
+  CreateIterationRequest,
   PromptUsageLog,
 } from '@/types/saved-prompts';
 
@@ -759,15 +761,16 @@ class ApiClient {
   // ============================================
 
   async getPromptIterations(promptId: string): Promise<PromptIteration[]> {
-    return this.request<PromptIteration[]>(`/api/v2/history/saved-prompts/${promptId}/iterations/`);
+    // API returns { iterations: [...], count: N } — unwrap to array
+    const res = await this.request<IterationsResponse | PromptIteration[]>(
+      `/api/v2/history/saved-prompts/${promptId}/iterations/`
+    );
+    if (Array.isArray(res)) return res;
+    return (res as IterationsResponse).iterations ?? [];
   }
 
-  async createPromptIteration(promptId: string, data: {
-    content: string;
-    change_description: string;
-    change_type: string;
-    performance_metrics?: Record<string, unknown>;
-  }): Promise<PromptIteration> {
+  async createPromptIteration(promptId: string, data: CreateIterationRequest): Promise<PromptIteration> {
+    // Field names must match the API schema exactly (FRONTEND_INTEGRATION.md §6a)
     return this.request<PromptIteration>(`/api/v2/history/saved-prompts/${promptId}/iterations/`, {
       method: 'POST',
       body: JSON.stringify(data),
@@ -778,8 +781,19 @@ class ApiClient {
     return this.request<PromptIteration>(`/api/v2/history/saved-prompts/${promptId}/iterations/${iterationId}/`);
   }
 
-  async revertToIteration(promptId: string, iterationId: string): Promise<SavedPrompt> {
-    return this.request<SavedPrompt>(`/api/v2/history/saved-prompts/${promptId}/iterations/${iterationId}/revert/`, {
+  /**
+   * Set an iteration as the active (HEAD) version.
+   * Calls POST /api/v2/history/iterations/{id}/set-active/ — no body required.
+   * All other iterations under the same parent_prompt become inactive.
+   */
+  async revertToIteration(_promptId: string, iterationId: string): Promise<PromptIteration> {
+    return this.request<PromptIteration>(`/api/v2/history/iterations/${iterationId}/set-active/`, {
+      method: 'POST',
+    });
+  }
+
+  async toggleIterationBookmark(iterationId: string): Promise<{ id: string; is_bookmarked: boolean; message: string }> {
+    return this.request(`/api/v2/history/iterations/${iterationId}/toggle-bookmark/`, {
       method: 'POST',
     });
   }

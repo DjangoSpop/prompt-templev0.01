@@ -11,6 +11,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { usePromptOptimization } from '@/hooks/api/useAI';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,6 +45,7 @@ import {
   AlertCircle,
   Copy,
   Eye,
+  RefreshCw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSavedPromptsStore } from '@/store/saved-prompts';
@@ -55,7 +57,7 @@ import {
 import {
   ITERATION_CHANGE_TYPES,
   type PromptIteration,
-  type IterationChangeType,
+  type InteractionType,
   type SavedPrompt,
   type CreateIterationRequest,
 } from '@/types/saved-prompts';
@@ -76,8 +78,8 @@ function IterationTimelineItem({
   isCurrent: boolean;
   onClick: () => void;
 }) {
-  const changeTypeInfo = ITERATION_CHANGE_TYPES.find(
-    (ct) => ct.value === iteration.change_type
+  const typeInfo = ITERATION_CHANGE_TYPES.find(
+    (ct) => ct.value === iteration.interaction_type
   );
 
   return (
@@ -101,7 +103,7 @@ function IterationTimelineItem({
                 : 'bg-muted text-muted-foreground'
           )}
         >
-          v{iteration.version}
+          #{iteration.iteration_number}
         </div>
         <div className="w-px h-full bg-border mt-1" />
       </div>
@@ -109,32 +111,38 @@ function IterationTimelineItem({
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
           <span className="text-sm font-medium truncate">
-            {iteration.change_description || changeTypeInfo?.label || 'Update'}
+            {iteration.changes_summary || typeInfo?.label || 'Update'}
           </span>
           {isCurrent && (
             <Badge variant="default" className="text-[10px] px-1.5 py-0">
               Current
             </Badge>
           )}
+          {iteration.is_bookmarked && (
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+              ★
+            </Badge>
+          )}
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Badge variant="outline" className="text-[10px]">
-            {changeTypeInfo?.label || iteration.change_type}
+            {typeInfo?.label || iteration.interaction_type}
           </Badge>
+          {iteration.diff_size !== undefined && iteration.diff_size !== 0 && (
+            <>
+              <span>·</span>
+              <span className={iteration.diff_size > 0 ? 'text-green-600' : 'text-red-500'}>
+                {iteration.diff_size > 0 ? '+' : ''}{iteration.diff_size} chars
+              </span>
+            </>
+          )}
           <span>·</span>
           <Clock className="h-3 w-3" />
           <span>{formatDate(iteration.created_at)}</span>
         </div>
-        {iteration.performance_metrics && (
-          <div className="flex items-center gap-2 mt-1.5 text-xs text-muted-foreground">
-            {iteration.performance_metrics.tokens_after && (
-              <span>{iteration.performance_metrics.tokens_after} tokens</span>
-            )}
-            {iteration.performance_metrics.quality_score_after && (
-              <span>
-                Quality: {Math.round(iteration.performance_metrics.quality_score_after * 100)}%
-              </span>
-            )}
+        {iteration.tokens_output && (
+          <div className="mt-1 text-xs text-muted-foreground">
+            {iteration.tokens_output} tokens out
           </div>
         )}
       </div>
@@ -202,8 +210,11 @@ export function PromptIterationModal() {
   // Create iteration form
   const [newContent, setNewContent] = useState('');
   const [changeDescription, setChangeDescription] = useState('');
-  const [changeType, setChangeType] = useState<IterationChangeType>('refinement');
+  const [changeType, setChangeType] = useState<InteractionType>('refinement');
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  // AI Enhance streaming for the Create tab
+  const { optimize: runAIEnhance, cancel: cancelAIEnhance, isStreaming: isAIEnhancing, output: aiEnhanceOutput } = usePromptOptimization();
 
   // Compare state
   const [compareA, setCompareA] = useState<number>(0);
@@ -219,7 +230,26 @@ export function PromptIterationModal() {
       setFormErrors({});
       setActiveTab('history');
     }
+    if (!isOpen) cancelAIEnhance();
   }, [isOpen, prompt?.id]);
+
+  // Stream AI enhance output into the new content textarea
+  useEffect(() => {
+    if (isAIEnhancing && aiEnhanceOutput) setNewContent(aiEnhanceOutput);
+  }, [isAIEnhancing, aiEnhanceOutput]);
+
+  const handleAIEnhance = async () => {
+    if (!prompt || isAIEnhancing) return;
+    setNewContent('');
+    setChangeType('optimization');
+    setChangeDescription('AI-enhanced version');
+    setFormErrors({});
+    await runAIEnhance({
+      original: prompt.content,
+      session_id: `iter_enhance_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      mode: 'fast',
+    });
+  };
 
   // Auto-select latest iteration
   useEffect(() => {
@@ -229,8 +259,14 @@ export function PromptIterationModal() {
   }, [iterations]);
 
   const sortedIterations = useMemo(
-    () => [...iterations].sort((a, b) => b.version - a.version),
+    () => [...iterations].sort((a, b) => b.iteration_number - a.iteration_number),
     [iterations]
+  );
+
+  // The HEAD iteration — is_active = true, or fall back to the highest-numbered one
+  const activeIteration = useMemo(
+    () => sortedIterations.find((i) => i.is_active) ?? sortedIterations[0] ?? null,
+    [sortedIterations]
   );
 
   // Validation
@@ -245,18 +281,18 @@ export function PromptIterationModal() {
     return Object.keys(errors).length === 0;
   };
 
-  // Create iteration
+  // Create iteration — sends correct API field names and chains previous_iteration
   const handleCreateIteration = async () => {
     if (!prompt || !validateCreate()) return;
 
     const payload: CreateIterationRequest = {
-      content: newContent.trim(),
-      change_description: changeDescription.trim(),
-      change_type: changeType,
-      performance_metrics: {
-        tokens_before: Math.ceil((prompt.content.length || 0) / 4),
-        tokens_after: Math.ceil(newContent.trim().length / 4),
-      },
+      prompt_text: newContent.trim(),
+      // Chain to the current HEAD so diff_size is computed correctly
+      previous_iteration: activeIteration?.id ?? null,
+      interaction_type: changeType,
+      changes_summary: changeDescription.trim(),
+      tokens_input: Math.ceil((prompt.content.length || 0) / 4),
+      tokens_output: Math.ceil(newContent.trim().length / 4),
     };
 
     try {
@@ -264,7 +300,7 @@ export function PromptIterationModal() {
         promptId: prompt.id,
         data: payload,
       });
-      // Update the prompt's content in store
+      // Optimistically reflect new content in the store
       updatePrompt(prompt.id, {
         content: newContent.trim(),
         current_version: (prompt.current_version || 1) + 1,
@@ -276,7 +312,7 @@ export function PromptIterationModal() {
     }
   };
 
-  // Revert
+  // Set iteration as active (HEAD) — calls /iterations/{id}/set-active/
   const handleRevert = async (iteration: PromptIteration) => {
     if (!prompt) return;
     try {
@@ -285,10 +321,10 @@ export function PromptIterationModal() {
         iterationId: iteration.id,
       });
       updatePrompt(prompt.id, {
-        content: iteration.content,
-        current_version: iteration.version,
+        content: iteration.prompt_text,
+        current_version: iteration.iteration_number,
       });
-      setNewContent(iteration.content);
+      setNewContent(iteration.prompt_text);
     } catch {
       // Handled by mutation
     }
@@ -328,7 +364,7 @@ export function PromptIterationModal() {
         <div className="flex items-center gap-2">
           <Badge variant="secondary" className="text-xs">
             <GitBranch className="h-3 w-3 mr-1" />
-            v{currentVersion}
+            #{activeIteration?.iteration_number ?? currentVersion}
           </Badge>
           <Badge variant="outline" className="text-xs">
             {sortedIterations.length} iteration{sortedIterations.length !== 1 ? 's' : ''}
@@ -349,7 +385,7 @@ export function PromptIterationModal() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handleSaveAsNew(newContent || prompt.content)}
+            onClick={() => handleSaveAsNew(newContent || activeIteration?.prompt_text || prompt.content)}
             className="flex items-center gap-1.5"
           >
             <BookOpen className="h-3.5 w-3.5" />
@@ -410,7 +446,7 @@ export function PromptIterationModal() {
                       key={iter.id}
                       iteration={iter}
                       isActive={selectedIteration?.id === iter.id}
-                      isCurrent={iter.version === currentVersion}
+                      isCurrent={iter.is_active}
                       onClick={() => setSelectedIteration(iter)}
                     />
                   ))}
@@ -423,26 +459,31 @@ export function PromptIterationModal() {
                       <div className="flex items-center justify-between">
                         <div>
                           <h4 className="font-medium text-sm flex items-center gap-2">
-                            Version {selectedIteration.version}
-                            {selectedIteration.version === currentVersion && (
+                            Iteration #{selectedIteration.iteration_number}
+                            {selectedIteration.version_tag && (
+                              <Badge variant="outline" className="text-[10px]">
+                                {selectedIteration.version_tag}
+                              </Badge>
+                            )}
+                            {selectedIteration.is_active && (
                               <Badge variant="default" className="text-[10px]">
-                                Current
+                                HEAD
                               </Badge>
                             )}
                           </h4>
                           <p className="text-xs text-muted-foreground mt-0.5">
-                            {selectedIteration.change_description}
+                            {selectedIteration.changes_summary || selectedIteration.interaction_type}
                           </p>
                         </div>
                         <div className="flex items-center gap-1.5">
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleCopy(selectedIteration.content)}
+                            onClick={() => handleCopy(selectedIteration.prompt_text)}
                           >
                             <Copy className="h-3.5 w-3.5" />
                           </Button>
-                          {selectedIteration.version !== currentVersion && (
+                          {!selectedIteration.is_active && (
                             <Button
                               variant="outline"
                               size="sm"
@@ -455,13 +496,13 @@ export function PromptIterationModal() {
                               ) : (
                                 <RotateCcw className="h-3.5 w-3.5" />
                               )}
-                              Revert
+                              Set Active
                             </Button>
                           )}
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleSaveAsNew(selectedIteration.content)}
+                            onClick={() => handleSaveAsNew(selectedIteration.prompt_text)}
                           >
                             <BookOpen className="h-3.5 w-3.5 mr-1" />
                             Save as New
@@ -471,25 +512,22 @@ export function PromptIterationModal() {
 
                       {/* Content viewer */}
                       <div className="p-3 border rounded-md bg-muted/30 text-sm font-mono whitespace-pre-wrap max-h-[300px] overflow-auto">
-                        {selectedIteration.content}
+                        {selectedIteration.prompt_text}
                       </div>
 
                       {/* Metrics */}
-                      {selectedIteration.performance_metrics && (
+                      {(selectedIteration.tokens_output || selectedIteration.diff_size) && (
                         <div className="flex items-center gap-4 text-xs text-muted-foreground border-t pt-3">
-                          {selectedIteration.performance_metrics.tokens_after && (
-                            <span>
-                              ~{selectedIteration.performance_metrics.tokens_after} tokens
+                          {selectedIteration.tokens_output && (
+                            <span>~{selectedIteration.tokens_output} tokens out</span>
+                          )}
+                          {selectedIteration.diff_size !== undefined && selectedIteration.diff_size !== 0 && (
+                            <span className={selectedIteration.diff_size > 0 ? 'text-green-600' : 'text-red-500'}>
+                              {selectedIteration.diff_size > 0 ? '+' : ''}{selectedIteration.diff_size} chars
                             </span>
                           )}
-                          {selectedIteration.performance_metrics.quality_score_after && (
-                            <span>
-                              Quality:{' '}
-                              {Math.round(
-                                selectedIteration.performance_metrics.quality_score_after * 100
-                              )}
-                              %
-                            </span>
+                          {selectedIteration.credits_spent && (
+                            <span>{selectedIteration.credits_spent} credits</span>
                           )}
                         </div>
                       )}
@@ -509,10 +547,25 @@ export function PromptIterationModal() {
           <TabsContent value="create" className="mt-4 space-y-4">
             {/* Current version reference */}
             <div className="rounded-md border bg-muted/20 p-3">
-              <Label className="text-xs text-muted-foreground flex items-center gap-1 mb-2">
-                <FileText className="h-3 w-3" />
-                Current Version (v{currentVersion})
-              </Label>
+              <div className="flex items-center justify-between mb-2">
+                <Label className="text-xs text-muted-foreground flex items-center gap-1">
+                  <FileText className="h-3 w-3" />
+                  Current Version (v{currentVersion})
+                </Label>
+                {/* AI Enhance button — streams optimized content into the editor */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isAIEnhancing || createMutation.isPending}
+                  onClick={handleAIEnhance}
+                  className="h-6 px-2.5 text-xs gap-1.5 text-purple-600 border-purple-200 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                >
+                  {isAIEnhancing
+                    ? <><RefreshCw className="h-3 w-3 animate-spin" /> Enhancing…</>
+                    : <><Sparkles className="h-3 w-3" /> AI Enhance (3 credits)</>}
+                </Button>
+              </div>
               <div className="text-sm font-mono whitespace-pre-wrap max-h-[100px] overflow-auto text-muted-foreground">
                 {prompt.content}
               </div>
@@ -520,22 +573,30 @@ export function PromptIterationModal() {
 
             {/* New content */}
             <div className="space-y-1.5">
-              <Label className="text-sm font-medium">
+              <Label className="text-sm font-medium flex items-center gap-2">
                 New Content <span className="text-red-500">*</span>
+                {isAIEnhancing && (
+                  <span className="text-xs font-normal text-purple-600 flex items-center gap-1">
+                    <RefreshCw className="h-3 w-3 animate-spin" /> AI writing…
+                  </span>
+                )}
               </Label>
               <Textarea
                 value={newContent}
                 onChange={(e) => {
+                  if (isAIEnhancing) return; // don't allow edits while streaming
                   setNewContent(e.target.value);
                   if (formErrors.content)
                     setFormErrors((prev) => ({ ...prev, content: '' }));
                 }}
                 rows={8}
                 className={cn(
-                  'font-mono text-sm',
-                  formErrors.content && 'border-red-500'
+                  'font-mono text-sm transition-colors',
+                  formErrors.content && 'border-red-500',
+                  isAIEnhancing && 'border-purple-300 bg-purple-50/30 dark:bg-purple-900/10'
                 )}
-                placeholder="Edit the prompt content..."
+                placeholder={isAIEnhancing ? '' : 'Edit the prompt content…'}
+                readOnly={isAIEnhancing}
               />
               {formErrors.content && (
                 <p className="text-xs text-red-500 flex items-center gap-1">
@@ -560,7 +621,7 @@ export function PromptIterationModal() {
                 <Label className="text-sm font-medium">Change Type</Label>
                 <Select
                   value={changeType}
-                  onValueChange={(v) => setChangeType(v as IterationChangeType)}
+                  onValueChange={(v) => setChangeType(v as InteractionType)}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -637,38 +698,36 @@ export function PromptIterationModal() {
           <TabsContent value="compare" className="mt-4 space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Version A</Label>
+                <Label className="text-sm font-medium">Iteration A</Label>
                 <Select
                   value={String(compareA)}
                   onValueChange={(v) => setCompareA(Number(v))}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select version" />
+                    <SelectValue placeholder="Select iteration" />
                   </SelectTrigger>
                   <SelectContent>
                     {sortedIterations.map((iter) => (
-                      <SelectItem key={iter.id} value={String(iter.version)}>
-                        v{iter.version} —{' '}
-                        {iter.change_description || iter.change_type}
+                      <SelectItem key={iter.id} value={String(iter.iteration_number)}>
+                        #{iter.iteration_number} — {iter.changes_summary || iter.interaction_type}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Version B</Label>
+                <Label className="text-sm font-medium">Iteration B</Label>
                 <Select
                   value={String(compareB)}
                   onValueChange={(v) => setCompareB(Number(v))}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select version" />
+                    <SelectValue placeholder="Select iteration" />
                   </SelectTrigger>
                   <SelectContent>
                     {sortedIterations.map((iter) => (
-                      <SelectItem key={iter.id} value={String(iter.version)}>
-                        v{iter.version} —{' '}
-                        {iter.change_description || iter.change_type}
+                      <SelectItem key={iter.id} value={String(iter.iteration_number)}>
+                        #{iter.iteration_number} — {iter.changes_summary || iter.interaction_type}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -679,21 +738,19 @@ export function PromptIterationModal() {
             {compareA > 0 && compareB > 0 && compareA !== compareB ? (
               <SimpleDiffView
                 before={
-                  sortedIterations.find((i) => i.version === compareA)?.content ||
-                  ''
+                  sortedIterations.find((i) => i.iteration_number === compareA)?.prompt_text ?? ''
                 }
                 after={
-                  sortedIterations.find((i) => i.version === compareB)?.content ||
-                  ''
+                  sortedIterations.find((i) => i.iteration_number === compareB)?.prompt_text ?? ''
                 }
-                labelBefore={`Version ${compareA}`}
-                labelAfter={`Version ${compareB}`}
+                labelBefore={`Iteration #${compareA}`}
+                labelAfter={`Iteration #${compareB}`}
               />
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 <ArrowLeftRight className="h-8 w-8 mx-auto mb-2 opacity-30" />
                 <p className="text-sm">
-                  Select two different versions to compare
+                  Select two different iterations to compare
                 </p>
               </div>
             )}

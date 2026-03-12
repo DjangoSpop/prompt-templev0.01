@@ -9,10 +9,11 @@
 
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ConfirmDeleteDialog } from '@/components/common/ConfirmDeleteDialog';
 import { AskMeModal } from '@/components/ai/AskMeModal';
+import { Modal } from '@/components/ui/modal';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,6 +39,7 @@ import {
   Heart,
   BookOpen,
   GitBranch,
+  GitCommit,
   Copy,
   Trash2,
   MoreHorizontal,
@@ -56,8 +58,14 @@ import {
   BarChart3,
   FolderOpen,
   ArrowUpDown,
+  Wand2,
+  RefreshCw,
+  CheckCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+import { usePromptOptimization } from '@/hooks/api/useAI';
+import { useCreditsStore } from '@/store/credits';
 import { useSavedPromptsStore } from '@/store/saved-prompts';
 import {
   useSavedPrompts,
@@ -65,6 +73,7 @@ import {
   useToggleFavorite,
   useDeleteSavedPrompt,
   useDuplicateSavedPrompt,
+  useCreateIteration,
 } from '@/hooks/api/useSavedPrompts';
 import {
   PROMPT_CATEGORIES,
@@ -82,12 +91,14 @@ function PromptCard({
   onIterate,
   onEdit,
   onUse,
+  onEnhance,
 }: {
   prompt: SavedPrompt;
   viewMode: 'grid' | 'list';
   onIterate: (prompt: SavedPrompt) => void;
   onEdit: (prompt: SavedPrompt) => void;
   onUse: (prompt: SavedPrompt) => void;
+  onEnhance: (prompt: SavedPrompt) => void;
 }) {
   const toggleFavorite = useToggleFavorite();
   const deleteMutation = useDeleteSavedPrompt();
@@ -164,16 +175,27 @@ function PromptCard({
 
         {/* Actions */}
         <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
-          <Button variant="ghost" size="sm" onClick={() => onUse(prompt)} className="h-7 px-2">
+          <Button type="button" variant="ghost" size="sm" onClick={() => onUse(prompt)} className="h-7 px-2">
             <Send className="h-3.5 w-3.5" />
           </Button>
           <Button
+            type="button"
             variant="ghost"
             size="sm"
             onClick={() => onIterate(prompt)}
             className="h-7 px-2"
           >
             <GitBranch className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => onEnhance(prompt)}
+            className="h-7 px-2 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+            title="AI Enhance"
+          >
+            <Wand2 className="h-3.5 w-3.5" />
           </Button>
           <PromptActionMenu
             prompt={prompt}
@@ -283,6 +305,7 @@ function PromptCard({
           {/* Actions */}
           <div className="flex items-center gap-1.5 pt-1">
             <Button
+              type="button"
               variant="outline"
               size="sm"
               className="flex-1 h-7 text-xs"
@@ -292,6 +315,7 @@ function PromptCard({
               Use
             </Button>
             <Button
+              type="button"
               variant="outline"
               size="sm"
               className="flex-1 h-7 text-xs"
@@ -299,6 +323,16 @@ function PromptCard({
             >
               <GitBranch className="h-3 w-3 mr-1" />
               Iterate
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-7 px-2 text-purple-600 border-purple-200 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+              onClick={() => onEnhance(prompt)}
+              title="AI Enhance"
+            >
+              <Wand2 className="h-3 w-3" />
             </Button>
           </div>
         </CardContent>
@@ -414,6 +448,14 @@ export function PromptLibrary() {
   const [searchInput, setSearchInput] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
 
+  // AI Enhance state
+  const [enhancingPrompt, setEnhancingPrompt] = useState<SavedPrompt | null>(null);
+  const [enhancedContent, setEnhancedContent] = useState('');
+  const { optimize, cancel, isStreaming: isEnhanceStreaming, output: enhanceOutput } = usePromptOptimization();
+  const createIteration = useCreateIteration();
+  const { creditsAvailable, creditsRemaining } = useCreditsStore();
+  const hasCredits = creditsRemaining === null || creditsAvailable > 0;
+
   // Build query filters
   const queryFilters: SavedPromptFilters = useMemo(
     () => ({
@@ -429,6 +471,55 @@ export function PromptLibrary() {
 
   const prompts = data?.results || [];
   const totalCount = data?.count || 0;
+
+  // Sync streaming output into enhanced content preview
+  useEffect(() => {
+    if (enhancingPrompt && enhanceOutput) setEnhancedContent(enhanceOutput);
+  }, [enhancingPrompt, enhanceOutput]);
+
+  const handleEnhance = async (prompt: SavedPrompt) => {
+    if (!hasCredits) {
+      toast.error("You've run out of credits. Upgrade your plan to continue.", {
+        action: { label: 'Upgrade', onClick: () => window.location.href = '/billing' },
+        duration: 6000,
+      });
+      return;
+    }
+    setEnhancingPrompt(prompt);
+    setEnhancedContent('');
+    await optimize({
+      original: prompt.content,
+      session_id: `lib_enhance_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      mode: 'fast',
+    });
+  };
+
+  const handleSaveEnhancement = async () => {
+    if (!enhancingPrompt || !enhancedContent) return;
+    try {
+      await createIteration.mutateAsync({
+        promptId: enhancingPrompt.id,
+        data: {
+          prompt_text: enhancedContent,
+          interaction_type: 'optimization',
+          changes_summary: 'AI-enhanced version',
+          tokens_input: Math.ceil(enhancingPrompt.content.length / 4),
+          tokens_output: Math.ceil(enhancedContent.length / 4),
+        },
+      });
+      toast.success('Saved as new iteration');
+      setEnhancingPrompt(null);
+      setEnhancedContent('');
+    } catch {
+      // handled by mutation
+    }
+  };
+
+  const handleCloseEnhanceModal = () => {
+    if (isEnhanceStreaming) cancel();
+    setEnhancingPrompt(null);
+    setEnhancedContent('');
+  };
 
   // Handlers
   const handleIterate = (prompt: SavedPrompt) => {
@@ -611,6 +702,7 @@ export function PromptLibrary() {
                 onIterate={handleIterate}
                 onEdit={handleEdit}
                 onUse={handleUsePrompt}
+                onEnhance={handleEnhance}
               />
             ))}
           </div>
@@ -638,6 +730,80 @@ export function PromptLibrary() {
       )}
 
       <AskMeModal open={askMeOpen} onOpenChange={setAskMeOpen} />
+
+      {/* AI Enhance Result Modal */}
+      <Modal
+        isOpen={!!enhancingPrompt}
+        onClose={handleCloseEnhanceModal}
+        title={`AI Enhance: ${enhancingPrompt?.title || ''}`}
+        size="lg"
+      >
+        <div className="space-y-4">
+          {isEnhanceStreaming ? (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground flex items-center gap-2">
+                <RefreshCw className="h-3.5 w-3.5 animate-spin text-purple-500" />
+                Enhancing your prompt with AI…
+              </p>
+              <div className="p-4 rounded-lg border bg-purple-50/40 dark:bg-purple-900/10 text-sm font-mono whitespace-pre-wrap min-h-[100px] max-h-[280px] overflow-auto leading-relaxed">
+                {enhancedContent}<span className="animate-pulse text-purple-500">▋</span>
+              </div>
+            </div>
+          ) : enhancedContent ? (
+            <>
+              {/* Before / After diff */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-red-400 inline-block" />
+                    Original
+                  </p>
+                  <div className="p-3 border rounded-md bg-red-50/30 dark:bg-red-900/10 text-sm font-mono whitespace-pre-wrap max-h-[220px] overflow-auto">
+                    {enhancingPrompt?.content}
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-green-400 inline-block" />
+                    AI Enhanced
+                  </p>
+                  <div className="p-3 border rounded-md bg-green-50/30 dark:bg-green-900/10 text-sm font-mono whitespace-pre-wrap max-h-[220px] overflow-auto">
+                    {enhancedContent}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t">
+                <p className="text-xs text-muted-foreground">
+                  Saving will create a new iteration (v{(enhancingPrompt?.current_version ?? 1) + 1}) of this prompt.
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCloseEnhanceModal}
+                  >
+                    Discard
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleSaveEnhancement}
+                    disabled={createIteration.isPending}
+                    className="pharaoh-button flex items-center gap-1.5"
+                  >
+                    {createIteration.isPending
+                      ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      : <GitCommit className="h-3.5 w-3.5" />}
+                    Save as Iteration
+                  </Button>
+                </div>
+              </div>
+            </>
+          ) : null}
+        </div>
+      </Modal>
     </div>
   );
 }
