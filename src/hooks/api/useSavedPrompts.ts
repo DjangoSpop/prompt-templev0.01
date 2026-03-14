@@ -348,6 +348,31 @@ export function useDiscoverTemplates(filters?: {
   });
 }
 
+/**
+ * Infinite-scroll variant — accumulates pages so all prompts are browsable.
+ */
+export function useDiscoverTemplatesInfinite(filters?: {
+  search?: string;
+  category?: string;
+  sort_by?: 'use_count' | 'created_at';
+  sort_order?: 'asc' | 'desc';
+}) {
+  return useInfiniteQuery({
+    queryKey: [...savedPromptKeys.discover(filters), 'infinite'],
+    queryFn: ({ pageParam = 1 }) =>
+      apiClient.discoverTemplates({ ...filters, page: pageParam }) as Promise<PaginatedSavedPrompts>,
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage.next) return allPages.length + 1;
+      const loaded = allPages.reduce((sum, p) => sum + (p.results?.length ?? 0), 0);
+      if (loaded < (lastPage.count ?? 0)) return allPages.length + 1;
+      return undefined;
+    },
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+}
+
 export function useDiscoverCategories() {
   return useQuery({
     queryKey: savedPromptKeys.discoverCategories(),

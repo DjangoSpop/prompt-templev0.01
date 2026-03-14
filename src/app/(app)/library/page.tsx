@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGameStore } from "@/lib/stores/gameStore";
@@ -44,7 +44,16 @@ import {
   Zap,
   Play,
   Share2,
+  Wand2,
+  Layers,
 } from "lucide-react";
+import { AISearchBar } from "@/components/templates/AISearchBar";
+import { SmartFillPanel } from "@/components/templates/SmartFillPanel";
+import { VariationsDrawer } from "@/components/templates/VariationsDrawer";
+import { EnhancedTemplateCard } from "@/components/EnhancedTemplateCard";
+import type { TemplateList, TemplateDetail } from "@/lib/types";
+import type { TemplateRecommendation } from "@/lib/api/typed-client";
+import { apiClient } from "@/lib/api/typed-client";
 
 interface Template {
   id: string;
@@ -204,6 +213,73 @@ const mockTemplates: Template[] = [
     createdAt: new Date("2024-01-06"),
     content: "Analyze the business case for {business_idea} including market size...",
     rarity: "legendary"
+  },
+  {
+    id: "7",
+    title: "SEO Content Optimizer",
+    description: "Optimize your content for search engines with keyword analysis and meta tag generation.",
+    category: "Marketing",
+    difficulty: "Intermediate",
+    rating: 4.7,
+    downloads: 13800,
+    views: 47000,
+    author: {
+      name: "Lisa Park",
+      avatar: "/avatars/lisa.jpg",
+      level: 44
+    },
+    tags: ["seo", "content", "keywords", "optimization"],
+    xpReward: 80,
+    isPremium: false,
+    isBookmarked: false,
+    createdAt: new Date("2024-01-11"),
+    content: "Analyze the following content for {topic} and suggest SEO improvements including...",
+    rarity: "rare"
+  },
+  {
+    id: "8",
+    title: "API Documentation Writer",
+    description: "Generate comprehensive API documentation with examples, parameters, and response schemas.",
+    category: "Development",
+    difficulty: "Advanced",
+    rating: 4.8,
+    downloads: 6200,
+    views: 19000,
+    author: {
+      name: "Tom Hughes",
+      avatar: "/avatars/tom.jpg",
+      level: 61
+    },
+    tags: ["api", "documentation", "technical", "rest"],
+    xpReward: 110,
+    isPremium: true,
+    isBookmarked: false,
+    createdAt: new Date("2024-01-09"),
+    content: "Generate API documentation for the {endpoint_name} endpoint that handles {operation}...",
+    rarity: "epic"
+  },
+  {
+    id: "9",
+    title: "Customer Support Email Drafter",
+    description: "Draft professional customer support responses that address issues empathetically and effectively.",
+    category: "Business",
+    difficulty: "Beginner",
+    rating: 4.6,
+    downloads: 18900,
+    views: 63000,
+    author: {
+      name: "Nadia El-Amin",
+      avatar: "/avatars/nadia.jpg",
+      level: 35
+    },
+    tags: ["email", "support", "customer-service", "communication"],
+    xpReward: 45,
+    isPremium: false,
+    isBookmarked: true,
+    createdAt: new Date("2024-01-13"),
+    lastUsed: new Date("2024-01-19"),
+    content: "Draft a professional support response for a customer experiencing {issue_type}...",
+    rarity: "common"
   }
 ];
 
@@ -246,7 +322,18 @@ export default function LibraryPage() {
   const [selectedRarity, setSelectedRarity] = useState("all");
   const [sortBy, setSortBy] = useState("popular");
   const [showFilters, setShowFilters] = useState(false);
-  
+
+  // AI Features state
+  const [smartFillTemplateId, setSmartFillTemplateId] = useState<string | null>(null);
+  const [smartFillTemplate, setSmartFillTemplate] = useState<TemplateDetail | null>(null);
+  const [smartFillOpen, setSmartFillOpen] = useState(false);
+  const [variationsTemplateId, setVariationsTemplateId] = useState<string | null>(null);
+  const [variationsTemplateTitle, setVariationsTemplateTitle] = useState("");
+  const [variationsOpen, setVariationsOpen] = useState(false);
+  const [aiRecommendations, setAiRecommendations] = useState<TemplateRecommendation[]>([]);
+  const [showAiResults, setShowAiResults] = useState(false);
+  const [isFetchingTemplate, setIsFetchingTemplate] = useState(false);
+
   const { addExperience, addNotification } = useGameStore();
 
   const filteredTemplates = useMemo(() => {
@@ -298,10 +385,47 @@ export default function LibraryPage() {
     });
     router.push(`/optimization?${params.toString()}`);
   };
+
   const handleBookmark = (templateId: string) => {
     // Toggle bookmark logic would go here
     console.log('Toggle bookmark for:', templateId);
   };
+
+  // AI Feature Handlers
+  const handleSmartFill = useCallback(async (templateId: string) => {
+    setIsFetchingTemplate(true);
+    try {
+      // Fetch the full template with fields
+      const template = await apiClient.getTemplate(templateId);
+      setSmartFillTemplate(template);
+      setSmartFillTemplateId(templateId);
+      setSmartFillOpen(true);
+    } catch (error) {
+      console.error('Failed to fetch template for Smart Fill:', error);
+      // Fallback: open with just the ID
+      setSmartFillTemplateId(templateId);
+      setSmartFillOpen(true);
+    } finally {
+      setIsFetchingTemplate(false);
+    }
+  }, []);
+
+  const handleVariations = useCallback((templateId: string, templateTitle: string) => {
+    setVariationsTemplateId(templateId);
+    setVariationsTemplateTitle(templateTitle);
+    setVariationsOpen(true);
+  }, []);
+
+  const handleKeywordSearch = useCallback((query: string) => {
+    setSearchQuery(query);
+    setShowAiResults(false);
+  }, []);
+
+  const handleRecommendationSelect = useCallback((recommendation: TemplateRecommendation) => {
+    // When user selects an AI recommendation, navigate to that template
+    router.push(`/templates/${recommendation.template_id}`);
+    setShowAiResults(false);
+  }, [router]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-primary/5">
@@ -310,31 +434,27 @@ export default function LibraryPage() {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-[#C9A227] via-[#E8D48B] to-[#C9A227] bg-clip-text text-transparent">
                 Template Library
               </h1>
-              <p className="text-muted-foreground mt-1">
-                Discover and use powerful AI templates to boost your productivity
+              <p className="text-muted-foreground mt-1 text-sm md:text-base">
+                Discover sacred scrolls of prompt wisdom
               </p>
             </div>
-            <div className="flex items-center gap-3">
-              <Badge variant="secondary" className="px-3 py-1">
-                <BookOpen className="h-4 w-4 mr-1" />
-                {filteredTemplates.length} templates
-              </Badge>
-            </div>
+            <Badge variant="secondary" className="px-3 py-1 hidden sm:flex">
+              <BookOpen className="h-4 w-4 mr-1" />
+              {filteredTemplates.length} templates
+            </Badge>
           </div>
 
           {/* Search and Filters */}
           <div className="flex flex-col lg:flex-row gap-4">
-            {/* Search */}
+            {/* AI-Powered Search */}
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search templates, tags, or authors..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-background/50 border-border/50"
+              <AISearchBar
+                onKeywordSearch={handleKeywordSearch}
+                onRecommendationSelect={handleRecommendationSelect}
+                placeholder="Search templates with AI (type 10+ chars for semantic search)…"
               />
             </div>
 
@@ -431,8 +551,8 @@ export default function LibraryPage() {
       </div>
 
       {/* Template Grid */}
-      <div className="container mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="container mx-auto px-4 md:px-6 py-6 md:py-8 pb-24 lg:pb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-5">
           <AnimatePresence mode="popLayout">
             {filteredTemplates.map((template, index) => (
               <motion.div
@@ -446,7 +566,7 @@ export default function LibraryPage() {
                 }}
                 layout
               >
-                <Card className={`group relative cursor-pointer transition-all duration-300 hover:scale-[1.02] glass-effect ${rarityGlow[template.rarity]}`}>
+                <Card className={`group relative cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:border-[#C9A227]/40 hover:shadow-lg hover:shadow-[#C9A227]/5 bg-card border-border/50 rounded-xl ${rarityGlow[template.rarity]}`}>
                   {/* Premium blur overlay for locked premium templates */}
                   {template.isPremium && (
                     <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-lg bg-black/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -527,16 +647,16 @@ export default function LibraryPage() {
                     </div>
 
                     {/* Tags */}
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-wrap gap-1.5">
                       {template.tags.slice(0, 3).map(tag => (
-                        <Badge key={tag} variant="outline" className="text-xs">
+                        <span key={tag} className="text-xs px-2 py-0.5 rounded-md bg-[#EBD5A7]/20 text-[#C9A227] dark:bg-[#C9A227]/10 dark:text-[#E8D48B]">
                           {tag}
-                        </Badge>
+                        </span>
                       ))}
                       {template.tags.length > 3 && (
-                        <Badge variant="outline" className="text-xs">
+                        <span className="text-xs px-2 py-0.5 rounded-md bg-muted text-muted-foreground">
                           +{template.tags.length - 3}
-                        </Badge>
+                        </span>
                       )}
                     </div>
 
@@ -556,16 +676,34 @@ export default function LibraryPage() {
 
                     {/* Action Buttons */}
                     <div className="flex gap-2 pt-2">
-                      <Button 
-                        className="flex-1" 
+                      <button
                         onClick={() => handleTemplateUse(template)}
+                        className="flex-1 flex items-center justify-center gap-1.5 bg-[#C9A227] text-white hover:bg-[#C9A227]/90 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
                       >
-                        <Play className="h-4 w-4 mr-1" />
-                        Use Template
-                      </Button>
-                      <Button variant="outline" size="sm" className="px-3">
-                        <Share2 className="h-4 w-4" />
-                      </Button>
+                        <Play className="h-4 w-4" />
+                        Use
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSmartFill(template.id);
+                        }}
+                        className="flex items-center gap-1.5 border border-[#C9A227]/40 text-[#C9A227] hover:bg-[#C9A227]/10 rounded-lg px-3 py-2 text-sm transition-colors"
+                        title="AI Fill — auto-fill variables with AI"
+                      >
+                        <Wand2 className="h-4 w-4" />
+                        <span className="hidden sm:inline">AI Fill</span>
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleVariations(template.id, template.title);
+                        }}
+                        className="flex items-center gap-1.5 border border-border rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:border-border transition-colors"
+                        title="Generate variations"
+                      >
+                        <Layers className="h-4 w-4" />
+                      </button>
                     </div>
                   </CardContent>
                 </Card>
@@ -581,12 +719,12 @@ export default function LibraryPage() {
             animate={{ opacity: 1 }}
             className="text-center py-16"
           >
-            <div className="w-24 h-24 bg-secondary/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <BookOpen className="h-12 w-12 text-muted-foreground" />
+            <div className="w-24 h-24 bg-[#C9A227]/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#C9A227]/20">
+              <BookOpen className="h-12 w-12 text-[#C9A227]/60" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">No templates found</h3>
+            <h3 className="text-xl font-semibold mb-2 text-foreground">No scrolls found in the library</h3>
             <p className="text-muted-foreground max-w-sm mx-auto">
-              Try adjusting your search criteria or filters to find the templates you&apos;re looking for.
+              Try adjusting your search criteria or filters to discover the sacred scrolls you seek.
             </p>
             <Button 
               variant="outline" 
@@ -601,6 +739,64 @@ export default function LibraryPage() {
               Clear all filters
             </Button>
           </motion.div>
+        )}
+
+        {/* AI Features Modals */}
+        {smartFillTemplateId && (
+          <SmartFillPanel
+            open={smartFillOpen}
+            onOpenChange={setSmartFillOpen}
+            templateId={smartFillTemplateId}
+            templateTitle={smartFillTemplate?.title}
+            templatePreview={smartFillTemplate?.template_content?.substring(0, 150)}
+            variables={
+              smartFillTemplate?.fields
+                ? Object.fromEntries(
+                    smartFillTemplate.fields.map((field) => [field.label, field.default_value || ''])
+                  )
+                : {}
+            }
+            onApply={(suggestions) => {
+              console.log('Applied Smart Fill suggestions:', suggestions);
+              // Navigate to optimizer with filled template
+              const template = smartFillTemplate || mockTemplates.find(t => t.id === smartFillTemplateId);
+              if (template) {
+                let filledContent = 'template_content' in template ? template.template_content : template.content;
+                Object.entries(suggestions).forEach(([key, value]) => {
+                  // Try both {key} and {{key}} patterns
+                  filledContent = filledContent.replace(new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, 'g'), value);
+                  filledContent = filledContent.replace(new RegExp(`\\{${key}\\}`, 'g'), value);
+                });
+                const params = new URLSearchParams({
+                  template: template.id,
+                  content: encodeURIComponent(filledContent),
+                  title: `${template.title} (AI Filled)`,
+                });
+                router.push(`/optimization?${params.toString()}`);
+              }
+              setSmartFillOpen(false);
+              setSmartFillTemplate(null);
+              setSmartFillTemplateId(null);
+            }}
+          />
+        )}
+
+        {variationsTemplateId && (
+          <VariationsDrawer
+            open={variationsOpen}
+            onOpenChange={setVariationsOpen}
+            templateId={variationsTemplateId}
+            templateTitle={variationsTemplateTitle}
+            onUseVariation={(variation) => {
+              console.log('Using variation:', variation);
+              // Navigate to optimizer with variation content
+              const params = new URLSearchParams({
+                content: encodeURIComponent(variation.content),
+                title: variation.title,
+              });
+              router.push(`/optimization?${params.toString()}`);
+            }}
+          />
         )}
       </div>
     </div>

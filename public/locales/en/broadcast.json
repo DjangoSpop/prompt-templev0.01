@@ -1,0 +1,82 @@
+{
+  "title": "Multi-AI Broadcast",
+  "subtitle": "Send one prompt to multiple AI models simultaneously and compare their responses side-by-side to find the best result.",
+  "composer": {
+    "title": "Multi-AI Broadcast",
+    "description": "Send your prompt to multiple AI models and compare results",
+    "select_models": "Select AI Models",
+    "selected_count": "{{count}} selected",
+    "show_selection": "Show AI Model Selection ({{count}} selected)",
+    "prompt_placeholder": "Enter your prompt here... Try: 'Write a product description for a smartwatch' or 'Explain quantum computing in simple terms'",
+    "chars": "{{count}} chars",
+    "quick_prompts": {
+      "blog": "Write a blog post about AI",
+      "complex": "Explain a complex concept",
+      "creative": "Generate creative ideas",
+      "documentation": "Write code documentation"
+    },
+    "keyboard_shortcut": "Press ⌘/Ctrl + Enter to submit",
+    "submit_broadcasting": "Broadcasting...",
+    "submit_button": "Broadcast to {{count}} AI{{plural}}",
+    "credits": "{{count}} credits"
+  },
+  "providers": {
+    "deepseek": {
+      "name": "DeepSeek",
+      "description": "Fast and efficient"
+    },
+    "openrouter_qwen": {
+      "name": "Qwen 80B",
+      "description": "Open source powerhouse"
+    },
+    "openrouter_deepseek_r1": {
+      "name": "DeepSeek R1",
+      "description": "Reasoning specialist"
+    },
+    "anthropic_haiku": {
+      "name": "Claude Haiku",
+      "description": "Compact and clever",
+      "requires_key": "API key required"
+    }
+  },
+  "comparison": {
+    "summary_title": "AI Comparison Summary",
+    "no_responses_title": "No Responses Yet",
+    "no_responses_description": "Submit a prompt to see AI models race side-by-side",
+    "total_latency": "{{count}}ms total latency",
+    "best": "Best: {{provider}}",
+    "try_again": "Try Again",
+    "share": "Share Comparison"
+  },
+  "scores": {
+    "overall": "Overall",
+    "completeness": "Complete",
+    "clarity": "Clear",
+    "accuracy": "Accurate",
+    "creativity": "Creative"
+  },
+  "model_card": {
+    "thinking": "{{name}} is thinking...",
+    "error_title": "{{name}}",
+    "winner": "Best Overall",
+    "latency": "{{count}}ms",
+    "tokens": "{{count}} tokens",
+    "copy": "Copy",
+    "copied": "Copied",
+    "show_more": "Show more",
+    "show_less": "Show less"
+  },
+  "user_info": {
+    "title": "Your Credits",
+    "available": "available"
+  },
+  "errors": {
+    "broadcast_failed": "Broadcast Failed",
+    "insufficient_credits": "You don't have enough credits for this broadcast.",
+    "generic": "Failed to broadcast. Please try again."
+  },
+  "share": {
+    "title": "AI Model Comparison",
+    "text": "Check out this AI comparison from Prompt Temple!\n\n{{summary}}"
+  }
+}

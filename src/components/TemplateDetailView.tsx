@@ -5,12 +5,12 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/AuthProvider';
 import { apiClient } from '@/lib/api-client';
 import { TemplateDetail, PromptField } from '@/lib/types';
-import { 
-  Star, 
-  User, 
-  Calendar, 
-  Eye, 
-  Copy, 
+import {
+  Star,
+  User,
+  Calendar,
+  Eye,
+  Copy,
   Play,
   Upload,
   Edit,
@@ -18,11 +18,15 @@ import {
   Check,
   AlertCircle,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Wand2,
+  Layers,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { SmartFillPanel } from '@/components/templates/SmartFillPanel';
+import { VariationsDrawer } from '@/components/templates/VariationsDrawer';
 
 interface TemplateDetailViewProps {
   templateId: string;
@@ -42,6 +46,10 @@ export default function TemplateDetailView({ templateId }: TemplateDetailViewPro
   const [showJsonImport, setShowJsonImport] = useState(false);
   const [jsonInput, setJsonInput] = useState('');
   const [error, setError] = useState<string | null>(null);
+
+  // AI Features state
+  const [smartFillOpen, setSmartFillOpen] = useState(false);
+  const [variationsOpen, setVariationsOpen] = useState(false);
 
   useEffect(() => {
     const loadTemplateData = async () => {
@@ -320,6 +328,26 @@ export default function TemplateDetailView({ templateId }: TemplateDetailViewPro
               </div>
               
               <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSmartFillOpen(true)}
+                  className="flex items-center gap-1.5 border-primary/40 text-primary hover:bg-primary/5"
+                  title="AI Fill — auto-fill variables with AI"
+                >
+                  <Wand2 className="h-4 w-4" />
+                  Smart Fill
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setVariationsOpen(true)}
+                  className="flex items-center gap-1.5"
+                  title="Generate variations"
+                >
+                  <Layers className="h-4 w-4" />
+                  Variations
+                </Button>
                 <Button variant="outline" size="sm" onClick={exportAsJson}>
                   <FileJson className="h-4 w-4 mr-1" />
                   Export JSON
@@ -525,6 +553,38 @@ export default function TemplateDetailView({ templateId }: TemplateDetailViewPro
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* AI Features Modals */}
+      {template && (
+        <>
+          <SmartFillPanel
+            open={smartFillOpen}
+            onOpenChange={setSmartFillOpen}
+            templateId={template.id}
+            templateTitle={template.title}
+            templatePreview={template.template_content?.substring(0, 150)}
+            variables={variables}
+            onApply={(suggestions) => {
+              setVariables((prev) => ({ ...prev, ...suggestions }));
+              setSmartFillOpen(false);
+            }}
+          />
+
+          <VariationsDrawer
+            open={variationsOpen}
+            onOpenChange={setVariationsOpen}
+            templateId={template.id}
+            templateTitle={template.title}
+            onUseVariation={(variation) => {
+              // Apply variation content as the new template content
+              setTemplate((prev) =>
+                prev ? { ...prev, template_content: variation.content } : prev
+              );
+              setVariationsOpen(false);
+            }}
+          />
+        </>
       )}
     </div>
   );

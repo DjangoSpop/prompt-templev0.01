@@ -8,6 +8,9 @@ import { TemplateList, TemplateDetail, TemplateCategory, PaginatedResponse, Temp
 import { EnhancedTemplateDetailModal } from '@/components/templates/EnhancedTemplateDetailModal';
 import { AISearchBar } from '@/components/templates/AISearchBar';
 import { PyramidGrid } from '@/components/pharaonic/PyramidGrid';
+import { Modal } from '@/components/ui/modal';
+import { usePromptOptimization } from '@/hooks/api/useAI';
+import { useCreditsStore } from '@/store/credits';
 import { NefertitiBackground } from '@/components/pharaonic/NefertitiIcon';
 import { StepTracker } from '@/components/onboarding/StepTracker';
 import { toast } from 'react-hot-toast';
@@ -32,7 +35,8 @@ import {
   Share2,
   CheckCircle,
   Loader2,
-  X
+  X,
+  RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -78,6 +82,18 @@ export default function TemplatesPage() {
   
   // Quick copy state
   const [copyingTemplates, setCopyingTemplates] = useState<Set<string>>(new Set());
+
+  // AI Enhance state — same streaming pattern as PromptLibrary
+  const [enhancingTemplate, setEnhancingTemplate] = useState<TemplateList | null>(null);
+  const [enhancedContent, setEnhancedContent] = useState('');
+  const { optimize, cancel, isStreaming: isEnhanceStreaming, output: enhanceOutput } = usePromptOptimization();
+  const { creditsAvailable, creditsRemaining } = useCreditsStore();
+  const hasCredits = creditsRemaining === null || creditsAvailable > 0;
+
+  // Sync streaming output
+  useEffect(() => {
+    if (enhancingTemplate && enhanceOutput) setEnhancedContent(enhanceOutput);
+  }, [enhancingTemplate, enhanceOutput]);
 
   // Debounce search query
   useEffect(() => {
@@ -414,169 +430,148 @@ export default function TemplatesPage() {
   };
 
   const handleUseTemplate = useCallback((templateId: string) => {
-    // Navigate to builder with template
-    // TODO: Implement navigation to builder
-    toast.success('Opening template in builder...', {
-      icon: '🚀',
-      duration: 2000,
-    });
+    // Navigate to template detail page
+    window.location.href = `/templates/${templateId}`;
   }, []);
+
+  const handleEnhanceTemplate = useCallback(async (template: TemplateList) => {
+    if (!hasCredits) {
+      toast.error("You've run out of credits. Upgrade your plan to continue.", {
+        duration: 6000,
+      });
+      return;
+    }
+    const content = `Template: ${template.title}\n\n${template.description}`;
+    setEnhancingTemplate(template);
+    setEnhancedContent('');
+    await optimize({
+      original: content,
+      session_id: `tpl_enhance_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      mode: 'fast',
+    });
+  }, [hasCredits, optimize]);
+
+  const handleCopyEnhanced = useCallback(async () => {
+    if (!enhancedContent) return;
+    await navigator.clipboard.writeText(enhancedContent);
+    toast.success('Enhanced prompt copied to clipboard!');
+  }, [enhancedContent]);
+
+  const handleCloseEnhanceModal = useCallback(() => {
+    if (isEnhanceStreaming) cancel();
+    setEnhancingTemplate(null);
+    setEnhancedContent('');
+  }, [isEnhanceStreaming, cancel]);
 
   const TemplateCard = ({ template }: { template: TemplateList }) => {
     const isCopying = copyingTemplates.has(template.id);
-    
+
     return (
       <motion.div
         layout
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
-        whileHover={{ y: -5 }}
+        whileHover={{ y: -3 }}
         transition={{ duration: 0.2 }}
+        className="min-w-0"
       >
-        <Card className="temple-card pyramid-elevation hover:pharaoh-glow transition-all duration-300 group overflow-hidden">
-          <div className="p-6">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex-1">
-                <button
-                  onClick={() => handleTemplateAction(template, 'view')}
-                  className="text-lg font-semibold text-hieroglyph hover:text-primary transition-colors text-glow group-hover:text-glow-lg text-left"
-                >
-                  {template.title}
-                </button>
-                <p className="text-muted-foreground text-sm mt-1 line-clamp-2">
-                  {template.description}
-                </p>
+        <Card className="group rounded-xl bg-card border border-border/50 hover:border-[#C9A227]/40 hover:shadow-lg hover:shadow-[#C9A227]/5 transition-all duration-200 overflow-hidden h-full flex flex-col">
+          <div className="p-3 sm:p-4 md:p-5 flex flex-col flex-1 min-w-0">
+            {/* Top row: category + rating */}
+            <div className="flex items-center justify-between mb-2 gap-2">
+              <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
+                <span className="text-[10px] sm:text-xs font-medium px-2 py-0.5 rounded-full bg-[#1E3A8A]/10 text-[#1E3A8A] dark:bg-[#6CA0FF]/10 dark:text-[#6CA0FF] truncate max-w-[120px]">
+                  {template.category.name}
+                </span>
+                {template.is_featured && (
+                  <Award className="h-3.5 w-3.5 text-[#C9A227] shrink-0" />
+                )}
               </div>
-              {template.is_featured && (
-                <div className="pharaoh-badge rounded-full p-1 flex-shrink-0 ml-2">
-                  <Award className="h-4 w-4 text-white" />
+              <div className="flex items-center gap-1 shrink-0">
+                <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
+                <span className="text-xs text-muted-foreground">{(template.average_rating ?? 0).toFixed(1)}</span>
+              </div>
+            </div>
+
+            {/* Title */}
+            <button
+              onClick={() => handleTemplateAction(template, 'view')}
+              className="text-sm sm:text-base font-semibold text-foreground hover:text-[#C9A227] transition-colors text-left line-clamp-2 mb-1.5 break-words"
+            >
+              {template.title}
+            </button>
+
+            {/* Description */}
+            <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 mb-2 sm:mb-3 break-words">
+              {template.description}
+            </p>
+
+            {/* Spacer */}
+            <div className="flex-1" />
+
+            {/* Stats row */}
+            <div className="flex items-center justify-between text-[10px] sm:text-xs text-muted-foreground mb-2 sm:mb-3">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="flex items-center gap-1">
+                  <Users className="h-3 w-3" />
+                  <span>{(template.usage_count ?? 0).toLocaleString()}</span>
                 </div>
-              )}
-            </div>
-
-            <div className="flex items-center space-x-4 text-sm text-muted-foreground mb-4">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger className="flex items-center space-x-1">
-                    <Star className="h-4 w-4 text-pharaoh fill-current" />
-                    <span>{template.average_rating.toFixed(1)}</span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Average rating from {template.usage_count} users</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger className="flex items-center space-x-1">
-                    <Users className="h-4 w-4 text-oasis" />
-                    <span>{template.usage_count.toLocaleString()}</span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Times this template has been used</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              
-              <Badge variant="outline" className="text-xs border-oasis/30 text-oasis">
-                {template.category.name}
-              </Badge>
-              
-              {template.field_count && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger className="flex items-center space-x-1 text-xs">
-                      <Hash className="h-3 w-3" />
-                      <span>{template.field_count}</span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{template.field_count} customizable fields</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        size="sm"
-                        className="bg-pharaoh-gold hover:bg-pharaoh-gold/90 text-white text-xs"
-                        onClick={() => handleTemplateAction(template, 'use')}
-                      >
-                        <Zap className="h-3 w-3 mr-1" />
-                        <span>Use</span>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Open template with full customization</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-primary/30 hover:border-primary hover:bg-primary/10 text-xs"
-                        onClick={() => handleTemplateAction(template, 'quick_copy')}
-                        disabled={isCopying}
-                      >
-                        {isCopying ? (
-                          <Loader2 className="h-3 w-3 animate-spin" />
-                        ) : (
-                          <Copy className="h-3 w-3" />
-                        )}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Quick copy template info</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-destructive/30 hover:border-destructive hover:bg-destructive/10 text-xs"
-                        onClick={() => handleTemplateAction(template, 'favorite')}
-                      >
-                        <Heart className="h-3 w-3" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Add to favorites</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div>
-                        <TemplateShareMenu template={template} />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Share template</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                {template.field_count && (
+                  <div className="flex items-center gap-1">
+                    <Hash className="h-3 w-3" />
+                    <span>{template.field_count} fields</span>
+                  </div>
+                )}
               </div>
-              
-              <div className="text-xs text-muted-foreground flex items-center space-x-2">
-                <Clock className="h-3 w-3" />
-                <span>2 min setup</span>
+            </div>
+
+            {/* Actions — wrapped for mobile */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <Button
+                size="sm"
+                className="bg-[#C9A227] hover:bg-[#C9A227]/90 text-white text-[10px] sm:text-xs font-medium h-7 px-2 sm:px-3"
+                onClick={() => handleTemplateAction(template, 'use')}
+              >
+                <Zap className="h-3 w-3 mr-0.5 sm:mr-1" />
+                Use
+              </Button>
+
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-[#C9A227]/40 text-[#C9A227] hover:bg-[#C9A227]/10 text-[10px] sm:text-xs h-7 px-2"
+                onClick={() => handleEnhanceTemplate(template)}
+              >
+                <Sparkles className="h-3 w-3 mr-0.5" />
+                <span className="hidden sm:inline">Enhance</span>
+              </Button>
+
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-border hover:border-[#C9A227]/40 hover:bg-[#C9A227]/5 text-xs h-7 w-7 p-0"
+                onClick={() => handleTemplateAction(template, 'quick_copy')}
+                disabled={isCopying}
+              >
+                {isCopying ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Copy className="h-3 w-3" />
+                )}
+              </Button>
+
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-border hover:border-red-400/40 hover:bg-red-500/5 text-xs h-7 w-7 p-0"
+                onClick={() => handleTemplateAction(template, 'favorite')}
+              >
+                <Heart className="h-3 w-3" />
+              </Button>
+
+              <div className="ml-auto">
+                <TemplateShareMenu template={template} />
               </div>
             </div>
           </div>
@@ -586,53 +581,61 @@ export default function TemplatesPage() {
   };
 
   const TemplateListItem = ({ template }: { template: TemplateList }) => (
-    <Card className="temple-card pyramid-elevation hover:pharaoh-glow transition-all duration-300">
-      <div className="p-4 flex items-center justify-between">
-        <div className="flex-1">
-          <div className="flex items-center space-x-3">
-            <Link 
+    <Card className="group rounded-xl bg-card border border-border/50 hover:border-[#C9A227]/40 hover:shadow-lg hover:shadow-[#C9A227]/5 transition-all duration-200 overflow-hidden">
+      <div className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center gap-3 min-w-0">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1 min-w-0">
+            <Link
               href={`/templates/${template.id}`}
-              className="text-lg font-semibold text-hieroglyph hover:text-primary transition-colors text-glow"
+              className="text-sm sm:text-base font-semibold text-foreground hover:text-[#C9A227] transition-colors truncate"
             >
               {template.title}
             </Link>
             {template.is_featured && (
-              <div className="pharaoh-badge rounded-full p-1">
-                <Award className="h-3 w-3 text-white" />
-              </div>
+              <Award className="h-3.5 w-3.5 text-[#C9A227] shrink-0" />
             )}
-            <span className="text-xs bg-oasis/20 text-oasis px-2 py-1 rounded border border-oasis/30">
+            <span className="text-[10px] sm:text-xs font-medium px-2 py-0.5 rounded-full bg-[#1E3A8A]/10 text-[#1E3A8A] dark:bg-[#6CA0FF]/10 dark:text-[#6CA0FF] shrink-0 hidden sm:inline-flex">
               {template.category.name}
             </span>
           </div>
-          <p className="text-muted-foreground text-sm mt-1 line-clamp-1">
+          <p className="text-muted-foreground text-xs sm:text-sm line-clamp-1 mb-1.5">
             {template.description}
           </p>
-          <div className="flex items-center space-x-4 text-sm text-muted-foreground mt-2">
-            <div className="flex items-center space-x-1">
-              <Star className="h-3 w-3 text-pharaoh fill-current" />
-              <span>{template.average_rating.toFixed(1)}</span>
+          <div className="flex items-center gap-3 text-[10px] sm:text-xs text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
+              <span>{(template.average_rating ?? 0).toFixed(1)}</span>
             </div>
-            <div className="flex items-center space-x-1">
-              <Users className="h-3 w-3 text-oasis" />
-              <span>{template.usage_count} uses</span>
+            <div className="flex items-center gap-1">
+              <Users className="h-3 w-3" />
+              <span>{(template.usage_count ?? 0).toLocaleString()}</span>
             </div>
-            <span>{template.field_count} sacred fields</span>
+            <span>{template.field_count} fields</span>
           </div>
         </div>
-        
-        <div className="flex items-center space-x-2 ml-4">
+
+        <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
           <Button
             size="sm"
-            className="pharaoh-badge text-xs"
+            className="bg-[#C9A227] hover:bg-[#C9A227]/90 text-white text-[10px] sm:text-xs h-7 px-2 sm:px-3"
             onClick={() => handleTemplateAction(template, 'use')}
           >
-            Invoke Template
+            <Zap className="h-3 w-3 mr-0.5" />
+            Use
           </Button>
           <Button
             size="sm"
             variant="outline"
-            className="border-primary/30 hover:border-primary hover:bg-primary/10"
+            className="border-[#C9A227]/40 text-[#C9A227] hover:bg-[#C9A227]/10 text-[10px] sm:text-xs h-7 px-2"
+            onClick={() => handleEnhanceTemplate(template)}
+          >
+            <Sparkles className="h-3 w-3 mr-0.5" />
+            <span className="hidden sm:inline">Enhance</span>
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="border-border hover:border-[#C9A227]/40 text-xs h-7 w-7 p-0"
             onClick={() => handleTemplateAction(template, 'duplicate')}
           >
             <Copy className="h-3 w-3" />
@@ -640,7 +643,7 @@ export default function TemplatesPage() {
           <Button
             size="sm"
             variant="outline"
-            className="border-destructive/30 hover:border-destructive hover:bg-destructive/10"
+            className="border-border hover:border-red-400/40 text-xs h-7 w-7 p-0"
             onClick={() => handleTemplateAction(template, 'favorite')}
           >
             <Heart className="h-3 w-3" />
@@ -652,17 +655,17 @@ export default function TemplatesPage() {
   );
 
   return (
-    <div className="min-h-screen bg-background relative">
+    <div className="min-h-screen bg-background relative pb-20 lg:pb-0 overflow-x-hidden">
       {/* Track onboarding step completion */}
       <StepTracker stepId="library" />
-      
+
       {/* Background decoration */}
       <div className="absolute inset-0 opacity-5 pointer-events-none">
         <PyramidGrid animate={false} />
       </div>
       <NefertitiBackground opacity={0.03} />
-      
-      <div className="relative z-10 container mx-auto px-4 py-4 md:px-6 md:py-8">
+
+      <div className="relative z-10 container mx-auto px-3 py-4 md:px-6 md:py-8 max-w-full overflow-hidden">
         {/* Enhanced Header Section */}
         <motion.div 
           className="text-center mb-8 md:mb-12"
@@ -670,28 +673,28 @@ export default function TemplatesPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <div className="flex items-center justify-center space-x-4 mb-6">
-            <motion.div 
-              className="w-16 h-16 bg-gradient-to-br from-pharaoh-gold to-nile-teal rounded-full flex items-center justify-center shadow-pyramid"
+          <div className="flex items-center justify-center gap-3 md:gap-4 mb-6">
+            <motion.div
+              className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-pharaoh-gold to-nile-teal rounded-full flex items-center justify-center shadow-pyramid shrink-0"
               animate={{ rotate: [0, 5, -5, 0] }}
               transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
             >
-              <BookOpen className="h-8 w-8 text-white" />
+              <BookOpen className="h-6 w-6 md:h-8 md:w-8 text-white" />
             </motion.div>
             <div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold bg-gradient-to-r from-lapis-blue via-pharaoh-gold to-nile-teal bg-clip-text text-transparent text-center sm:text-left">
+              <h1 className="text-xl sm:text-3xl md:text-5xl font-display font-bold bg-gradient-to-r from-lapis-blue via-pharaoh-gold to-nile-teal bg-clip-text text-transparent break-words">
                 The Sacred Archive
               </h1>
-              <p className="text-lg md:text-xl text-muted-foreground mt-2 text-center sm:text-left">
-                Ancient wisdom meets modern AI • {templates.length.toLocaleString()} sacred scrolls
+              <p className="text-sm md:text-xl text-muted-foreground mt-1 md:mt-2">
+                Ancient wisdom meets modern AI
               </p>
             </div>
           </div>
           
 
 
-          {/* Download Section */}
-          <div className="grid md:grid-cols-3 gap-6 mb-8">
+          {/* Download Section — hidden on mobile for cleaner UX */}
+          <div className="hidden md:grid md:grid-cols-3 gap-6 mb-8">
             <Card className="temple-card p-6 text-center pyramid-elevation hover:pharaoh-glow transition-all duration-300">
               <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
                 <Award className="h-6 w-6 text-white" />
@@ -736,45 +739,46 @@ export default function TemplatesPage() {
         </motion.div>
 
         {/* Header Actions */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-          <div>
-            <h2 className="text-3xl font-bold text-hieroglyph text-glow">Temple Library</h2>
-            <p className="text-muted-foreground mt-2">
-              Discover, use, and create AI prompt templates for every sacred ritual.
+        <div className="flex items-center justify-between mb-6 md:mb-8 gap-3">
+          <div className="min-w-0">
+            <h2 className="text-lg md:text-3xl font-bold text-hieroglyph text-glow truncate">Temple Library</h2>
+            <p className="text-muted-foreground mt-1 text-xs md:text-base">
+              Discover and use AI prompt templates
             </p>
           </div>
-          <Link href="/templates/create">
-            <Button className="pharaoh-badge mt-4 md:mt-0 flex items-center space-x-2 pyramid-elevation">
-              <Plus className="h-4 w-4" />
-              <span>Forge New Template</span>
+          <Link href="/templates/create" className="shrink-0">
+            <Button className="pharaoh-badge flex items-center gap-1.5 sm:gap-2 pyramid-elevation text-xs sm:text-sm">
+              <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Forge New Template</span>
+              <span className="sm:hidden">Create</span>
             </Button>
           </Link>
         </div>
 
       {/* Featured & Trending Section */}
-      <div className="grid md:grid-cols-2 gap-8 mb-8">
-        <div>
-          <h2 className="text-xl font-semibold mb-4 flex items-center text-hieroglyph text-glow">
-            <Award className="h-5 w-5 mr-2 text-pharaoh" />
-            Sacred Featured Scrolls
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 mb-6 md:mb-8">
+        <div className="min-w-0">
+          <h2 className="text-base md:text-xl font-semibold mb-3 md:mb-4 flex items-center text-hieroglyph text-glow">
+            <Award className="h-4 w-4 md:h-5 md:w-5 mr-2 text-pharaoh shrink-0" />
+            Featured Scrolls
           </h2>
           <div className="space-y-3">
             {featuredTemplates.map(template => (
-              <Card key={template.id} className="temple-card p-3 pyramid-elevation hover:pharaoh-glow transition-all duration-300">
-                <div className="flex items-start justify-between gap-2">
-                  <Link 
+              <Card key={template.id} className="temple-card p-3 pyramid-elevation hover:pharaoh-glow transition-all duration-300 overflow-hidden">
+                <div className="flex items-start justify-between gap-2 min-w-0">
+                  <Link
                     href={`/templates/${template.id}`}
-                    className="font-medium text-hieroglyph hover:text-primary transition-colors text-glow"
+                    className="font-medium text-sm text-hieroglyph hover:text-primary transition-colors text-glow truncate"
                   >
                     {template.title}
                   </Link>
                   <TemplateShareMenu template={template} />
                 </div>
-                <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-1">
                   {template.description}
                 </p>
                 <div className="flex items-center space-x-2 mt-2 text-xs text-muted-foreground">
-                  <Star className="h-3 w-3 text-pharaoh fill-current" />
+                  <Star className="h-3 w-3 text-pharaoh fill-current shrink-0" />
                   <span>{template.average_rating.toFixed(1)}</span>
                   <span>•</span>
                   <span>{template.usage_count} uses</span>
@@ -784,28 +788,28 @@ export default function TemplatesPage() {
           </div>
         </div>
 
-        <div>
-          <h2 className="text-xl font-semibold mb-4 flex items-center text-hieroglyph text-glow">
-            <TrendingUp className="h-5 w-5 mr-2 text-oasis" />
-            Trending Ancient Wisdom
+        <div className="min-w-0">
+          <h2 className="text-base md:text-xl font-semibold mb-3 md:mb-4 flex items-center text-hieroglyph text-glow">
+            <TrendingUp className="h-4 w-4 md:h-5 md:w-5 mr-2 text-oasis shrink-0" />
+            Trending Wisdom
           </h2>
           <div className="space-y-3">
             {trendingTemplates.map(template => (
-              <Card key={template.id} className="temple-card p-3 pyramid-elevation hover:pharaoh-glow transition-all duration-300">
-                <div className="flex items-start justify-between gap-2">
-                  <Link 
+              <Card key={template.id} className="temple-card p-3 pyramid-elevation hover:pharaoh-glow transition-all duration-300 overflow-hidden">
+                <div className="flex items-start justify-between gap-2 min-w-0">
+                  <Link
                     href={`/templates/${template.id}`}
-                    className="font-medium text-hieroglyph hover:text-primary transition-colors text-glow"
+                    className="font-medium text-sm text-hieroglyph hover:text-primary transition-colors text-glow truncate"
                   >
                     {template.title}
                   </Link>
                   <TemplateShareMenu template={template} />
                 </div>
-                <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-1">
                   {template.description}
                 </p>
                 <div className="flex items-center space-x-2 mt-2 text-xs text-muted-foreground">
-                  <Star className="h-3 w-3 text-pharaoh fill-current" />
+                  <Star className="h-3 w-3 text-pharaoh fill-current shrink-0" />
                   <span>{template.average_rating.toFixed(1)}</span>
                   <span>•</span>
                   <span>{template.usage_count} uses</span>
@@ -817,23 +821,23 @@ export default function TemplatesPage() {
       </div>
 
       {/* Search and Filters */}
-      <Card className="temple-card p-6 mb-6 pyramid-elevation">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 lg:space-x-4">
-          <div className="flex-1">
-            <AISearchBar
-              onKeywordSearch={(q) => setSearchQuery(q)}
-              placeholder="Search the sacred scrolls…"
-              className="w-full"
-            />
-          </div>
+      <Card className="temple-card p-3 sm:p-4 md:p-6 mb-4 md:mb-6 pyramid-elevation overflow-hidden">
+        <div className="space-y-3">
+          {/* Search bar */}
+          <AISearchBar
+            onKeywordSearch={(q) => setSearchQuery(q)}
+            placeholder="Search the sacred scrolls…"
+            className="w-full"
+          />
 
-          <div className="flex flex-wrap items-center space-x-4">
+          {/* Filters row — scrollable on mobile */}
+          <div className="flex items-center gap-2 md:gap-4 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
             <select
               value={selectedCategory || ''}
               onChange={(e) => setSelectedCategory(e.target.value ? Number(e.target.value) : null)}
-              className="px-3 py-2 border border-primary/30 rounded-lg focus:ring-2 focus:ring-primary bg-secondary/50 text-hieroglyph"
+              className="px-3 py-2 border border-primary/30 rounded-lg focus:ring-2 focus:ring-primary bg-secondary/50 text-hieroglyph text-sm shrink-0"
             >
-              <option value="">All Sacred Categories</option>
+              <option value="">All Categories</option>
               {categories.map(category => (
                 <option key={category.id} value={category.id}>
                   {category.name}
@@ -844,30 +848,31 @@ export default function TemplatesPage() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="px-3 py-2 border border-primary/30 rounded-lg focus:ring-2 focus:ring-primary bg-secondary/50 text-hieroglyph"
+              className="px-3 py-2 border border-primary/30 rounded-lg focus:ring-2 focus:ring-primary bg-secondary/50 text-hieroglyph text-sm shrink-0"
             >
-              <option value="popularity">Most Revered</option>
-              <option value="rating">Highest Blessed</option>
-              <option value="recent">Newest Discoveries</option>
-              <option value="trending">Rising Power</option>
+              <option value="popularity">Most Popular</option>
+              <option value="rating">Top Rated</option>
+              <option value="recent">Newest</option>
+              <option value="trending">Trending</option>
             </select>
 
-            <label className="flex items-center space-x-2 text-hieroglyph">
+            <label className="flex items-center gap-2 text-hieroglyph text-sm shrink-0">
               <input
                 type="checkbox"
                 checked={showFeaturedOnly}
                 onChange={(e) => setShowFeaturedOnly(e.target.checked)}
                 className="rounded border-primary/30 text-primary focus:ring-primary"
               />
-              <span>Sacred Scrolls Only</span>
+              <span className="hidden sm:inline">Featured Only</span>
+              <span className="sm:hidden">Featured</span>
             </label>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-1 shrink-0 ml-auto">
               <Button
                 variant={viewMode === 'grid' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setViewMode('grid')}
-                className="pharaoh-badge"
+                className={viewMode === 'grid' ? 'pharaoh-badge' : 'border-primary/30'}
               >
                 <Grid className="h-4 w-4" />
               </Button>
@@ -875,7 +880,7 @@ export default function TemplatesPage() {
                 variant={viewMode === 'list' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setViewMode('list')}
-                className="border-primary/30 hover:border-primary hover:bg-primary/10"
+                className={viewMode === 'list' ? 'pharaoh-badge' : 'border-primary/30'}
               >
                 <List className="h-4 w-4" />
               </Button>
@@ -886,23 +891,57 @@ export default function TemplatesPage() {
 
       {/* Templates Grid/List */}
       {isLoading ? (
-        <div className="flex items-center justify-center min-h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className={viewMode === 'grid'
+          ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-6'
+          : 'space-y-3'
+        }>
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="rounded-xl border border-border/50 bg-card p-4 animate-pulse min-w-0">
+              <div className="flex items-center justify-between mb-3">
+                <div className="h-5 w-20 rounded-full bg-muted" />
+                <div className="h-4 w-10 rounded bg-muted" />
+              </div>
+              <div className="h-5 w-3/4 rounded bg-muted mb-2" />
+              <div className="h-4 w-full rounded bg-muted mb-1" />
+              <div className="h-4 w-2/3 rounded bg-muted mb-4" />
+              <div className="flex gap-2">
+                <div className="h-4 w-16 rounded bg-muted" />
+                <div className="h-4 w-16 rounded bg-muted" />
+              </div>
+              <div className="flex gap-2 mt-4">
+                <div className="h-8 w-16 rounded-lg bg-muted" />
+                <div className="h-8 w-8 rounded-lg bg-muted" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : templates.length === 0 ? (
-        <Card className="temple-card p-8 text-center pyramid-elevation">
-          <Search className="h-12 w-12 text-primary mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-hieroglyph mb-2">No Sacred Scrolls Found</h3>
-          <p className="text-muted-foreground">
+        <Card className="temple-card p-8 md:p-12 text-center pyramid-elevation">
+          <div className="w-20 h-20 bg-[#C9A227]/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#C9A227]/20">
+            <Search className="h-10 w-10 text-[#C9A227]/60" />
+          </div>
+          <h3 className="text-lg font-semibold text-hieroglyph mb-2">No Sacred Scrolls Found</h3>
+          <p className="text-muted-foreground text-sm max-w-sm mx-auto">
             Try adjusting your search criteria or explore our featured temple archives.
           </p>
+          <Button
+            variant="outline"
+            className="mt-4 border-primary/30"
+            onClick={() => {
+              setSearchQuery('');
+              setSelectedCategory(null);
+              setShowFeaturedOnly(false);
+            }}
+          >
+            Clear all filters
+          </Button>
         </Card>
       ) : (
         <>
-          <motion.div 
-            className={viewMode === 'grid' 
-              ? 'grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' 
-              : 'space-y-4'
+          <motion.div
+            className={viewMode === 'grid'
+              ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-6'
+              : 'space-y-3'
             }
             layout
           >
@@ -919,16 +958,18 @@ export default function TemplatesPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-center space-x-2 mt-8">
+            <div className="flex items-center justify-center gap-2 mt-6 md:mt-8">
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => loadTemplates(currentPage - 1)}
                 disabled={currentPage === 1}
+                className="border-border text-sm"
               >
-                Previous
+                Prev
               </Button>
-              
-              <div className="flex items-center space-x-1">
+
+              <div className="flex items-center gap-1">
                 {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                   const page = i + 1;
                   return (
@@ -937,7 +978,7 @@ export default function TemplatesPage() {
                       variant={currentPage === page ? 'default' : 'outline'}
                       size="sm"
                       onClick={() => loadTemplates(page)}
-                      className={currentPage === page ? 'pharaoh-badge' : 'border-primary/30 hover:border-primary hover:bg-primary/10'}
+                      className={currentPage === page ? 'bg-[#C9A227] hover:bg-[#C9A227]/90 text-white' : 'border-border'}
                     >
                       {page}
                     </Button>
@@ -947,9 +988,10 @@ export default function TemplatesPage() {
 
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => loadTemplates(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="border-primary/30 hover:border-primary hover:bg-primary/10"
+                className="border-border text-sm"
               >
                 Next
               </Button>
@@ -970,6 +1012,76 @@ export default function TemplatesPage() {
           onUse={handleUseTemplate}
         />
       )}
+
+      {/* AI Enhance Result Modal */}
+      <Modal
+        isOpen={!!enhancingTemplate}
+        onClose={handleCloseEnhanceModal}
+        title={`AI Enhance: ${enhancingTemplate?.title || ''}`}
+        size="lg"
+      >
+        <div className="space-y-4">
+          {isEnhanceStreaming ? (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground flex items-center gap-2">
+                <RefreshCw className="h-3.5 w-3.5 animate-spin text-purple-500" />
+                Enhancing your template with AI…
+              </p>
+              <div className="p-4 rounded-lg border bg-purple-50/40 dark:bg-purple-900/10 text-sm font-mono whitespace-pre-wrap min-h-[100px] max-h-[280px] overflow-auto leading-relaxed">
+                {enhancedContent}<span className="animate-pulse text-purple-500">▋</span>
+              </div>
+            </div>
+          ) : enhancedContent ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-red-400 inline-block" />
+                    Original
+                  </p>
+                  <div className="p-3 border rounded-md bg-red-50/30 dark:bg-red-900/10 text-sm font-mono whitespace-pre-wrap max-h-[220px] overflow-auto">
+                    {enhancingTemplate?.description}
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-green-400 inline-block" />
+                    AI Enhanced
+                  </p>
+                  <div className="p-3 border rounded-md bg-green-50/30 dark:bg-green-900/10 text-sm font-mono whitespace-pre-wrap max-h-[220px] overflow-auto">
+                    {enhancedContent}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t">
+                <p className="text-xs text-muted-foreground">
+                  Copy the enhanced version to use it anywhere.
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCloseEnhanceModal}
+                  >
+                    Close
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleCopyEnhanced}
+                    className="bg-[#C9A227] hover:bg-[#C9A227]/90 text-white flex items-center gap-1.5"
+                  >
+                    <Copy className="h-3.5 w-3.5" />
+                    Copy Enhanced
+                  </Button>
+                </div>
+              </div>
+            </>
+          ) : null}
+        </div>
+      </Modal>
     </div>
   </div>
   );

@@ -26,7 +26,7 @@ interface ModelCardProps {
   isWinner?: boolean;
   isExpanded?: boolean;
   onToggleExpand?: () => void;
-  onCopy?: (content: string) => void;
+  onCopy?: (content: string, event: React.MouseEvent) => Promise<void>;
   className?: string;
 }
 
@@ -59,9 +59,9 @@ export const ModelCard: React.FC<ModelCardProps> = ({
   const provider = AVAILABLE_PROVIDERS.find((p) => p.id === response.provider);
   const isLoading = !response.content && !response.error;
 
-  const handleCopy = () => {
+  const handleCopy = async (event: React.MouseEvent) => {
     if (onCopy && response.content) {
-      onCopy(response.content);
+      await onCopy(response.content, event);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }

@@ -10,12 +10,16 @@ import {
   HelpCircle,
   Download,
   User,
+  Radio,
+  Layers,
   X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const MORE_ITEMS = [
   { href: '/templates',  label: 'Templates',  icon: BookOpen    },
+  { href: '/broadcast',  label: 'Broadcast',  icon: Radio       },
+  { href: '/playground', label: 'Playground', icon: Layers      },
   { href: '/analysis',   label: 'Analytics',  icon: TrendingUp  },
   { href: '/academy',    label: 'Academy',    icon: Crown       },
   { href: '/settings',   label: 'Settings',   icon: Settings    },

@@ -9,6 +9,7 @@ import { ImprovementTags, parseImprovements, SAMPLE_IMPROVEMENT_TAGS, type Impro
 import { ViralShareButton } from '@/components/ViralShareButton';
 import { apiClient } from '@/lib/api/typed-client';
 import type { OptimizeStreamResult } from '@/lib/api/ai';
+import { copyWithConfetti } from '@/lib/utils/confetti';
 
 interface OptimizationResultPanelProps {
   result: OptimizeStreamResult | null;
@@ -73,6 +74,23 @@ export function OptimizationResultPanel({
       setSaving(false);
     }
   }, [result, originalPrompt, saving, saved, onSave]);
+
+  const handleCopy = useCallback(async (event: React.MouseEvent) => {
+    if (!result?.optimized) return;
+
+    const success = await copyWithConfetti(result.optimized, {
+      intensity: 'medium',
+      x: event.clientX,
+      y: event.clientY,
+    });
+
+    if (success) {
+      toast.success('Prompt copied to clipboard');
+      onCopy?.();
+    } else {
+      toast.error('Failed to copy prompt');
+    }
+  }, [result?.optimized, onCopy]);
   const wowScore = useMemo<number>(() => {
     if (!result) return 0;
     return computeWowScore(result);
@@ -135,9 +153,9 @@ export function OptimizationResultPanel({
           transition={{ delay: 0.4 }}
           className="flex items-center gap-2 pt-2 border-t border-[rgba(245,197,24,0.08)]"
         >
-          {onCopy && (
+          {result?.optimized && (
             <button
-              onClick={onCopy}
+              onClick={handleCopy}
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-[#9CA3AF] hover:text-white hover:bg-white/5 transition-all"
             >
               <Copy className="w-3.5 h-3.5" />

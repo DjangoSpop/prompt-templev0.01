@@ -17,9 +17,9 @@ export const CREDIT_COSTS = {
   // SEO & Templates
   seoSpec: 10,
   aiBroadcast: 8,
-  smartFill: 5,
-  templateRecommendations: 3,
-  templateVariations: 5,
+  smartFill: 2, // Sprint 4: Smart Fill one-click template completion
+  templateRecommendations: 1, // Sprint 4: AI semantic search per query
+  templateVariations: 5, // Sprint 4: Generate 3 tone variations
 
   // Fallback
   default: 5,

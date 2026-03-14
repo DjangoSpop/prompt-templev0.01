@@ -1,0 +1,82 @@
+{
+  "title": "بث الذكاء الاصطناعي المتعدد",
+  "subtitle": "أرسل موجهًا واحدًا إلى نماذج متعددة من الذكاء الاصطناعي في نفس الوقت وقارن بين ردودها جنبًا إلى جنب للعثور على أفضل نتيجة.",
+  "composer": {
+    "title": "بث الذكاء الاصطناعي المتعدد",
+    "description": "أرسل موجهك إلى نماذج متعددة من الذكاء الاصطناعي وقارن النتائج",
+    "select_models": "اختر نماذج الذكاء الاصطناعي",
+    "selected_count": "{{count}} محدد",
+    "show_selection": "عرض اختيار نماذج الذكاء الاصطناعي ({{count}} محدد)",
+    "prompt_placeholder": "أدخل موجهك هنا... جرب: 'اكتب وصف منتج لساعة ذكية' أو 'اشرح الحوسبة الكمومية ببساطة'",
+    "chars": "{{count}} حرف",
+    "quick_prompts": {
+      "blog": "اكتب منشور مدونة عن الذكاء الاصطناعي",
+      "complex": "اشرح مفهومًا معقدًا",
+      "creative": "ولد أفكارًا إبداعية",
+      "documentation": "اكتب توثيق الكود"
+    },
+    "keyboard_shortcut": "اضغط ⌘/Ctrl + Enter للإرسال",
+    "submit_broadcasting": "جاري البث...",
+    "submit_button": "بث إلى {{count}} ذكاء اصطناعي{{plural}}",
+    "credits": "{{count}} نقطة"
+  },
+  "providers": {
+    "deepseek": {
+      "name": "ديب سيك",
+      "description": "سريع وفعال"
+    },
+    "openrouter_qwen": {
+      "name": "Qwen 80B",
+      "description": "قوة المصادر المفتوحة"
+    },
+    "openrouter_deepseek_r1": {
+      "name": "ديب سيك R1",
+      "description": "متخصص في الاستدلال"
+    },
+    "anthropic_haiku": {
+      "name": "كلود هايكو",
+      "description": "مضغوط وذكي",
+      "requires_key": "مطلوب مفتاح API"
+    }
+  },
+  "comparison": {
+    "summary_title": "ملخص مقارنة الذكاء الاصطناعي",
+    "no_responses_title": "لا توجد ردود بعد",
+    "no_responses_description": "أرسل موجهًا لترى نماذج الذكاء الاصطناعي تتنافس جنبًا إلى جنب",
+    "total_latency": "{{count}} مللي ثانية إجمالي زمن الاستجابة",
+    "best": "الأفضل: {{provider}}",
+    "try_again": "حاول مرة أخرى",
+    "share": "مشاركة المقارنة"
+  },
+  "scores": {
+    "overall": "الإجمالي",
+    "completeness": "الاكتمال",
+    "clarity": "الوضوح",
+    "accuracy": "الدقة",
+    "creativity": "الإبداع"
+  },
+  "model_card": {
+    "thinking": "{{name}} يفكر...",
+    "error_title": "{{name}}",
+    "winner": "الأفضل بشكل عام",
+    "latency": "{{count}} مللي ثانية",
+    "tokens": "{{count}} رمز",
+    "copy": "نسخ",
+    "copied": "تم النسخ",
+    "show_more": "عرض المزيد",
+    "show_less": "عرض أقل"
+  },
+  "user_info": {
+    "title": "نقاطك",
+    "available": "متاحة"
+  },
+  "errors": {
+    "broadcast_failed": "فشل البث",
+    "insufficient_credits": "ليس لديك نقاط كافية لهذا البث.",
+    "generic": "فشل البث. يرجى المحاولة مرة أخرى."
+  },
+  "share": {
+    "title": "مقارنة نماذج الذكاء الاصطناعي",
+    "text": "تحقق من هذه المقارنة للذكاء الاصطناعي من معبد الموجهات!\n\n{{summary}}"
+  }
+}

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -10,9 +11,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Layers, Copy, Loader2, RefreshCw } from 'lucide-react';
+import { Layers, Copy, RefreshCw } from 'lucide-react';
 import { useTemplateVariations } from '@/hooks/api/useSmartTemplates';
 import { CostPreviewPill } from '@/components/credits/CostPreviewPill';
+import { CostConfirmation } from '@/components/credits/CostConfirmation';
+import { EgyptianLoadingCompact } from './EgyptianLoadingCompact';
 import { toast } from 'sonner';
 import type { TemplateVariation } from '@/lib/api/typed-client';
 
@@ -32,9 +35,19 @@ export function VariationsDrawer({
   onUseVariation,
 }: VariationsDrawerProps) {
   const variationsMutation = useTemplateVariations(templateId);
+  const [showCostConfirmation, setShowCostConfirmation] = useState(false);
 
-  const handleGenerate = () => {
+  const handleGenerateRequest = () => {
+    setShowCostConfirmation(true);
+  };
+
+  const handleConfirmCost = () => {
+    setShowCostConfirmation(false);
     variationsMutation.mutate({ count: 4 });
+  };
+
+  const handleCancelCost = () => {
+    setShowCostConfirmation(false);
   };
 
   const handleCopy = (content: string) => {
@@ -56,29 +69,33 @@ export function VariationsDrawer({
         </DialogHeader>
 
         <div className="mt-4 space-y-4">
-          {!variationsMutation.data && !variationsMutation.isPending && (
+          {!variationsMutation.data && !variationsMutation.isPending && !showCostConfirmation && (
             <div className="flex items-center justify-between">
               <CostPreviewPill feature="template_variations" />
-              <Button onClick={handleGenerate} className="flex items-center gap-2">
+              <Button onClick={handleGenerateRequest} className="flex items-center gap-2">
                 <Layers className="h-4 w-4" />
                 Generate Variations
               </Button>
             </div>
           )}
 
+          {showCostConfirmation && (
+            <div className="py-4">
+              <CostConfirmation
+                feature="variations"
+                onConfirm={handleConfirmCost}
+                onCancel={handleCancelCost}
+              />
+            </div>
+          )}
+
           {variationsMutation.isPending && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Generating variations…</span>
-              </div>
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="rounded-lg border p-4 space-y-2">
-                  <Skeleton className="h-5 w-32" />
-                  <Skeleton className="h-16 w-full" />
-                  <Skeleton className="h-4 w-48" />
-                </div>
-              ))}
+            <div className="py-4">
+              <EgyptianLoadingCompact
+                isLoading={true}
+                message="Generating variations…"
+                size="md"
+              />
             </div>
           )}
 
@@ -89,7 +106,7 @@ export function VariationsDrawer({
                 variant="ghost"
                 size="sm"
                 className="mt-2 w-full"
-                onClick={handleGenerate}
+                onClick={handleGenerateRequest}
               >
                 <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
                 Retry
@@ -106,7 +123,7 @@ export function VariationsDrawer({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={handleGenerate}
+                  onClick={handleGenerateRequest}
                   className="flex items-center gap-1.5 text-xs"
                 >
                   <RefreshCw className="h-3 w-3" />

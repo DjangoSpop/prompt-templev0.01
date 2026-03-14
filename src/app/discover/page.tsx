@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Modal } from '@/components/ui/modal';
 import {
   Dialog,
   DialogContent,
@@ -32,10 +33,12 @@ import {
   Puzzle,
   Send,
   X,
+  Share2,
+  Wand2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
-  useDiscoverTemplates,
+  useDiscoverTemplatesInfinite,
   useDiscoverCategories,
   useCopyFromTemplate,
 } from '@/hooks/api/useSavedPrompts';
@@ -45,6 +48,19 @@ import {
   sendPromptToExtension,
   CHROME_STORE_URL,
 } from '@/lib/extension';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { toast } from 'sonner';
+import { usePromptOptimization } from '@/hooks/api/useAI';
+import { useCreditsStore } from '@/store/credits';
+
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://www.prompt-temple.com').replace(/\/$/, '');
 
 // ============================================
 // PromptDetailModal
@@ -58,6 +74,7 @@ function PromptDetailModal({
   isCopying,
   onSendToExtension,
   extensionInstalled,
+  onEnhance,
 }: {
   prompt: SavedPrompt | null;
   open: boolean;
@@ -66,6 +83,7 @@ function PromptDetailModal({
   isCopying: boolean;
   onSendToExtension: (prompt: SavedPrompt) => void;
   extensionInstalled: boolean | null;
+  onEnhance: (prompt: SavedPrompt) => void;
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -165,6 +183,16 @@ function PromptDetailModal({
             )}
           </Button>
 
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => { onEnhance(prompt); onClose(); }}
+            className="flex items-center gap-2 border-[#C9A227]/40 text-[#C9A227] hover:bg-[#C9A227]/10"
+          >
+            <Wand2 className="h-4 w-4" />
+            Enhance with AI
+          </Button>
+
           {extensionInstalled && (
             <Button
               variant="outline"
@@ -177,19 +205,22 @@ function PromptDetailModal({
             </Button>
           )}
 
-          <Button
-            size="sm"
-            onClick={() => onCopy(prompt.id)}
-            disabled={isCopying}
-            className="flex items-center gap-2 ml-auto"
-          >
-            {isCopying ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Library className="h-4 w-4" />
-            )}
-            {isCopying ? 'Saving...' : 'Copy to Library'}
-          </Button>
+          <div className="ml-auto flex items-center gap-2">
+            <PromptShareMenu prompt={prompt} />
+            <Button
+              size="sm"
+              onClick={() => onCopy(prompt.id)}
+              disabled={isCopying}
+              className="flex items-center gap-2"
+            >
+              {isCopying ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Library className="h-4 w-4" />
+              )}
+              {isCopying ? 'Saving...' : 'Copy to Library'}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
@@ -200,16 +231,70 @@ function PromptDetailModal({
 // PublicPromptCard
 // ============================================
 
+function PromptShareMenu({ prompt }: { prompt: SavedPrompt }) {
+  const shareUrl = `${SITE_URL}/discover?prompt=${prompt.id}`;
+  const shareText = `Check out "${prompt.title}" on Prompt Temple`;
+  const ogUrl = `${SITE_URL}/api/og/share/prompt?title=${encodeURIComponent(prompt.title)}&category=${encodeURIComponent(prompt.category)}&uses=${prompt.use_count}`;
+
+  const handleShare = async (channel: string) => {
+    if (channel === 'x') {
+      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank', 'noopener,noreferrer,width=640,height=560');
+    } else if (channel === 'linkedin') {
+      window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`, '_blank', 'noopener,noreferrer,width=640,height=560');
+    } else if (channel === 'copy') {
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success('Link copied!');
+    } else if (navigator.share) {
+      await navigator.share({ title: prompt.title, text: shareText, url: shareUrl });
+    } else {
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success('Link copied!');
+    }
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button size="sm" variant="outline" className="h-7 px-2 text-[10px]" onClick={(e) => e.stopPropagation()}>
+          <Share2 className="h-3 w-3" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuLabel className="text-xs">Share Prompt</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={() => handleShare('native')}>
+          <Share2 className="h-3.5 w-3.5 mr-2" /> Quick Share
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => handleShare('x')}>
+          X (Twitter)
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => handleShare('linkedin')}>
+          LinkedIn
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => handleShare('copy')}>
+          <Copy className="h-3.5 w-3.5 mr-2" /> Copy Link
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <a href={ogUrl} target="_blank" rel="noopener noreferrer">Preview OG Card</a>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 function PublicPromptCard({
   prompt,
   onCopy,
   isCopying,
   onOpen,
+  onEnhance,
 }: {
   prompt: SavedPrompt;
   onCopy: (id: string) => void;
   isCopying: boolean;
   onOpen: (prompt: SavedPrompt) => void;
+  onEnhance: (prompt: SavedPrompt) => void;
 }) {
   const preview = prompt.content.slice(0, 160);
   const isTruncated = prompt.content.length > 160;
@@ -221,7 +306,7 @@ function PublicPromptCard({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
     >
-      <Card className="p-5 flex flex-col gap-3 hover:shadow-md transition-shadow">
+      <Card className="p-4 md:p-5 flex flex-col gap-3 rounded-xl border-border/50 hover:border-[#C9A227]/40 hover:shadow-lg hover:shadow-[#C9A227]/5 transition-all duration-200 h-full">
         {/* Header — clickable area opens modal */}
         <button
           type="button"
@@ -229,7 +314,7 @@ function PublicPromptCard({
           className="flex items-start justify-between gap-3 text-left w-full group"
         >
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-sm leading-snug truncate group-hover:text-primary transition-colors">
+            <h3 className="font-semibold text-sm leading-snug line-clamp-1 group-hover:text-primary transition-colors">
               {prompt.title}
             </h3>
             {prompt.description && (
@@ -244,43 +329,61 @@ function PublicPromptCard({
         <button
           type="button"
           onClick={() => onOpen(prompt)}
-          className="rounded-md bg-muted/40 border px-3 py-2 text-xs text-muted-foreground font-mono leading-relaxed text-left w-full hover:bg-muted/60 transition-colors"
+          className="rounded-md bg-muted/40 border px-3 py-2 text-xs text-muted-foreground font-mono leading-relaxed text-left w-full hover:bg-muted/60 transition-colors line-clamp-3 overflow-hidden"
         >
           {preview}
           {isTruncated && '…'}
         </button>
 
-        {/* Footer */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <Badge variant="outline" className="text-[10px]">
+        {/* Tags */}
+        <div className="flex items-center gap-1.5 flex-wrap overflow-hidden max-h-6">
+          <Badge variant="outline" className="text-[10px] shrink-0">
             {prompt.category}
           </Badge>
-          {prompt.tags.slice(0, 3).map((tag) => (
-            <Badge key={tag} variant="secondary" className="text-[10px] flex items-center gap-1">
+          {prompt.tags.slice(0, 2).map((tag) => (
+            <Badge key={tag} variant="secondary" className="text-[10px] flex items-center gap-1 shrink-0">
               <Tag className="h-2.5 w-2.5" />
               {tag}
             </Badge>
           ))}
-          <div className="ml-auto flex items-center gap-2">
-            <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-              <TrendingUp className="h-3 w-3" />
-              {prompt.use_count}
-            </span>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => onCopy(prompt.id)}
-              disabled={isCopying}
-              className="h-7 px-2.5 text-[10px] flex items-center gap-1"
-            >
-              {isCopying ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
-              ) : (
-                <Copy className="h-3 w-3" />
-              )}
-              {isCopying ? 'Saving…' : 'Copy'}
-            </Button>
-          </div>
+          {prompt.tags.length > 2 && (
+            <span className="text-[10px] text-muted-foreground">+{prompt.tags.length - 2}</span>
+          )}
+        </div>
+
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* Actions row */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="flex items-center gap-1 text-[10px] text-muted-foreground mr-auto">
+            <TrendingUp className="h-3 w-3" />
+            {prompt.use_count}
+          </span>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={(e) => { e.stopPropagation(); onEnhance(prompt); }}
+            className="h-7 px-2 text-[10px] flex items-center gap-1 border-[#C9A227]/40 text-[#C9A227] hover:bg-[#C9A227]/10"
+          >
+            <Wand2 className="h-3 w-3" />
+            <span className="hidden sm:inline">Enhance</span>
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={(e) => { e.stopPropagation(); onCopy(prompt.id); }}
+            disabled={isCopying}
+            className="h-7 px-2.5 text-[10px] flex items-center gap-1"
+          >
+            {isCopying ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <Copy className="h-3 w-3" />
+            )}
+            {isCopying ? 'Saving…' : 'Copy'}
+          </Button>
+          <PromptShareMenu prompt={prompt} />
         </div>
       </Card>
     </motion.div>
@@ -320,12 +423,31 @@ function DiscoverSkeleton() {
 
 export default function DiscoverPage() {
   const [searchInput, setSearchInput] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'use_count' | 'created_at'>('use_count');
   const [copyingId, setCopyingId] = useState<string | null>(null);
   const [selectedPrompt, setSelectedPrompt] = useState<SavedPrompt | null>(null);
   const [extensionInstalled, setExtensionInstalled] = useState<boolean | null>(null);
   const [bannerDismissed, setBannerDismissed] = useState(false);
+
+  // AI Enhance state — same pattern as PromptLibrary
+  const [enhancingPrompt, setEnhancingPrompt] = useState<SavedPrompt | null>(null);
+  const [enhancedContent, setEnhancedContent] = useState('');
+  const { optimize, cancel, isStreaming: isEnhanceStreaming, output: enhanceOutput } = usePromptOptimization();
+  const { creditsAvailable, creditsRemaining } = useCreditsStore();
+  const hasCredits = creditsRemaining === null || creditsAvailable > 0;
+
+  // Sync streaming output into enhanced content preview
+  useEffect(() => {
+    if (enhancingPrompt && enhanceOutput) setEnhancedContent(enhanceOutput);
+  }, [enhancingPrompt, enhanceOutput]);
+
+  // Debounce search — 300ms delay for server queries
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchInput), 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   useEffect(() => {
     detectExtension().then(setExtensionInstalled);
@@ -335,19 +457,46 @@ export default function DiscoverPage() {
 
   const queryFilters = useMemo(
     () => ({
-      search: searchInput || undefined,
+      search: debouncedSearch || undefined,
       category: activeCategory !== 'all' ? activeCategory : undefined,
       sort_by: sortBy,
       sort_order: 'desc' as const,
     }),
-    [searchInput, activeCategory, sortBy]
+    [debouncedSearch, activeCategory, sortBy]
   );
 
-  const { data, isLoading, isError, refetch } = useDiscoverTemplates(queryFilters);
+  const {
+    data,
+    isLoading,
+    isError,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useDiscoverTemplatesInfinite(queryFilters);
   const { data: categoryList } = useDiscoverCategories();
 
-  const prompts = data?.results ?? [];
+  // Flatten all pages into a single array
+  const prompts = useMemo(
+    () => data?.pages?.flatMap((page) => page.results ?? []) ?? [],
+    [data]
+  );
+  const totalCount = data?.pages?.[0]?.count ?? 0;
   const categories = ['all', ...(categoryList ?? PROMPT_CATEGORIES)];
+
+  // Client-side instant filtering on already-loaded prompts
+  const filteredPrompts = useMemo(() => {
+    if (!searchInput || searchInput === debouncedSearch) return prompts;
+    // Instant client-side filter while debounced server search fires
+    const q = searchInput.toLowerCase();
+    return prompts.filter(
+      (p) =>
+        p.title.toLowerCase().includes(q) ||
+        p.description?.toLowerCase().includes(q) ||
+        p.content.toLowerCase().includes(q) ||
+        p.tags.some((t) => t.toLowerCase().includes(q))
+    );
+  }, [prompts, searchInput, debouncedSearch]);
 
   const handleCopy = async (id: string) => {
     setCopyingId(id);
@@ -373,8 +522,37 @@ export default function DiscoverPage() {
     });
   };
 
+  const handleEnhance = async (prompt: SavedPrompt) => {
+    if (!hasCredits) {
+      toast.error("You've run out of credits. Upgrade your plan to continue.", {
+        action: { label: 'Upgrade', onClick: () => window.location.href = '/billing' },
+        duration: 6000,
+      });
+      return;
+    }
+    setEnhancingPrompt(prompt);
+    setEnhancedContent('');
+    await optimize({
+      original: prompt.content,
+      session_id: `discover_enhance_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      mode: 'fast',
+    });
+  };
+
+  const handleCopyEnhanced = async () => {
+    if (!enhancedContent) return;
+    await navigator.clipboard.writeText(enhancedContent);
+    toast.success('Enhanced prompt copied to clipboard!');
+  };
+
+  const handleCloseEnhanceModal = () => {
+    if (isEnhanceStreaming) cancel();
+    setEnhancingPrompt(null);
+    setEnhancedContent('');
+  };
+
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 max-w-6xl pb-24 lg:pb-8 overflow-x-hidden">
       {/* Extension install banner */}
       {extensionInstalled === false && !bannerDismissed && (
         <div className="mb-6 flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm">
@@ -403,17 +581,16 @@ export default function DiscoverPage() {
       )}
 
       {/* Hero */}
-      <div className="mb-10 text-center">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 mb-4">
-          <Globe className="h-7 w-7 text-primary" />
+      <div className="mb-6 md:mb-10 text-center">
+        <div className="inline-flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-full bg-[#C9A227]/10 mb-3 md:mb-4">
+          <Globe className="h-6 w-6 md:h-7 md:w-7 text-[#C9A227]" />
         </div>
-        <h1 className="text-3xl font-bold mb-2 flex items-center justify-center gap-2">
+        <h1 className="text-2xl md:text-3xl font-bold mb-2 flex items-center justify-center gap-2">
           Discover Prompts
-          <Sparkles className="h-6 w-6 text-primary" />
+          <Sparkles className="h-5 w-5 md:h-6 md:w-6 text-[#C9A227]" />
         </h1>
-        <p className="text-muted-foreground max-w-xl mx-auto">
-          Explore prompts shared by the community. Click any prompt to preview it in full, then copy
-          it directly into your personal library.
+        <p className="text-muted-foreground text-sm md:text-base max-w-xl mx-auto">
+          Explore {totalCount > 0 ? `${totalCount.toLocaleString()}+` : ''} prompts shared by the community
         </p>
       </div>
 
@@ -430,14 +607,14 @@ export default function DiscoverPage() {
       </div>
 
       {/* Category filter */}
-      <div className="flex gap-2 flex-wrap mb-6">
+      <div className="flex gap-2 overflow-x-auto pb-2 mb-6 scrollbar-hide -mx-1 px-1">
         {categories.map((cat) => (
           <button
             key={cat}
             type="button"
             onClick={() => setActiveCategory(cat)}
             className={cn(
-              'px-3 py-1 rounded-full text-sm border transition-colors',
+              'px-3 py-1 rounded-full text-sm border transition-colors whitespace-nowrap shrink-0',
               activeCategory === cat
                 ? 'bg-primary text-primary-foreground border-primary'
                 : 'bg-background text-muted-foreground border-border hover:border-primary/50 hover:text-foreground'
@@ -454,7 +631,7 @@ export default function DiscoverPage() {
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <BookOpen className="h-4 w-4" />
             <span>
-              {data?.count ?? 0} public prompt{(data?.count ?? 0) !== 1 ? 's' : ''}
+              {filteredPrompts.length} of {totalCount.toLocaleString()} prompt{totalCount !== 1 ? 's' : ''}
               {searchInput && ` matching "${searchInput}"`}
             </span>
           </div>
@@ -506,34 +683,63 @@ export default function DiscoverPage() {
             Retry
           </Button>
         </Card>
-      ) : prompts.length === 0 ? (
-        <Card className="p-12 text-center">
-          <Globe className="h-14 w-14 mx-auto mb-4 text-muted-foreground/30" />
+      ) : filteredPrompts.length === 0 ? (
+        <Card className="p-8 md:p-12 text-center">
+          <div className="w-16 h-16 bg-[#C9A227]/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#C9A227]/20">
+            <Globe className="h-8 w-8 text-[#C9A227]/50" />
+          </div>
           <h3 className="text-lg font-medium mb-2">
             {searchInput || activeCategory !== 'all'
               ? 'No prompts match your filters'
               : 'No public prompts yet'}
           </h3>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             {searchInput || activeCategory !== 'all'
               ? 'Try adjusting your search or category filter.'
-              : 'Be the first to share a prompt with the community by marking it as public in your library.'}
+              : 'Be the first to share a prompt with the community.'}
           </p>
         </Card>
       ) : (
-        <AnimatePresence mode="popLayout">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {prompts.map((prompt) => (
-              <PublicPromptCard
-                key={prompt.id}
-                prompt={prompt}
-                onCopy={handleCopy}
-                isCopying={copyingId === prompt.id}
-                onOpen={setSelectedPrompt}
-              />
-            ))}
-          </div>
-        </AnimatePresence>
+        <>
+          <AnimatePresence mode="popLayout">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+              {filteredPrompts.map((prompt) => (
+                <PublicPromptCard
+                  key={prompt.id}
+                  prompt={prompt}
+                  onCopy={handleCopy}
+                  isCopying={copyingId === prompt.id}
+                  onOpen={setSelectedPrompt}
+                  onEnhance={handleEnhance}
+                />
+              ))}
+            </div>
+          </AnimatePresence>
+
+          {/* Load More */}
+          {hasNextPage && (
+            <div className="flex flex-col items-center gap-2 mt-8">
+              <Button
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
+                variant="outline"
+                className="border-[#C9A227]/40 text-[#C9A227] hover:bg-[#C9A227]/10 px-8"
+              >
+                {isFetchingNextPage ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Loading more...
+                  </>
+                ) : (
+                  <>Load More Prompts</>
+                )}
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Showing {filteredPrompts.length} of {totalCount.toLocaleString()} prompts
+              </p>
+            </div>
+          )}
+        </>
       )}
 
       {/* Detail modal */}
@@ -545,7 +751,79 @@ export default function DiscoverPage() {
         isCopying={!!copyingId && copyingId === selectedPrompt?.id}
         onSendToExtension={handleSendToExtension}
         extensionInstalled={extensionInstalled}
+        onEnhance={handleEnhance}
       />
+
+      {/* AI Enhance Result Modal — same as PromptLibrary */}
+      <Modal
+        isOpen={!!enhancingPrompt}
+        onClose={handleCloseEnhanceModal}
+        title={`AI Enhance: ${enhancingPrompt?.title || ''}`}
+        size="lg"
+      >
+        <div className="space-y-4">
+          {isEnhanceStreaming ? (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground flex items-center gap-2">
+                <RefreshCw className="h-3.5 w-3.5 animate-spin text-purple-500" />
+                Enhancing your prompt with AI…
+              </p>
+              <div className="p-4 rounded-lg border bg-purple-50/40 dark:bg-purple-900/10 text-sm font-mono whitespace-pre-wrap min-h-[100px] max-h-[280px] overflow-auto leading-relaxed">
+                {enhancedContent}<span className="animate-pulse text-purple-500">▋</span>
+              </div>
+            </div>
+          ) : enhancedContent ? (
+            <>
+              {/* Before / After diff */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-red-400 inline-block" />
+                    Original
+                  </p>
+                  <div className="p-3 border rounded-md bg-red-50/30 dark:bg-red-900/10 text-sm font-mono whitespace-pre-wrap max-h-[220px] overflow-auto">
+                    {enhancingPrompt?.content}
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-green-400 inline-block" />
+                    AI Enhanced
+                  </p>
+                  <div className="p-3 border rounded-md bg-green-50/30 dark:bg-green-900/10 text-sm font-mono whitespace-pre-wrap max-h-[220px] overflow-auto">
+                    {enhancedContent}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t">
+                <p className="text-xs text-muted-foreground">
+                  Copy the enhanced version to use it anywhere.
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCloseEnhanceModal}
+                  >
+                    Close
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleCopyEnhanced}
+                    className="bg-[#C9A227] hover:bg-[#C9A227]/90 text-white flex items-center gap-1.5"
+                  >
+                    <Copy className="h-3.5 w-3.5" />
+                    Copy Enhanced
+                  </Button>
+                </div>
+              </div>
+            </>
+          ) : null}
+        </div>
+      </Modal>
     </div>
   );
 }

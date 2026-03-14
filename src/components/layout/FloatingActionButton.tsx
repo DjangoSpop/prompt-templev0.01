@@ -16,7 +16,7 @@ interface Props {
   showOnPaths?: string[];
 }
 
-export function FloatingActionButton({ showOnPaths = ['/dashboard', '/prompt-library', '/optimization'] }: Props) {
+export function FloatingActionButton({ showOnPaths = ['/dashboard', '/discover', '/templates', '/playground', '/academy'] }: Props) {
   const [expanded, setExpanded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 

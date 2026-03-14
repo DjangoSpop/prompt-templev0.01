@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Star, Crown, Users, Eye, Copy, Wand2 } from 'lucide-react';
+import { Star, Crown, Users, Wand2, Layers } from 'lucide-react';
 import type { TemplateList, TemplateDetail } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 
@@ -14,16 +14,27 @@ interface TemplateCardProps {
   isAIRecommended?: boolean;
 }
 
-export function EnhancedTemplateCard({ template, viewMode, onSmartFill, relevanceScore, isAIRecommended }: TemplateCardProps) {
+function formatUsageCount(count: number): string {
+  if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(1)}M`;
+  if (count >= 1_000) return `${(count / 1_000).toFixed(1)}k`;
+  return String(count);
+}
+
+export function EnhancedTemplateCard({
+  template,
+  viewMode,
+  onSelect,
+  onSmartFill,
+  relevanceScore,
+  isAIRecommended,
+}: TemplateCardProps) {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const handleUseTemplate = async (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsLoading(true);
-    
     try {
-      // Navigate to template detail page for usage
       router.push(`/templates/${template.id}`);
     } catch (error) {
       console.error('Failed to navigate to template:', error);
@@ -33,31 +44,13 @@ export function EnhancedTemplateCard({ template, viewMode, onSmartFill, relevanc
   };
 
   const handleCardClick = () => {
-    router.push(`/templates/${template.id}`);
-  };
-
-  const renderStars = (rating: number) => {
-    return [...Array(5)].map((_, i) => (
-      <Star 
-        key={i} 
-        className={`w-3 h-3 ${
-          i < Math.floor(rating) 
-            ? 'text-yellow-400 fill-current' 
-            : 'text-gray-300'
-        }`} 
-      />
-    ));
-  };
-
-  // Helper function to get template content
-  const getTemplateContent = () => {
-    if ('template_content' in template) {
-      return template.template_content;
+    if (onSelect) {
+      onSelect(template);
+    } else {
+      router.push(`/templates/${template.id}`);
     }
-    return '';
   };
 
-  // Helper function to check if template is featured
   const isFeatured = () => {
     if ('is_featured' in template) {
       return template.is_featured;
@@ -65,57 +58,87 @@ export function EnhancedTemplateCard({ template, viewMode, onSmartFill, relevanc
     return false;
   };
 
+  const rating = template.average_rating || 0;
+  const usageCount = template.usage_count || 0;
+  const fieldCount = template.field_count || 0;
+  const categoryName = template.category?.name || 'General';
+  const tags: string[] = Array.isArray(template.tags) ? template.tags as string[] : [];
+
+  // ─── List View ───────────────────────────────────────────────
   if (viewMode === 'list') {
     return (
-      <div 
-        className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+      <div
+        className="group rounded-xl bg-card border border-border/50 hover:border-[#C9A227]/40 hover:shadow-lg hover:shadow-[#C9A227]/5 transition-all duration-200 p-4 cursor-pointer"
         onClick={handleCardClick}
       >
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <h3 className="font-semibold text-lg text-gray-900">
-                {template.title || 'Untitled'}
-              </h3>
+        <div className="flex items-start gap-4">
+          {/* Left content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              {/* Category badge */}
+              <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-[#1E3A8A]/10 text-[#1E3A8A] dark:bg-[#6CA0FF]/10 dark:text-[#6CA0FF] shrink-0">
+                {categoryName}
+              </span>
+
               {isFeatured() && (
-                <Crown className="w-4 h-4 text-yellow-500" />
+                <Crown className="w-4 h-4 text-[#C9A227] shrink-0" />
+              )}
+              {isAIRecommended && (
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#C9A227]/15 text-[#C9A227] shrink-0">
+                  AI
+                </span>
+              )}
+              {relevanceScore !== undefined && (
+                <span className="text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded shrink-0">
+                  {Math.round(relevanceScore * 100)}%
+                </span>
               )}
             </div>
-            
-            <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+
+            <h3 className="text-base font-semibold text-foreground line-clamp-1 mb-1">
+              {template.title || 'Untitled'}
+            </h3>
+
+            <p className="text-sm text-muted-foreground line-clamp-1 mb-2">
               {template.description}
             </p>
-            
-            <div className="flex items-center gap-4 text-sm text-gray-500">
+
+            {/* Meta row */}
+            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+              {/* Rating */}
               <div className="flex items-center gap-1">
-                {renderStars(template.average_rating || 0)}
-                <span className="ml-1">{(template.average_rating || 0).toFixed(1)}</span>
+                <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
+                <span>{rating.toFixed(1)}</span>
               </div>
-              
+              {/* Uses */}
               <div className="flex items-center gap-1">
-                <Eye className="w-4 h-4" />
-                <span>{template.usage_count || 0}</span>
+                <Users className="w-3.5 h-3.5" />
+                <span>{formatUsageCount(usageCount)} uses</span>
               </div>
-              
+              {/* Fields */}
               <div className="flex items-center gap-1">
-                <Users className="w-4 h-4" />
-                <span>{template.category?.name || 'Unknown'}</span>
+                <Layers className="w-3.5 h-3.5" />
+                <span>{fieldCount} fields</span>
               </div>
             </div>
           </div>
-          
-          <div className="flex flex-col gap-2">
+
+          {/* Right actions */}
+          <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={handleUseTemplate}
               disabled={isLoading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 text-sm"
+              className="bg-[#C9A227] text-white hover:bg-[#C9A227]/90 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
             >
-              {isLoading ? 'Loading...' : 'Use Template'}
+              {isLoading ? '...' : 'Use'}
             </button>
             {onSmartFill && (
               <button
-                onClick={(e) => { e.stopPropagation(); onSmartFill(template.id); }}
-                className="px-4 py-2 flex items-center justify-center gap-1.5 border border-primary/40 text-primary rounded-md hover:bg-primary/5 transition-colors text-sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSmartFill(template.id);
+                }}
+                className="flex items-center gap-1.5 border border-[#C9A227]/40 text-[#C9A227] hover:bg-[#C9A227]/10 rounded-lg px-3 py-2 text-sm transition-colors"
                 title="AI Fill — auto-fill variables with AI"
               >
                 <Wand2 className="w-3.5 h-3.5" />
@@ -128,100 +151,106 @@ export function EnhancedTemplateCard({ template, viewMode, onSmartFill, relevanc
     );
   }
 
-  // Grid view
+  // ─── Grid View ───────────────────────────────────────────────
   return (
-    <div 
-      className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+    <div
+      className="group rounded-xl bg-card border border-border/50 hover:border-[#C9A227]/40 hover:shadow-lg hover:shadow-[#C9A227]/5 transition-all duration-200 p-5 h-full flex flex-col cursor-pointer hover:-translate-y-0.5"
       onClick={handleCardClick}
     >
-      <div className="p-4">
-        <div className="flex items-start justify-between mb-3">
-          <h3 className="font-semibold text-lg text-gray-900 line-clamp-2">
-            {template.title || 'Untitled'}
-          </h3>
-          <div className="flex items-center gap-1 flex-shrink-0 ml-2">
-            {isAIRecommended && (
-              <span className="text-[10px] font-semibold bg-primary/10 text-primary px-1.5 py-0.5 rounded">Smart</span>
-            )}
-            {relevanceScore !== undefined && (
-              <span className="text-[10px] font-semibold bg-green-100 text-green-700 px-1.5 py-0.5 rounded">
-                {Math.round(relevanceScore * 100)}% match
-              </span>
-            )}
-            {isFeatured() && (
-              <Crown className="w-5 h-5 text-yellow-500" />
-            )}
-          </div>
-        </div>
-        
-        <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-          {template.description}
-        </p>
-        
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-1 text-sm">
-            {renderStars(template.average_rating || 0)}
-            <span className="ml-1 text-gray-600">{(template.average_rating || 0).toFixed(1)}</span>
-          </div>
-          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-            {template.category?.name || 'Unknown'}
+      {/* Top row: category + featured/AI badges + rating */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-[#1E3A8A]/10 text-[#1E3A8A] dark:bg-[#6CA0FF]/10 dark:text-[#6CA0FF] truncate">
+            {categoryName}
           </span>
+          {isFeatured() && (
+            <Crown className="w-4 h-4 text-[#C9A227] shrink-0" />
+          )}
+          {isAIRecommended && (
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#C9A227]/15 text-[#C9A227] shrink-0">
+              AI
+            </span>
+          )}
+          {relevanceScore !== undefined && (
+            <span className="text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded shrink-0">
+              {Math.round(relevanceScore * 100)}%
+            </span>
+          )}
         </div>
-        
-        {getTemplateContent() && (
-          <div className="bg-gray-50 border rounded p-3 mb-4">
-            <p className="text-xs text-gray-600 font-medium mb-1">Preview:</p>
-            <p className="text-sm text-gray-700 font-mono">
-              {getTemplateContent().substring(0, 100)}
-              {getTemplateContent().length > 100 && '...'}
-            </p>
-          </div>
+
+        {/* Rating */}
+        <div className="flex items-center gap-1 shrink-0">
+          <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
+          <span className="text-sm text-muted-foreground">{rating.toFixed(1)}</span>
+        </div>
+      </div>
+
+      {/* Title */}
+      <h3 className="text-base font-semibold text-foreground line-clamp-2 mb-1.5">
+        {template.title || 'Untitled'}
+      </h3>
+
+      {/* Description */}
+      <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+        {template.description}
+      </p>
+
+      {/* Tags */}
+      {tags.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {tags.slice(0, 3).map((tag) => (
+            <span
+              key={tag}
+              className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground"
+            >
+              {tag}
+            </span>
+          ))}
+          {tags.length > 3 && (
+            <span className="text-[11px] text-muted-foreground px-1 py-0.5">
+              +{tags.length - 3}
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Spacer to push footer down */}
+      <div className="flex-1" />
+
+      {/* Footer: usage + fields */}
+      <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
+        <div className="flex items-center gap-1">
+          <Users className="w-3.5 h-3.5" />
+          <span>{formatUsageCount(usageCount)} uses</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <Layers className="w-3.5 h-3.5" />
+          <span>{fieldCount} fields</span>
+        </div>
+      </div>
+
+      {/* Action buttons */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={handleUseTemplate}
+          disabled={isLoading}
+          className="bg-[#C9A227] text-white hover:bg-[#C9A227]/90 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
+        >
+          {isLoading ? '...' : 'Use'}
+        </button>
+        {onSmartFill && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onSmartFill(template.id);
+            }}
+            className="flex items-center gap-1.5 border border-[#C9A227]/40 text-[#C9A227] hover:bg-[#C9A227]/10 rounded-lg px-3 py-2 text-sm transition-colors"
+            title="AI Fill — auto-fill variables with AI"
+          >
+            <Wand2 className="w-3.5 h-3.5" />
+            AI Fill
+          </button>
         )}
-        
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 text-sm text-gray-500">
-            <div className="flex items-center gap-1">
-              <Eye className="w-4 h-4" />
-              <span>{template.usage_count || 0}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Users className="w-4 h-4" />
-              <span>{template.field_count || 0} fields</span>
-            </div>
-          </div>
-          
-          <div className="flex gap-2">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                const content = getTemplateContent();
-                if (content) {
-                  navigator.clipboard.writeText(content);
-                }
-              }}
-              className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-              title="Copy template"
-            >
-              <Copy className="w-4 h-4" />
-            </button>
-            <button
-              onClick={handleUseTemplate}
-              disabled={isLoading}
-              className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors disabled:opacity-50"
-            >
-              {isLoading ? '...' : 'Use'}
-            </button>
-            {onSmartFill && (
-              <button
-                onClick={(e) => { e.stopPropagation(); onSmartFill(template.id); }}
-                className="p-1.5 flex items-center gap-1 border border-primary/40 text-primary rounded text-sm hover:bg-primary/5 transition-colors"
-                title="AI Fill — auto-fill variables with AI"
-              >
-                <Wand2 className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-        </div>
       </div>
     </div>
   );

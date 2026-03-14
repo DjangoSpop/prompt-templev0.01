@@ -12,9 +12,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Wand2, Check, X, Loader2, Lightbulb, RotateCcw } from 'lucide-react';
+import { Wand2, Check, X, Lightbulb, RotateCcw } from 'lucide-react';
 import { useSmartFill } from '@/hooks/api/useSmartTemplates';
 import { CostPreviewPill } from '@/components/credits/CostPreviewPill';
+import { CostConfirmation } from '@/components/credits/CostConfirmation';
+import { EgyptianLoadingCompact } from './EgyptianLoadingCompact';
 import { toast } from 'sonner';
 
 interface SmartFillPanelProps {
@@ -27,7 +29,7 @@ interface SmartFillPanelProps {
   onApply: (suggestions: Record<string, string>) => void;
 }
 
-type Step = 'setup' | 'loading' | 'results' | 'error';
+type Step = 'setup' | 'cost-confirmation' | 'loading' | 'results' | 'error';
 
 export function SmartFillPanel({
   open,
@@ -42,16 +44,22 @@ export function SmartFillPanel({
   const [context, setContext] = useState('');
   const [accepted, setAccepted] = useState<Record<string, boolean>>({});
   const [step, setStep] = useState<Step>('setup');
+  const [pendingPayload, setPendingPayload] = useState<Record<string, string> | null>(null);
 
   const handleRun = () => {
-    setStep('loading');
     // Merge context into variables so the AI has extra signal
     const payload: Record<string, string> = {
       ...variables,
       ...(context.trim() ? { _context: context.trim() } : {}),
     };
+    setPendingPayload(payload);
+    setStep('cost-confirmation');
+  };
 
-    smartFill.mutate(payload, {
+  const handleConfirmCost = () => {
+    if (!pendingPayload) return;
+    setStep('loading');
+    smartFill.mutate(pendingPayload, {
       onSuccess: (data) => {
         const initialAccepted: Record<string, boolean> = {};
         Object.keys(data.suggestions).forEach((k) => {
@@ -59,11 +67,18 @@ export function SmartFillPanel({
         });
         setAccepted(initialAccepted);
         setStep('results');
+        setPendingPayload(null);
       },
       onError: () => {
         setStep('error');
+        setPendingPayload(null);
       },
     });
+  };
+
+  const handleCancelCost = () => {
+    setStep('setup');
+    setPendingPayload(null);
   };
 
   const handleReset = () => {
@@ -170,19 +185,25 @@ export function SmartFillPanel({
             </div>
           )}
 
+          {/* ── Cost Confirmation step ───────────────────────────────────────────── */}
+          {step === 'cost-confirmation' && (
+            <div className="py-4">
+              <CostConfirmation
+                feature="smartFill"
+                onConfirm={handleConfirmCost}
+                onCancel={handleCancelCost}
+              />
+            </div>
+          )}
+
           {/* â”€â”€ Loading step â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           {step === 'loading' && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                <span>Analysing your template and contextâ€¦</span>
-              </div>
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="space-y-1.5">
-                  <Skeleton className="h-3.5 w-28" />
-                  <Skeleton className="h-9 w-full" />
-                </div>
-              ))}
+            <div className="py-4">
+              <EgyptianLoadingCompact
+                isLoading={true}
+                message="Analyzing your template and contextâ€¦"
+                size="md"
+              />
             </div>
           )}
 

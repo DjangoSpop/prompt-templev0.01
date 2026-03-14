@@ -17,6 +17,7 @@ import { useEntitlements } from '@/hooks/api/useBilling';
 
 const FEATURE_LABELS: Record<string, string> = {
   prompt_optimizer: 'Prompt Optimizer',
+  broadcast: 'Multi-AI Broadcast',
   askme: 'AskMe Interview',
   askme_start: 'AskMe Interview',
   askme_finalize: 'AskMe Prompt Builder',

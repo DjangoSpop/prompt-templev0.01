@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, Suspense } from 'react';
+import React, { useState, useCallback, useMemo, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
 import {
@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { SmartFillPanel } from '@/components/templates/SmartFillPanel';
 import {
   usePromptOptimization,
   useDeepSeekStream,
@@ -227,14 +228,42 @@ function SettingsPanel({
 
 // ─── Main Playground Component ────────────────────────────────────────────────
 
+// Extract {variable} or {{variable}} names from a prompt string
+function extractVariables(text: string): Record<string, string> {
+  const seen = new Set<string>();
+  const result: Record<string, string> = {};
+  const regex = /\{\{?\s*(\w+)\s*\}?\}/g;
+  let m: RegExpExecArray | null;
+  while ((m = regex.exec(text)) !== null) {
+    const key = m[1];
+    if (!seen.has(key)) {
+      seen.add(key);
+      result[key] = '';
+    }
+  }
+  return result;
+}
+
 function PlaygroundInner() {
   const searchParams = useSearchParams();
   const initialTab = TAB_PARAM_MAP[searchParams.get('tab') ?? ''] ?? 'optimize';
 
+  // URL params — library can link here with ?templateId=&content=&title=
+  const urlTemplateId = searchParams.get('templateId') ?? '';
+  const urlContent = searchParams.get('content') ?? '';
+  const urlTitle = searchParams.get('title') ?? '';
+
   // Service & UI state
   const [mode, setMode] = useState<ServiceMode>(initialTab);
-  const [prompt, setPrompt] = useState('');
+  const [prompt, setPrompt] = useState(() =>
+    urlContent ? decodeURIComponent(urlContent) : ''
+  );
   const [showSettings, setShowSettings] = useState(false);
+
+  // Smart Fill state
+  const [smartFillOpen, setSmartFillOpen] = useState(false);
+  const promptVariables = useMemo(() => extractVariables(prompt), [prompt]);
+  const hasVariables = Object.keys(promptVariables).length > 0;
   const [settings, setSettings] = useState<ModelSettings>({
     model: 'deepseek-chat',
     temperature: 0.7,
@@ -417,12 +446,25 @@ function PlaygroundInner() {
     toast.success('Suggestion loaded — ready to optimize!');
   }, []);
 
+  // Smart Fill — apply AI suggestions back into the prompt
+  const handleSmartFillApply = useCallback((suggestions: Record<string, string>) => {
+    setPrompt((prev) => {
+      let filled = prev;
+      Object.entries(suggestions).forEach(([key, value]) => {
+        filled = filled.replace(new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, 'g'), value);
+        filled = filled.replace(new RegExp(`\\{${key}\\}`, 'g'), value);
+      });
+      return filled;
+    });
+    toast.success('Variables filled — ready to run!');
+  }, []);
+
   const serviceConfig = SERVICES.find((s) => s.id === mode)!;
 
   return (
-    <div className="flex flex-col h-full min-h-screen bg-bg-primary">
+    <div className="flex flex-col bg-bg-primary pb-20 lg:pb-0">
       {/* ── Top Header ── */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-bg-secondary/50 backdrop-blur-sm sticky top-0 z-20">
+      <div className="flex items-center justify-between px-4 py-3 md:px-6 md:py-4 border-b border-border bg-bg-secondary/50 backdrop-blur-sm sticky top-0 z-20">
         <div className="flex items-center gap-3">
           <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-brand/10">
             <Layers className="w-4 h-4 text-brand" />
@@ -432,21 +474,22 @@ function PlaygroundInner() {
             <p className="text-xs text-text-muted hidden sm:block">Bundle of all AI services — powered by your credits</p>
           </div>
         </div>
-        <CreditBar />
+        <div className="scale-90 sm:scale-100 origin-right"><CreditBar /></div>
       </div>
 
       {/* ── Service Tabs ── */}
-      <div className="px-6 py-3 border-b border-border overflow-x-auto">
-        <div className="flex gap-2 min-w-max">
+      <div className="px-3 py-2 md:px-6 md:py-3 border-b border-border overflow-x-auto">
+        <div className="flex gap-1.5 md:gap-2 min-w-max">
           {SERVICES.map((svc) => {
             const Icon = svc.icon;
             const active = mode === svc.id;
             return (
               <button
+                type="button"
                 key={svc.id}
                 onClick={() => setMode(svc.id)}
                 className={cn(
-                  'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap',
+                  'flex items-center gap-1.5 md:gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all whitespace-nowrap',
                   active
                     ? 'bg-brand text-white shadow-sm'
                     : 'bg-bg-secondary text-text-secondary hover:bg-bg-tertiary hover:text-text-primary border border-border'
@@ -455,7 +498,7 @@ function PlaygroundInner() {
                 <Icon className="w-3.5 h-3.5" />
                 {svc.label}
                 <span className={cn(
-                  'text-[10px] px-1.5 py-0.5 rounded-full font-semibold',
+                  'text-[10px] px-1.5 py-0.5 rounded-full font-semibold hidden sm:inline',
                   active
                     ? 'bg-white/20 text-white'
                     : 'bg-bg-tertiary text-text-muted'
@@ -534,7 +577,7 @@ function PlaygroundInner() {
               }
               disabled={isAnyStreaming}
               className={cn(
-                'flex-1 w-full min-h-[180px] lg:min-h-[280px] resize-none bg-bg-secondary border rounded-xl px-4 py-3 text-sm text-text-primary placeholder-text-muted leading-relaxed',
+                'flex-1 w-full min-h-[120px] md:min-h-[180px] lg:min-h-[280px] resize-none bg-bg-secondary border rounded-xl px-4 py-3 text-sm text-text-primary placeholder-text-muted leading-relaxed',
                 'focus:outline-none focus:ring-2 focus:ring-brand/40 transition-all',
                 isAnyStreaming ? 'opacity-60 cursor-not-allowed border-border' : 'border-border hover:border-border-hover'
               )}
@@ -551,6 +594,7 @@ function PlaygroundInner() {
 
           {/* Settings toggle */}
           <button
+            type="button"
             onClick={() => setShowSettings(!showSettings)}
             className="flex items-center gap-2 text-xs text-text-muted hover:text-text-primary transition-colors self-start"
           >
@@ -582,6 +626,7 @@ function PlaygroundInner() {
           <div className="flex items-center gap-3">
             {isAnyStreaming ? (
               <button
+                type="button"
                 onClick={abort}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-500/10 text-red-400 border border-red-500/30 text-sm font-medium hover:bg-red-500/20 transition-colors"
               >
@@ -590,6 +635,7 @@ function PlaygroundInner() {
               </button>
             ) : (
               <button
+                type="button"
                 onClick={handleRun}
                 disabled={!prompt.trim()}
                 className={cn(
@@ -605,7 +651,27 @@ function PlaygroundInner() {
               </button>
             )}
 
+            {/* Smart Fill — enabled when prompt has {variables} and a templateId */}
+            {hasVariables && urlTemplateId && (
+              <button
+                type="button"
+                onClick={() => setSmartFillOpen(true)}
+                disabled={isAnyStreaming}
+                title="AI-fill template variables"
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-medium border transition-all',
+                  isAnyStreaming
+                    ? 'opacity-40 cursor-not-allowed border-border text-text-muted'
+                    : 'border-brand/40 text-brand hover:bg-brand/10 hover:border-brand'
+                )}
+              >
+                <Wand2 className="w-3.5 h-3.5" />
+                Smart Fill
+              </button>
+            )}
+
             <button
+              type="button"
               onClick={handleReset}
               disabled={isAnyStreaming}
               className="p-2.5 rounded-xl border border-border text-text-muted hover:text-text-primary hover:border-border-hover transition-colors"
@@ -639,7 +705,7 @@ function PlaygroundInner() {
 
         {/* Right — Output Panel (hidden for askme) */}
         {mode !== 'askme' && (
-        <div className="flex-1 p-4 min-h-0 h-[50vh] lg:h-auto">
+        <div className="flex-1 p-4 min-h-0 h-[40vh] lg:h-auto">
           <PlaygroundOutputPanel
             mode={mode}
             isStreaming={isAnyStreaming}
@@ -657,6 +723,19 @@ function PlaygroundInner() {
 
       {/* Paywall Modal (self-managed via Zustand store) */}
       <PaywallModal />
+
+      {/* Smart Fill panel — only when a templateId is known */}
+      {urlTemplateId && (
+        <SmartFillPanel
+          open={smartFillOpen}
+          onOpenChange={setSmartFillOpen}
+          templateId={urlTemplateId}
+          templateTitle={urlTitle || undefined}
+          templatePreview={prompt.substring(0, 150)}
+          variables={promptVariables}
+          onApply={handleSmartFillApply}
+        />
+      )}
     </div>
   );
 }
