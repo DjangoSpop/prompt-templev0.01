@@ -60,7 +60,7 @@ export function FastNavWidget() {
     <>
       {/* Floating Action Button */}
       <motion.div
-        className="fixed bottom-6 right-6 z-50"
+        className="hidden lg:block fixed bottom-6 right-6 z-50"
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: 'spring', stiffness: 260, damping: 20 }}

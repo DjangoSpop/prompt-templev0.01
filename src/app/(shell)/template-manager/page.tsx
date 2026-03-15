@@ -139,35 +139,32 @@ export default function LibraryPage() {
 
   if (isLoading && templates.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[...Array(9)].map((_, i) => (
-              <div key={i} className="h-64 bg-gray-200 rounded-lg"></div>
-            ))}
-          </div>
+      <div className="animate-pulse space-y-6">
+        <div className="h-8 bg-muted rounded w-1/3"></div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+          {[...Array(9)].map((_, i) => (
+            <div key={i} className="h-64 bg-muted rounded-lg"></div>
+          ))}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto px-4 py-8 space-y-6 max-w-7xl">
+    <div className="space-y-4 md:space-y-6">
         {/* Header */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
               Template Library
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-muted-foreground mt-1 text-sm md:text-base">
               Discover and use professional AI prompt templates
             </p>
           </div>
           
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="text-sm text-muted-foreground">
               {totalCount.toLocaleString()} templates
             </span>
             
@@ -336,13 +333,13 @@ export default function LibraryPage() {
         {templates.length === 0 ? (
           <Card className="p-12 text-center">
             <div className="space-y-4">
-              <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center">
-                <Filter className="w-8 h-8 text-gray-400" />
+              <div className="w-16 h-16 mx-auto bg-muted rounded-full flex items-center justify-center">
+                <Filter className="w-8 h-8 text-muted-foreground" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+              <h3 className="text-lg font-medium text-foreground">
                 No templates found
               </h3>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-muted-foreground">
                 Try adjusting your search criteria or filters
               </p>
               <Button onClick={clearFilters}>Clear Filters</Button>
@@ -351,9 +348,9 @@ export default function LibraryPage() {
         ) : (
           <>
             <div className={
-              viewMode === 'grid' 
-                ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
-                : 'space-y-4'
+              viewMode === 'grid'
+                ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6'
+                : 'space-y-3'
             }>
               {templates.map((template) => (
                 <EnhancedTemplateCard
@@ -373,12 +370,12 @@ export default function LibraryPage() {
             {/* Pagination */}
             {totalPages > 1 && (
               <Card className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Showing {((currentPage - 1) * 20) + 1} to {Math.min(currentPage * 20, totalCount)} of {totalCount} templates
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:justify-between">
+                  <div className="text-sm text-muted-foreground">
+                    Showing {((currentPage - 1) * 20) + 1}–{Math.min(currentPage * 20, totalCount)} of {totalCount} templates
                   </div>
-                  
-                  <div className="flex items-center gap-2">
+
+                  <div className="flex items-center gap-2 flex-wrap">
                     <Button
                       variant="outline"
                       size="sm"
@@ -387,12 +384,12 @@ export default function LibraryPage() {
                     >
                       Previous
                     </Button>
-                    
-                    <div className="flex items-center gap-1">
+
+                    <div className="flex items-center gap-1 overflow-x-auto">
                       {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                         const page = i + Math.max(1, currentPage - 2);
                         if (page > totalPages) return null;
-                        
+
                         return (
                           <Button
                             key={page}
@@ -406,7 +403,7 @@ export default function LibraryPage() {
                         );
                       })}
                     </div>
-                    
+
                     <Button
                       variant="outline"
                       size="sm"
@@ -422,7 +419,6 @@ export default function LibraryPage() {
           </>
         )}
       </div>
-    </div>
     </div>
   );
 }

@@ -35,12 +35,14 @@ import {
   X,
   Share2,
   Wand2,
+  Save,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   useDiscoverTemplatesInfinite,
   useDiscoverCategories,
   useCopyFromTemplate,
+  useCreateSavedPrompt,
 } from '@/hooks/api/useSavedPrompts';
 import { PROMPT_CATEGORIES, type SavedPrompt } from '@/types/saved-prompts';
 import {
@@ -305,8 +307,9 @@ function PublicPromptCard({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
+      className="min-w-0"
     >
-      <Card className="p-4 md:p-5 flex flex-col gap-3 rounded-xl border-border/50 hover:border-[#C9A227]/40 hover:shadow-lg hover:shadow-[#C9A227]/5 transition-all duration-200 h-full">
+      <Card className="min-w-0 overflow-hidden p-4 md:p-5 flex flex-col gap-3 rounded-xl border-border/50 hover:border-[#C9A227]/40 hover:shadow-lg hover:shadow-[#C9A227]/5 transition-all duration-200 h-full">
         {/* Header — clickable area opens modal */}
         <button
           type="button"
@@ -314,11 +317,11 @@ function PublicPromptCard({
           className="flex items-start justify-between gap-3 text-left w-full group"
         >
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-sm leading-snug line-clamp-1 group-hover:text-primary transition-colors">
+            <h3 className="font-semibold text-sm leading-snug line-clamp-1 break-words group-hover:text-primary transition-colors">
               {prompt.title}
             </h3>
             {prompt.description && (
-              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2 break-words">
                 {prompt.description}
               </p>
             )}
@@ -329,19 +332,19 @@ function PublicPromptCard({
         <button
           type="button"
           onClick={() => onOpen(prompt)}
-          className="rounded-md bg-muted/40 border px-3 py-2 text-xs text-muted-foreground font-mono leading-relaxed text-left w-full hover:bg-muted/60 transition-colors line-clamp-3 overflow-hidden"
+          className="rounded-md bg-muted/40 border px-3 py-2 text-xs text-muted-foreground font-mono leading-relaxed text-left w-full hover:bg-muted/60 transition-colors line-clamp-3 overflow-hidden break-words"
         >
           {preview}
           {isTruncated && '…'}
         </button>
 
         {/* Tags */}
-        <div className="flex items-center gap-1.5 flex-wrap overflow-hidden max-h-6">
-          <Badge variant="outline" className="text-[10px] shrink-0">
+        <div className="flex items-center gap-1.5 flex-wrap overflow-hidden max-h-8">
+          <Badge variant="outline" className="text-[10px] shrink-0 max-w-full truncate">
             {prompt.category}
           </Badge>
           {prompt.tags.slice(0, 2).map((tag) => (
-            <Badge key={tag} variant="secondary" className="text-[10px] flex items-center gap-1 shrink-0">
+            <Badge key={tag} variant="secondary" className="text-[10px] flex items-center gap-1 shrink-0 max-w-full truncate">
               <Tag className="h-2.5 w-2.5" />
               {tag}
             </Badge>
@@ -434,9 +437,21 @@ export default function DiscoverPage() {
   // AI Enhance state — same pattern as PromptLibrary
   const [enhancingPrompt, setEnhancingPrompt] = useState<SavedPrompt | null>(null);
   const [enhancedContent, setEnhancedContent] = useState('');
+  const [enhanceSetupMode, setEnhanceSetupMode] = useState(false);
+  const [professionalismLevel, setProfessionalismLevel] = useState(3);
+  const [savedToLibrary, setSavedToLibrary] = useState(false);
+  const createSavedPrompt = useCreateSavedPrompt();
   const { optimize, cancel, isStreaming: isEnhanceStreaming, output: enhanceOutput } = usePromptOptimization();
   const { creditsAvailable, creditsRemaining } = useCreditsStore();
   const hasCredits = creditsRemaining === null || creditsAvailable > 0;
+
+  const PROFESSIONALISM_LABELS: Record<number, { label: string; description: string }> = {
+    1: { label: 'Casual', description: 'Conversational and simple' },
+    2: { label: 'Clear', description: 'Clear and accessible' },
+    3: { label: 'Balanced', description: 'Neutral, professional tone' },
+    4: { label: 'Professional', description: 'Formal and structured' },
+    5: { label: 'Executive', description: 'Highly formal and precise' },
+  };
 
   // Sync streaming output into enhanced content preview
   useEffect(() => {
@@ -522,7 +537,7 @@ export default function DiscoverPage() {
     });
   };
 
-  const handleEnhance = async (prompt: SavedPrompt) => {
+  const handleEnhance = (prompt: SavedPrompt) => {
     if (!hasCredits) {
       toast.error("You've run out of credits. Upgrade your plan to continue.", {
         action: { label: 'Upgrade', onClick: () => window.location.href = '/billing' },
@@ -530,12 +545,21 @@ export default function DiscoverPage() {
       });
       return;
     }
+    // Open setup step — user picks professionalism level before streaming starts
     setEnhancingPrompt(prompt);
     setEnhancedContent('');
+    setEnhanceSetupMode(true);
+  };
+
+  const handleStartEnhance = async () => {
+    if (!enhancingPrompt) return;
+    setEnhanceSetupMode(false);
+    const toneInfo = PROFESSIONALISM_LABELS[professionalismLevel];
     await optimize({
-      original: prompt.content,
+      original: enhancingPrompt.content,
       session_id: `discover_enhance_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
       mode: 'fast',
+      context: { professionalism_level: professionalismLevel, tone: toneInfo.label },
     });
   };
 
@@ -545,14 +569,30 @@ export default function DiscoverPage() {
     toast.success('Enhanced prompt copied to clipboard!');
   };
 
+  const handleSaveToLibrary = async () => {
+    if (!enhancedContent || !enhancingPrompt) return;
+    const toneLabel = PROFESSIONALISM_LABELS[professionalismLevel].label;
+    await createSavedPrompt.mutateAsync({
+      title: `${enhancingPrompt.title} (Enhanced — ${toneLabel})`,
+      content: enhancedContent,
+      description: `AI-enhanced from Discover. Original by community. Tone: ${toneLabel}.`,
+      category: enhancingPrompt.category || 'general',
+      tags: [...(enhancingPrompt.tags || []), 'enhanced', 'ai-improved'],
+      is_public: false,
+    });
+    setSavedToLibrary(true);
+  };
+
   const handleCloseEnhanceModal = () => {
     if (isEnhanceStreaming) cancel();
     setEnhancingPrompt(null);
     setEnhancedContent('');
+    setEnhanceSetupMode(false);
+    setSavedToLibrary(false);
   };
 
   return (
-    <div className="container mx-auto px-3 md:px-4 py-6 md:py-8 max-w-6xl pb-24 lg:pb-8 overflow-x-hidden">
+    <div className="w-full min-w-0 overflow-x-hidden pb-24 lg:pb-8">
       {/* Extension install banner */}
       {extensionInstalled === false && !bannerDismissed && (
         <div className="mb-6 flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm">
@@ -607,35 +647,37 @@ export default function DiscoverPage() {
       </div>
 
       {/* Category filter */}
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-6 scrollbar-hide -mx-1 px-1">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            type="button"
-            onClick={() => setActiveCategory(cat)}
-            className={cn(
-              'px-3 py-1 rounded-full text-sm border transition-colors whitespace-nowrap shrink-0',
-              activeCategory === cat
-                ? 'bg-primary text-primary-foreground border-primary'
-                : 'bg-background text-muted-foreground border-border hover:border-primary/50 hover:text-foreground'
-            )}
-          >
-            {cat === 'all' ? 'All Categories' : cat}
-          </button>
-        ))}
+      <div className="w-full overflow-x-auto pb-2 mb-6 scrollbar-hide">
+        <div className="flex gap-2 min-w-max">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setActiveCategory(cat)}
+              className={cn(
+                'px-3 py-1 rounded-full text-sm border transition-colors whitespace-nowrap shrink-0',
+                activeCategory === cat
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-background text-muted-foreground border-border hover:border-primary/50 hover:text-foreground'
+              )}
+            >
+              {cat === 'all' ? 'All Categories' : cat}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Result count + sort toggle */}
       {!isLoading && !isError && (
         <div className="flex items-center gap-3 mb-4 flex-wrap">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <BookOpen className="h-4 w-4" />
-            <span>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground min-w-0">
+            <BookOpen className="h-4 w-4 shrink-0" />
+            <span className="min-w-0 truncate">
               {filteredPrompts.length} of {totalCount.toLocaleString()} prompt{totalCount !== 1 ? 's' : ''}
               {searchInput && ` matching "${searchInput}"`}
             </span>
           </div>
-          <div className="ml-auto flex items-center gap-1 rounded-lg border p-1">
+          <div className="sm:ml-auto flex items-center gap-1 rounded-lg border p-1 w-full sm:w-auto overflow-x-auto">
             <button
               type="button"
               onClick={() => setSortBy('use_count')}
@@ -754,26 +796,127 @@ export default function DiscoverPage() {
         onEnhance={handleEnhance}
       />
 
-      {/* AI Enhance Result Modal — same as PromptLibrary */}
+      {/* AI Enhance Modal */}
       <Modal
         isOpen={!!enhancingPrompt}
         onClose={handleCloseEnhanceModal}
-        title={`AI Enhance: ${enhancingPrompt?.title || ''}`}
+        title={`Enhance with AI: ${enhancingPrompt?.title || ''}`}
         size="lg"
       >
-        <div className="space-y-4">
-          {isEnhanceStreaming ? (
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground flex items-center gap-2">
-                <RefreshCw className="h-3.5 w-3.5 animate-spin text-purple-500" />
-                Enhancing your prompt with AI…
-              </p>
-              <div className="p-4 rounded-lg border bg-purple-50/40 dark:bg-purple-900/10 text-sm font-mono whitespace-pre-wrap min-h-[100px] max-h-[280px] overflow-auto leading-relaxed">
-                {enhancedContent}<span className="animate-pulse text-purple-500">▋</span>
+        <div className="space-y-5">
+
+          {/* ── Step 1: Setup — choose professionalism level ── */}
+          {enhanceSetupMode && (
+            <div className="space-y-5">
+              {/* Prompt preview */}
+              <div className="rounded-lg border bg-muted/30 px-4 py-3">
+                <p className="text-xs font-medium text-muted-foreground mb-1">Prompt to enhance</p>
+                <p className="text-sm text-foreground line-clamp-3 font-mono leading-relaxed">
+                  {enhancingPrompt?.content}
+                </p>
+              </div>
+
+              {/* Professionalism slider */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold text-foreground">
+                    Professionalism Level
+                  </label>
+                  <span className="text-sm font-bold text-[#C9A227]">
+                    {PROFESSIONALISM_LABELS[professionalismLevel].label}
+                  </span>
+                </div>
+
+                <input
+                  type="range"
+                  min={1}
+                  max={5}
+                  step={1}
+                  value={professionalismLevel}
+                  onChange={(e) => setProfessionalismLevel(Number(e.target.value))}
+                  className="w-full h-2 rounded-full appearance-none cursor-pointer accent-[#C9A227]"
+                  aria-label="Professionalism level"
+                />
+
+                {/* Level labels */}
+                <div className="flex justify-between text-[10px] text-muted-foreground px-0.5">
+                  {[1, 2, 3, 4, 5].map((lvl) => (
+                    <span
+                      key={lvl}
+                      className={lvl === professionalismLevel ? 'text-[#C9A227] font-semibold' : ''}
+                    >
+                      {PROFESSIONALISM_LABELS[lvl].label}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Active level description */}
+                <p className="text-xs text-muted-foreground text-center bg-muted/40 rounded-md px-3 py-2">
+                  {PROFESSIONALISM_LABELS[professionalismLevel].description}
+                </p>
+              </div>
+
+              {/* CTA */}
+              <div className="flex items-center justify-end gap-2 pt-1 border-t">
+                <Button type="button" variant="outline" size="sm" onClick={handleCloseEnhanceModal}>
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleStartEnhance}
+                  className="bg-[#C9A227] hover:bg-[#C9A227]/90 text-white flex items-center gap-1.5"
+                >
+                  <Wand2 className="h-3.5 w-3.5" />
+                  Enhance Now
+                </Button>
               </div>
             </div>
-          ) : enhancedContent ? (
+          )}
+
+          {/* ── Step 2: Streaming — word chunks appear as they arrive ── */}
+          {!enhanceSetupMode && isEnhanceStreaming && (() => {
+            // Split into settled text + the live "arriving" portion (last ~50 chars)
+            const LIVE_WINDOW = 50;
+            const settled = enhancedContent.length > LIVE_WINDOW
+              ? enhancedContent.slice(0, -LIVE_WINDOW)
+              : '';
+            const live = enhancedContent.length > LIVE_WINDOW
+              ? enhancedContent.slice(-LIVE_WINDOW)
+              : enhancedContent;
+            return (
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                  <RefreshCw className="h-3.5 w-3.5 animate-spin text-purple-500" />
+                  Enhancing at{' '}
+                  <span className="font-medium text-foreground">
+                    {PROFESSIONALISM_LABELS[professionalismLevel].label}
+                  </span>{' '}
+                  level…
+                </p>
+                <div className="p-4 rounded-lg border bg-purple-50/40 dark:bg-purple-900/10 text-sm font-mono whitespace-pre-wrap min-h-[100px] max-h-[280px] overflow-auto leading-relaxed">
+                  <span className="text-foreground/80">{settled}</span>
+                  <span
+                    key={live}
+                    className="text-foreground animate-[fadeIn_0.25s_ease_forwards]"
+                  >
+                    {live}
+                  </span>
+                  <span className="animate-pulse text-purple-500">▋</span>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* ── Step 3: Before / After result ── */}
+          {!enhanceSetupMode && !isEnhanceStreaming && enhancedContent && (
             <>
+              {/* Tone badge */}
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Wand2 className="h-3.5 w-3.5 text-[#C9A227]" />
+                Enhanced at <span className="font-semibold text-foreground">{PROFESSIONALISM_LABELS[professionalismLevel].label}</span> tone
+              </div>
+
               {/* Before / After diff */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
@@ -796,18 +939,30 @@ export default function DiscoverPage() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-2 border-t">
+              <div className="flex items-center justify-between pt-2 border-t flex-wrap gap-2">
                 <p className="text-xs text-muted-foreground">
-                  Copy the enhanced version to use it anywhere.
+                  Copy or save to your library to access it from the extension.
                 </p>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Button type="button" variant="outline" size="sm" onClick={handleCloseEnhanceModal}>
+                    Close
+                  </Button>
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={handleCloseEnhanceModal}
+                    onClick={handleSaveToLibrary}
+                    disabled={createSavedPrompt.isPending || savedToLibrary}
+                    className="flex items-center gap-1.5 border-primary/40 text-primary hover:bg-primary/5"
                   >
-                    Close
+                    {createSavedPrompt.isPending ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : savedToLibrary ? (
+                      <Check className="h-3.5 w-3.5 text-green-500" />
+                    ) : (
+                      <Save className="h-3.5 w-3.5" />
+                    )}
+                    {savedToLibrary ? 'Saved!' : 'Save to Library'}
                   </Button>
                   <Button
                     type="button"
@@ -816,12 +971,13 @@ export default function DiscoverPage() {
                     className="bg-[#C9A227] hover:bg-[#C9A227]/90 text-white flex items-center gap-1.5"
                   >
                     <Copy className="h-3.5 w-3.5" />
-                    Copy Enhanced
+                    Copy
                   </Button>
                 </div>
               </div>
             </>
-          ) : null}
+          )}
+
         </div>
       </Modal>
     </div>

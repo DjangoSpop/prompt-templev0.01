@@ -965,9 +965,18 @@ export function EnhancedTemplateDetailModal({
     if (!isOpen) {
       hasInitializedRef.current = false;
     } else {
-      setMobileTab('fill');
+      // If template already loaded and has no variables, jump straight to preview
+      const hasVars = templateDetail?.variables && templateDetail.variables.length > 0;
+      setMobileTab(hasVars ? 'fill' : 'preview');
     }
-  }, [isOpen]);
+  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Also switch to preview whenever templateDetail loads/changes with no variables
+  useEffect(() => {
+    if (templateDetail && (!templateDetail.variables || templateDetail.variables.length === 0)) {
+      setMobileTab('preview');
+    }
+  }, [templateDetail]);
 
   // Memoized handlers - Enhanced copy with visual feedback
   const handleCopy = useCallback(async () => {
@@ -1375,6 +1384,8 @@ export function EnhancedTemplateDetailModal({
             </div>
 
             {/* Mobile Tab Bar — hidden on sm+ (desktop uses side-by-side panels) */}
+            {/* Also hidden when template has no variables — preview is shown directly */}
+            {templateDetail && templateDetail.variables && templateDetail.variables.length > 0 && (
             <div className="flex sm:hidden border-b border-border flex-shrink-0">
               <button
                 onClick={() => setMobileTab('fill')}
@@ -1397,6 +1408,7 @@ export function EnhancedTemplateDetailModal({
                 Preview
               </button>
             </div>
+            )}
 
             {/* Main Content */}
             <div className="flex-1 overflow-hidden flex">
@@ -1411,12 +1423,14 @@ export function EnhancedTemplateDetailModal({
               >
                 <div className="p-4">
                   {/* Quick Stats Bar - Shows progress prominently */}
+                  {/* Only shown when there are variables to fill */}
+                  {templateDetail.variables && templateDetail.variables.length > 0 && (
                   <div className="flex items-center justify-between mb-4 p-3 bg-gradient-to-r from-pharaoh-gold/5 to-nile-teal/5 rounded-lg border border-pharaoh-gold/10">
                     <div className="flex items-center gap-4">
                       {/* Progress indicator */}
                       <div className="flex items-center gap-2">
                         <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
-                          <motion.div 
+                          <motion.div
                             className="h-full bg-gradient-to-r from-pharaoh-gold to-nile-teal rounded-full"
                             initial={{ width: 0 }}
                             animate={{ width: `${validation.progress}%` }}
@@ -1425,7 +1439,7 @@ export function EnhancedTemplateDetailModal({
                         </div>
                         <span className="text-sm font-bold text-pharaoh-gold">{Math.round(validation.progress)}%</span>
                       </div>
-                      
+
                       {/* Stats */}
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
@@ -1440,7 +1454,7 @@ export function EnhancedTemplateDetailModal({
                         )}
                       </div>
                     </div>
-                    
+
                     {/* Status Badge */}
                     <div className="flex items-center gap-2">
                       {validation.isValid && (
@@ -1453,14 +1467,15 @@ export function EnhancedTemplateDetailModal({
                           Ready!
                         </motion.div>
                       )}
-                      <Badge 
-                        variant={validation.isValid ? 'default' : 'secondary'} 
+                      <Badge
+                        variant={validation.isValid ? 'default' : 'secondary'}
                         className={`text-[10px] ${validation.isValid ? 'bg-green-500 hover:bg-green-600' : ''}`}
                       >
                         {validation.isValid ? '✓ Complete' : `${validation.filledCount}/${templateDetail.variables?.length || 0}`}
                       </Badge>
                     </div>
                   </div>
+                  )}
                   
                   {/* Variables List - Tab-navigable with rapid iteration */}
                   <div className="space-y-2" role="list" aria-label="Template variables">
@@ -1487,6 +1502,27 @@ export function EnhancedTemplateDetailModal({
                         inputRef={getInputRef(index)}
                       />
                     ))}
+
+                    {/* Empty state — shown when this template has no variables */}
+                    {(!templateDetail.variables || templateDetail.variables.length === 0) && (
+                      <div className="flex flex-col items-center text-center py-10 px-4 space-y-4">
+                        <div className="w-14 h-14 rounded-full bg-pharaoh-gold/10 border border-pharaoh-gold/20 flex items-center justify-center">
+                          <Check className="w-7 h-7 text-pharaoh-gold" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <p className="text-sm font-semibold text-foreground">No variables needed</p>
+                          <p className="text-xs text-muted-foreground leading-relaxed max-w-[220px]">
+                            This prompt is ready to use exactly as written. Switch to <strong>Preview</strong> to read the full prompt and copy it.
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => setMobileTab('preview')}
+                          className="text-xs font-medium text-pharaoh-gold hover:text-pharaoh-gold/80 underline underline-offset-2 transition-colors"
+                        >
+                          View full prompt →
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

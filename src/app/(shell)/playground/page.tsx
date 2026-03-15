@@ -367,13 +367,24 @@ function PlaygroundInner() {
         setIsRunning(true);
         setRagAnswer('');
         setRagChunks([]);
-        // Step 1 — retrieve context
-        const retrieved = await ragRetrieve.mutateAsync({ query: prompt });
-        const chunks = (retrieved as any)?.chunks ?? (retrieved as any)?.results ?? [];
+        // Step 1 — retrieve context (trim trailing newlines from textarea)
+        const retrieved = await ragRetrieve.mutateAsync({ query: prompt.trim() });
+        const chunks =
+          (retrieved as any)?.chunks ??
+          (retrieved as any)?.results ??
+          (retrieved as any)?.context?.results ??
+          [];
         setRagChunks(chunks);
         // Step 2 — generate answer grounded in context
-        const answer = await ragAnswerMutation.mutateAsync({ query: prompt, context: retrieved });
-        setRagAnswer((answer as any)?.answer ?? (answer as any)?.response ?? String(answer));
+        const answer = await ragAnswerMutation.mutateAsync({ query: prompt.trim(), context: retrieved });
+        setRagAnswer(
+          (answer as any)?.answer ??
+          (answer as any)?.response ??
+          (answer as any)?.optimized ??
+          (answer as any)?.text ??
+          (answer as any)?.content ??
+          String(answer)
+        );
         setIsRunning(false);
       } else if (mode === 'generate') {
         setIsRunning(true);
@@ -462,7 +473,7 @@ function PlaygroundInner() {
   const serviceConfig = SERVICES.find((s) => s.id === mode)!;
 
   return (
-    <div className="flex flex-col bg-bg-primary pb-20 lg:pb-0">
+    <div className="flex flex-col min-h-[calc(100vh-2rem)] bg-bg-primary pb-20 lg:pb-0">
       {/* ── Top Header ── */}
       <div className="flex items-center justify-between px-4 py-3 md:px-6 md:py-4 border-b border-border bg-bg-secondary/50 backdrop-blur-sm sticky top-0 z-20">
         <div className="flex items-center gap-3">
@@ -520,11 +531,11 @@ function PlaygroundInner() {
       </div>
 
       {/* ── Main Body ── */}
-      <div className="flex-1 flex flex-col lg:flex-row gap-0 overflow-hidden min-h-0">
+      <div className="flex flex-col lg:flex-row gap-0">
 
         {/* AskMe — full-width wizard, replaces split layout */}
         {mode === 'askme' && (
-          <div className="flex-1 p-6 overflow-y-auto">
+          <div className="p-4 md:p-6 overflow-y-auto min-h-[500px]">
             <div className="max-w-2xl mx-auto">
               <div className="mb-4 flex items-start gap-2 p-3 rounded-lg bg-brand/5 border border-brand/20">
                 <BrainCircuit className="w-4 h-4 text-brand flex-shrink-0 mt-0.5" />
@@ -539,7 +550,7 @@ function PlaygroundInner() {
 
         {/* Left — Input Panel (hidden for askme) */}
         {mode !== 'askme' && (
-        <div className="w-full lg:w-[45%] flex flex-col border-b lg:border-b-0 lg:border-r border-border p-4 gap-4">
+        <div className="w-full lg:w-[45%] flex flex-col border-b lg:border-b-0 lg:border-r border-border p-4 gap-4 min-w-0">
 
           {/* Service description */}
           <AnimatePresence mode="wait">
@@ -556,7 +567,7 @@ function PlaygroundInner() {
           </AnimatePresence>
 
           {/* Prompt textarea */}
-          <div className="flex-1 flex flex-col min-h-0">
+          <div className="flex flex-col">
             <label className="block text-xs font-medium text-text-muted mb-1.5 uppercase tracking-wide">
               {mode === 'suggestions' ? 'Prompt to Improve' :
                mode === 'chat' ? 'Your Message' :
@@ -577,7 +588,7 @@ function PlaygroundInner() {
               }
               disabled={isAnyStreaming}
               className={cn(
-                'flex-1 w-full min-h-[120px] md:min-h-[180px] lg:min-h-[280px] resize-none bg-bg-secondary border rounded-xl px-4 py-3 text-sm text-text-primary placeholder-text-muted leading-relaxed',
+                'w-full min-h-[150px] md:min-h-[200px] lg:min-h-[300px] resize-y bg-bg-secondary border rounded-xl px-4 py-3 text-sm text-text-primary placeholder-text-muted leading-relaxed',
                 'focus:outline-none focus:ring-2 focus:ring-brand/40 transition-all',
                 isAnyStreaming ? 'opacity-60 cursor-not-allowed border-border' : 'border-border hover:border-border-hover'
               )}
@@ -623,7 +634,7 @@ function PlaygroundInner() {
           </AnimatePresence>
 
           {/* Action buttons */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-x-3 gap-y-2 flex-wrap">
             {isAnyStreaming ? (
               <button
                 type="button"
@@ -641,8 +652,8 @@ function PlaygroundInner() {
                 className={cn(
                   'flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all',
                   prompt.trim()
-                    ? 'bg-brand text-white hover:bg-brand/90 shadow-sm hover:shadow-brand/30 hover:shadow-md'
-                    : 'bg-bg-secondary text-text-muted border border-border cursor-not-allowed'
+                    ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm hover:shadow-md'
+                    : 'bg-secondary text-muted-foreground border border-border cursor-not-allowed opacity-60'
                 )}
               >
                 <Play className="w-4 h-4" />
@@ -661,8 +672,8 @@ function PlaygroundInner() {
                 className={cn(
                   'flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-medium border transition-all',
                   isAnyStreaming
-                    ? 'opacity-40 cursor-not-allowed border-border text-text-muted'
-                    : 'border-brand/40 text-brand hover:bg-brand/10 hover:border-brand'
+                    ? 'opacity-40 cursor-not-allowed border-border text-muted-foreground'
+                    : 'border-primary/40 text-primary hover:bg-primary/10 hover:border-primary'
                 )}
               >
                 <Wand2 className="w-3.5 h-3.5" />
@@ -674,7 +685,7 @@ function PlaygroundInner() {
               type="button"
               onClick={handleReset}
               disabled={isAnyStreaming}
-              className="p-2.5 rounded-xl border border-border text-text-muted hover:text-text-primary hover:border-border-hover transition-colors"
+              className="p-2.5 rounded-xl border border-border text-muted-foreground hover:text-foreground hover:border-primary transition-colors"
               title="Clear"
             >
               <RotateCcw className="w-4 h-4" />
@@ -705,7 +716,7 @@ function PlaygroundInner() {
 
         {/* Right — Output Panel (hidden for askme) */}
         {mode !== 'askme' && (
-        <div className="flex-1 p-4 min-h-0 h-[40vh] lg:h-auto">
+        <div className="p-4 min-h-[300px] lg:min-h-0 lg:flex-1">
           <PlaygroundOutputPanel
             mode={mode}
             isStreaming={isAnyStreaming}

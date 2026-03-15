@@ -76,7 +76,7 @@ export default function RootLayout({
         {/* Full-screen viewport with safe-area support */}
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       </head>
-      <body className="font-sans antialiased bg-background text-foreground" suppressHydrationWarning>
+      <body className="font-sans antialiased bg-background text-foreground overflow-x-hidden" suppressHydrationWarning>
         <AppProviders>
           <HydrationGuard>
             <QueryProvider>
