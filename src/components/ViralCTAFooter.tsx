@@ -120,6 +120,18 @@ export function ViralCTAFooter() {
           <p className="mt-4 text-xs text-[#4B5563]">
             𓂀 3 free optimizations daily · No credit card · Cancel anytime
           </p>
+
+          {/* Footer nav */}
+          <nav className="mt-12 pt-8 border-t border-white/5 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-[#4B5563]">
+            <Link href="/about" className="hover:text-[#9CA3AF] transition-colors">About</Link>
+            <Link href="/pricing" className="hover:text-[#9CA3AF] transition-colors">Pricing</Link>
+            <Link href="/blog" className="hover:text-[#9CA3AF] transition-colors">Blog</Link>
+            <Link href="/academy" className="hover:text-[#9CA3AF] transition-colors">Academy</Link>
+            <Link href="/templates" className="hover:text-[#9CA3AF] transition-colors">Templates</Link>
+            <Link href="/privacy-policy" className="hover:text-[#9CA3AF] transition-colors">Privacy</Link>
+            <Link href="/privacy-policy/terms-of-service" className="hover:text-[#9CA3AF] transition-colors">Terms</Link>
+          </nav>
+          <p className="mt-3 text-xs text-[#2D3748]">© 2025 Prompt Temple. All rights reserved.</p>
         </motion.div>
       </div>
     </section>

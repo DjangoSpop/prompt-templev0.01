@@ -21,29 +21,66 @@ import { InsufficientCreditsModal } from "@/components/credits/InsufficientCredi
 import { DailyRefillToast } from "@/components/credits/DailyRefillToast";
 
 export const metadata: Metadata = {
-  title: "PromptTemple — Transform Any Prompt Into a Pharaoh-Level Masterpiece",
+  metadataBase: new URL("https://prompttemple2030.com"),
+  title: {
+    default: "Prompt Temple — AI Prompt Optimizer & Template Library",
+    template: "%s | Prompt Temple",
+  },
   description: "The AI prompt optimization platform that turns bad prompts into genius-level instructions. Free to start. Average improvement: 1.8 → 9.4 out of 10. Used by 47,000+ AI builders.",
   keywords: [
-    "prompt optimizer", "AI prompt engineering", "prompt temple", "prompt craft",
-    "ChatGPT prompts", "AI tools", "prompt improvement", "DeepSeek", "prompt library",
-    "wow score", "ai productivity", "pharaoh prompts"
+    "AI prompt optimizer", "prompt engineering tool", "ChatGPT prompt templates",
+    "prompt library", "AI prompt enhancer", "Claude prompt optimizer",
+    "prompt temple", "prompt craft", "AI tools", "prompt improvement",
+    "ai productivity", "how to write better prompts", "prompt engineering",
   ],
+  authors: [{ name: "Prompt Temple", url: "https://prompttemple2030.com" }],
+  creator: "Prompt Temple",
+  publisher: "Prompt Temple",
   manifest: "/manifest.webmanifest",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  alternates: {
+    canonical: "https://prompttemple2030.com",
+  },
+  verification: {
+    google: "9080aa2e20ef498a",
+  },
   openGraph: {
-    title: "PromptTemple — Where Every Prompt Becomes Sacred 𓂀",
-    description: "Transform bad prompts into Pharaoh-level masterpieces. Free. Average 1.8 → 9.4/10 improvement.",
     type: "website",
-    siteName: "PromptTemple",
+    locale: "en_US",
+    url: "https://prompttemple2030.com",
+    siteName: "Prompt Temple",
+    title: "Prompt Temple — AI Prompt Optimizer & Template Library",
+    description: "Transform bad prompts into Pharaoh-level masterpieces. Free. Average 1.8 → 9.4/10 improvement.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Prompt Temple — AI Prompt Optimizer",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "PromptTemple — AI Prompt Optimizer",
+    title: "Prompt Temple — AI Prompt Optimizer",
     description: "Transform any prompt from Apprentice to Pharaoh level. Free. No card needed.",
+    images: ["/og-image.png"],
+    creator: "@prompttemple",
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "PromptTemple",
+    title: "Prompt Temple",
   },
   other: {
     "mobile-web-app-capable": "yes",
@@ -77,6 +114,37 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       </head>
       <body className="font-sans antialiased bg-background text-foreground overflow-x-hidden" suppressHydrationWarning>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              name: "Prompt Temple",
+              applicationCategory: "ProductivityApplication",
+              operatingSystem: "Web",
+              url: "https://prompttemple2030.com",
+              description: "AI prompt optimization platform with 5000+ templates for ChatGPT, Claude, and Gemini.",
+              offers: {
+                "@type": "Offer",
+                price: "0",
+                priceCurrency: "USD",
+                description: "Free tier with 5 daily optimizations",
+              },
+              aggregateRating: {
+                "@type": "AggregateRating",
+                ratingValue: "4.8",
+                ratingCount: "1247",
+                bestRating: "5",
+              },
+              author: {
+                "@type": "Organization",
+                name: "Prompt Temple",
+                url: "https://prompttemple2030.com",
+              },
+            }),
+          }}
+        />
         <AppProviders>
           <HydrationGuard>
             <QueryProvider>

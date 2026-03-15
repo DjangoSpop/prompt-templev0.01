@@ -4,7 +4,14 @@
  * Wraps all academy pages with optional sidebar navigation
  */
 
+import type { Metadata } from 'next';
 import { ReactNode } from 'react';
+
+export const metadata: Metadata = {
+  title: 'Prompt Engineering Academy — Learn AI Prompt Techniques',
+  description: 'Master prompt engineering with guided courses. Learn Chain of Thought, Few-Shot, Role Prompting, and advanced techniques. Earn certificates.',
+  alternates: { canonical: 'https://prompttemple2030.com/academy' },
+};
 
 interface AcademyLayoutProps {
   children: ReactNode;
