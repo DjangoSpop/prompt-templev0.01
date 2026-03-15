@@ -87,7 +87,7 @@ function PromptDetailModal({
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-2xl w-full flex flex-col gap-0 p-0 overflow-hidden">
         {/* Header */}
-        <DialogHeader className="px-6 pt-6 pb-4 border-b">
+        <DialogHeader className="px-4 pt-5 pb-4 sm:px-6 sm:pt-6 border-b">
           <div className="flex items-start justify-between gap-3 pr-6">
             <div className="flex-1 min-w-0">
               <DialogTitle className="text-lg font-semibold leading-snug">
@@ -124,9 +124,9 @@ function PromptDetailModal({
         </DialogHeader>
 
         {/* Prompt content */}
-        <div className="px-6 py-4 flex-1 overflow-y-auto max-h-[50vh]">
+        <div className="px-4 py-4 sm:px-6 flex-1 overflow-y-auto max-h-[50vh]">
           <div className="relative group">
-            <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed bg-muted/40 border rounded-lg px-4 py-3 text-foreground">
+            <pre className="whitespace-pre-wrap break-words font-mono text-sm leading-relaxed bg-muted/40 border rounded-lg px-4 py-3 text-foreground overflow-x-auto">
               {prompt.content}
             </pre>
             <button
@@ -145,7 +145,7 @@ function PromptDetailModal({
         </div>
 
         {/* Footer actions */}
-        <div className="px-6 py-4 border-t flex items-center gap-2 flex-wrap">
+        <div className="px-4 py-4 sm:px-6 border-t flex items-center gap-2 flex-wrap">
           <Button
             variant="outline"
             size="sm"
@@ -244,24 +244,26 @@ function PublicPromptCard({
         <button
           type="button"
           onClick={() => onOpen(prompt)}
-          className="rounded-md bg-muted/40 border px-3 py-2 text-xs text-muted-foreground font-mono leading-relaxed text-left w-full hover:bg-muted/60 transition-colors"
+          className="rounded-md bg-muted/40 border px-3 py-2 text-xs text-muted-foreground font-mono leading-relaxed text-left w-full hover:bg-muted/60 transition-colors break-words overflow-hidden"
         >
           {preview}
           {isTruncated && '…'}
         </button>
 
         {/* Footer */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <Badge variant="outline" className="text-[10px]">
-            {prompt.category}
-          </Badge>
-          {prompt.tags.slice(0, 3).map((tag) => (
-            <Badge key={tag} variant="secondary" className="text-[10px] flex items-center gap-1">
-              <Tag className="h-2.5 w-2.5" />
-              {tag}
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+            <Badge variant="outline" className="text-[10px]">
+              {prompt.category}
             </Badge>
-          ))}
-          <div className="ml-auto flex items-center gap-2">
+            {prompt.tags.slice(0, 3).map((tag) => (
+              <Badge key={tag} variant="secondary" className="text-[10px] flex items-center gap-1">
+                <Tag className="h-2.5 w-2.5" />
+                {tag}
+              </Badge>
+            ))}
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
             <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
               <TrendingUp className="h-3 w-3" />
               {prompt.use_count}

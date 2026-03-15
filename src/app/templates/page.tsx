@@ -316,7 +316,7 @@ export default function TemplatesPage() {
               )}
             </div>
 
-            <div className="flex items-center space-x-4 text-sm text-muted-foreground mb-4">
+            <div className="flex items-center flex-wrap gap-x-3 gap-y-1.5 text-sm text-muted-foreground mb-4">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger className="flex items-center space-x-1">
@@ -360,7 +360,7 @@ export default function TemplatesPage() {
               )}
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center space-x-2">
                 <TooltipProvider>
                   <Tooltip>
@@ -435,12 +435,12 @@ export default function TemplatesPage() {
 
   const TemplateListItem = ({ template }: { template: TemplateList }) => (
     <Card className="temple-card pyramid-elevation hover:pharaoh-glow transition-all duration-300">
-      <div className="p-4 flex items-center justify-between">
-        <div className="flex-1">
-          <div className="flex items-center space-x-3">
-            <Link 
+      <div className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center flex-wrap gap-x-3 gap-y-1">
+            <Link
               href={`/templates/${template.id}`}
-              className="text-lg font-semibold text-hieroglyph hover:text-primary transition-colors text-glow"
+              className="text-lg font-semibold text-hieroglyph hover:text-primary transition-colors text-glow min-w-0 truncate"
             >
               {template.title}
             </Link>
@@ -456,7 +456,7 @@ export default function TemplatesPage() {
           <p className="text-muted-foreground text-sm mt-1 line-clamp-1">
             {template.description}
           </p>
-          <div className="flex items-center space-x-4 text-sm text-muted-foreground mt-2">
+          <div className="flex items-center flex-wrap gap-x-3 gap-y-1 text-sm text-muted-foreground mt-2">
             <div className="flex items-center space-x-1">
               <Star className="h-3 w-3 text-pharaoh fill-current" />
               <span>{template.average_rating.toFixed(1)}</span>
@@ -469,7 +469,7 @@ export default function TemplatesPage() {
           </div>
         </div>
         
-        <div className="flex items-center space-x-2 ml-4">
+        <div className="flex items-center space-x-2 sm:ml-4">
           <Button
             size="sm"
             className="pharaoh-badge text-xs"
@@ -538,7 +538,7 @@ export default function TemplatesPage() {
 
 
           {/* Download Section */}
-          <div className="grid md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <Card className="temple-card p-6 text-center pyramid-elevation hover:pharaoh-glow transition-all duration-300">
               <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
                 <Award className="h-6 w-6 text-white" />
@@ -599,7 +599,7 @@ export default function TemplatesPage() {
         </div>
 
       {/* Featured & Trending Section */}
-      <div className="grid md:grid-cols-2 gap-8 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
         <div>
           <h2 className="text-xl font-semibold mb-4 flex items-center text-hieroglyph text-glow">
             <Award className="h-5 w-5 mr-2 text-pharaoh" />
@@ -673,11 +673,11 @@ export default function TemplatesPage() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center space-x-4">
+          <div className="flex flex-wrap items-center gap-4">
             <select
               value={selectedCategory || ''}
               onChange={(e) => setSelectedCategory(e.target.value ? Number(e.target.value) : null)}
-              className="px-3 py-2 border border-primary/30 rounded-lg focus:ring-2 focus:ring-primary bg-secondary/50 text-hieroglyph"
+              className="w-full sm:w-auto px-3 py-2 border border-primary/30 rounded-lg focus:ring-2 focus:ring-primary bg-secondary/50 text-hieroglyph"
             >
               <option value="">All Sacred Categories</option>
               {categories.map(category => (
@@ -690,7 +690,7 @@ export default function TemplatesPage() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="px-3 py-2 border border-primary/30 rounded-lg focus:ring-2 focus:ring-primary bg-secondary/50 text-hieroglyph"
+              className="w-full sm:w-auto px-3 py-2 border border-primary/30 rounded-lg focus:ring-2 focus:ring-primary bg-secondary/50 text-hieroglyph"
             >
               <option value="popularity">Most Revered</option>
               <option value="rating">Highest Blessed</option>
@@ -747,7 +747,7 @@ export default function TemplatesPage() {
         <>
           <motion.div 
             className={viewMode === 'grid' 
-              ? 'grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' 
+              ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
               : 'space-y-4'
             }
             layout
