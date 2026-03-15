@@ -1031,4 +1031,283 @@ select:focus-visible {
 .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
 
 
+/* =====================================================================
+   MOBILE OVERFLOW FIX — /templates & /discover pages
+   Tested mentally at 375px (iPhone SE) and 320px widths.
+   ===================================================================== */
 
+/* ===== BREAKPOINT VARIABLES ===== */
+:root {
+  /* Central breakpoint tokens — change here to affect all rules below */
+  --mobile-max: 480px;
+  --tablet-min: 481px;
+}
+
+/* ===== GLOBAL MOBILE OVERFLOW FIX ===== */
+
+/* Enforce box-sizing on every element so padding never adds hidden width */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Prevent the root from ever growing wider than the viewport */
+html {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+/* Body must not scroll horizontally on any page */
+body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (max-width: 480px) {
+  /* Every direct child of body must stay inside the viewport */
+  body > * {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* Images and SVGs must never exceed their container */
+  img,
+  svg {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Pre-formatted text blocks (code, prompts) must wrap or clip — never push
+     the page wider */
+  pre,
+  code,
+  .font-mono {
+    max-width: 100%;
+    overflow-x: auto;           /* allow horizontal scroll inside the block */
+    white-space: pre-wrap;      /* wrap long lines instead of extending */
+    word-break: break-word;
+  }
+
+  /* All containers that use 100vw must be restrained — vw ignores scrollbar
+     width and can cause 15-17px overrun */
+  [class*="w-screen"],
+  [class*="min-w-screen"] {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}
+
+/* ===== LAYOUT — AppLayoutWithSidebar overflow guard ===== */
+
+/* The outer flex wrapper already carries overflow-x-hidden; reinforce it */
+.flex.min-h-screen.overflow-x-hidden {
+  overflow-x: hidden;
+}
+
+/* Main content <main> must not overflow when sidebar offset is applied */
+main {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+@media (max-width: 480px) {
+  /* On mobile, remove any leftover sidebar margin so content fills the screen */
+  main {
+    margin-left: 0 !important;
+  }
+}
+
+/* ===== TOUR TOOLTIP PANEL — hard-coded 380px overflows 320-375px screens ===== */
+.tour-tooltip-panel {
+  /* Override the hard-coded 380px width with a fluid capped value */
+  width: min(380px, calc(100vw - 2rem));
+  max-width: calc(100vw - 2rem);
+  box-sizing: border-box;
+}
+
+/* ===== /templates PAGE STYLES ===== */
+
+@media (max-width: 480px) {
+  /* Template grid — collapse to single fluid column; minmax prevents overflow */
+  .grid-cols-1.sm\:grid-cols-2,
+  .grid-cols-1.sm\:grid-cols-2.lg\:grid-cols-3,
+  [class*="grid-cols-"] {
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  }
+
+  /* Template cards must never spill outside the grid cell */
+  .pyramid-card,
+  .temple-card,
+  .temple-card-hover,
+  [class*="rounded-xl"],
+  [class*="rounded-lg"] {
+    max-width: 100%;
+    overflow-x: hidden;
+    word-break: break-word;
+  }
+
+  /* Template preview blocks — constrain and enable inner scroll */
+  .template-preview {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 1rem;          /* reduce from 1.5rem on very small screens */
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  /* Horizontally scrollable filter/tag rows stay inside their parent;
+     the negative-margin trick (-mx-1 px-1) must not make the body scroll */
+  .overflow-x-auto {
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Filter chip rows — contain within viewport */
+  .flex.gap-2.overflow-x-auto {
+    max-width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  /* Action rows inside cards — wrap rather than overflow */
+  .flex.items-center.gap-1\.5.flex-wrap,
+  .flex.items-center.gap-2.flex-wrap,
+  .flex.items-center.gap-3.flex-wrap {
+    flex-wrap: wrap;
+  }
+
+  /* Badges and inline chips — never allow them to grow beyond parent */
+  [class*="Badge"],
+  .badge,
+  [class*="badge"] {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Result count / sort toggle row — wrap on mobile */
+  .flex.items-center.gap-3.mb-4 {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  /* Dialogs and modals — never wider than viewport */
+  [role="dialog"],
+  [data-radix-dialog-content],
+  .DialogContent,
+  [class*="DialogContent"] {
+    max-width: calc(100vw - 2rem) !important;
+    width: calc(100vw - 2rem) !important;
+    overflow-x: hidden;
+  }
+
+  /* Dialog inner prompt content scroll area */
+  .max-h-\[50vh\] {
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ===== /discover PAGE STYLES ===== */
+
+@media (max-width: 480px) {
+  /* Discover page container — ensure full bleed is contained */
+  .container.mx-auto {
+    max-width: 100%;
+    overflow-x: hidden;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  /* Discovery feed grid — single column on ≤ 480px */
+  .grid.grid-cols-1.sm\:grid-cols-2.lg\:grid-cols-3 {
+    grid-template-columns: 1fr;
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* Category filter pills — contained horizontal scroll;
+     -webkit-overflow-scrolling prevents page-level horizontal drift */
+  .flex.gap-2.overflow-x-auto.pb-2.mb-6 {
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;   /* stop scroll chaining to body */
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  /* Each pill snaps cleanly into view */
+  .flex.gap-2.overflow-x-auto.pb-2.mb-6 > button {
+    scroll-snap-align: start;
+    flex-shrink: 0;
+  }
+
+  /* Search bar — fills the mobile viewport without overflow */
+  .relative.mb-5 {
+    max-width: 100%;
+  }
+
+  .relative.mb-5 input {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Sort toggle row — stack vertically or allow wrap */
+  .flex.items-center.gap-1.rounded-lg.border.p-1 {
+    flex-wrap: wrap;
+  }
+
+  /* Discover prompt cards — constrain the card and its children */
+  .grid > [class*="motion"] {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* Prompt preview text inside cards — wrap long mono content */
+  .rounded-md.bg-muted\/40.border.px-3.py-2 {
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-x: hidden;
+    max-width: 100%;
+  }
+
+  /* AI Enhance modal — before/after diff columns stack on mobile */
+  .grid.grid-cols-1.md\:grid-cols-2.gap-3 {
+    grid-template-columns: 1fr;
+  }
+
+  /* Carousels / swipeable sections — contain horizontal touch action */
+  [class*="swipe"],
+  [class*="carousel"],
+  [class*="slider"] {
+    touch-action: pan-y;            /* allow vertical scroll, block horizontal page drift */
+    overscroll-behavior-x: contain;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* Extension install banner — wrap text on narrow screens */
+  .mb-6.flex.items-center.gap-3.rounded-lg {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
+
+/* ===== NEXT ITERATION INSTRUCTIONS =====
+   If any overflow remains after applying this CSS, reply with:
+   1. Screenshot description of remaining overflow
+   2. The exact element causing it (class or selector)
+   3. I will then give you the next targeted fix.
+   ======================================= */
