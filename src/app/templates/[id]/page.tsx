@@ -1,32 +1,67 @@
-'use client';
-
-import { useParams, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import type { Metadata } from 'next';
 import TemplateDetailView from '@/components/TemplateDetailView';
 
-export default function TemplateDetailPage() {
-  const params = useParams();
-  const router = useRouter();
-  const templateId = params.id as string;
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.prompt-temple.com';
+const SITE_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://prompt-temple.com').replace(/\/$/, '');
 
-  useEffect(() => {
-    // If templateId is undefined or invalid, redirect to templates list
-    if (!templateId || templateId === 'undefined') {
-      console.warn('Invalid template ID detected, redirecting to templates list');
-      router.push('/templates');
-    }
-  }, [templateId, router]);
+export async function generateMetadata(
+  { params }: { params: Promise<{ id: string }> }
+): Promise<Metadata> {
+  const { id } = await params;
+  try {
+    const res = await fetch(`${API_BASE}/api/v2/templates/${id}/`, {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) throw new Error('not found');
+    const t = await res.json();
 
-  // Don't render the component if templateId is invalid
-  if (!templateId || templateId === 'undefined') {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <p>Invalid template ID. Redirecting...</p>
-        </div>
-      </div>
-    );
+    const title = t.title || 'Prompt Template';
+    const description = t.description || `A ${t.category?.name ?? ''} prompt template on PromptTemple.`;
+    const fieldCount = t.fields?.length ?? t.variable_count ?? 0;
+    const category = t.category?.name ?? (typeof t.category === 'string' ? t.category : 'Template');
+    const ogImage = `${SITE_URL}/api/og/share/template?title=${encodeURIComponent(title)}&category=${encodeURIComponent(category)}&fields=${fieldCount}`;
+
+    return {
+      title: `${title} — Prompt Temple`,
+      description,
+      openGraph: {
+        title,
+        description,
+        type: 'website',
+        siteName: 'PromptTemple',
+        url: `${SITE_URL}/templates/${id}`,
+        images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title,
+        description,
+        images: [ogImage],
+      },
+    };
+  } catch {
+    return {
+      title: 'Prompt Template — PromptTemple',
+      description: 'Explore and use this prompt template on PromptTemple.',
+      openGraph: {
+        title: 'Prompt Template — PromptTemple',
+        description: 'Explore and use this prompt template on PromptTemple.',
+        type: 'website',
+        siteName: 'PromptTemple',
+        images: [{ url: `${SITE_URL}/api/og/share`, width: 1200, height: 630 }],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: 'Prompt Template — PromptTemple',
+      },
+    };
   }
+}
 
-  return <TemplateDetailView templateId={templateId} />;
+export default async function TemplateDetailPage(
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  if (!id || id === 'undefined') return null;
+  return <TemplateDetailView templateId={id} />;
 }

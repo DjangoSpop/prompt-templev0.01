@@ -234,7 +234,7 @@ function PromptDetailModal({
 // ============================================
 
 function PromptShareMenu({ prompt }: { prompt: SavedPrompt }) {
-  const shareUrl = `${SITE_URL}/discover?prompt=${prompt.id}`;
+  const shareUrl = `${SITE_URL}/p/${prompt.id}`;
   const shareText = `Check out "${prompt.title}" on Prompt Temple`;
   const ogUrl = `${SITE_URL}/api/og/share/prompt?title=${encodeURIComponent(prompt.title)}&category=${encodeURIComponent(prompt.category)}&uses=${prompt.use_count}`;
 
