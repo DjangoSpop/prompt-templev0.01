@@ -55,7 +55,9 @@ export function AskMeWizard() {
   const allRequiredAnswered = userQuestions
     .filter((q) => q.required)
     .every((q) => localAnswers.has(q.qid));
-  const canSubmit = allRequiredAnswered && answeredQuestions.length > 0;
+  const canSubmit =
+    (allRequiredAnswered && answeredQuestions.length > 0) ||
+    (session?.good_enough_to_run ?? false);
 
   // â”€â”€â”€ Handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -117,7 +119,15 @@ export function AskMeWizard() {
             }
           }
 
-          // 400 â€” missing required questions
+          // 404 — session expired or not found
+          if (apiErr?.status === 404) {
+            refundOptimistic(3);
+            handleStartOver();
+            toast.error('Session expired — please start over.');
+            return;
+          }
+
+          // 400 — missing required questions
           if (apiErr?.status === 400) {
             const missing = (apiErr?.data as { missing_qids?: string[] })?.missing_qids;
             if (missing?.length) {
@@ -162,14 +172,12 @@ export function AskMeWizard() {
 
   const comparison = finalResult
     ? {
-        original_length: intent.length,
-        optimized_length: finalResult.optimized_length ?? finalResult.prompt.length,
+        original_length: finalResult.comparison?.original_length ?? intent.length,
+        optimized_length: finalResult.comparison?.optimized_length ?? finalResult.prompt.length,
         improvement_ratio:
           finalResult.comparison?.improvement_ratio ??
-          (finalResult.optimized_length
-            ? finalResult.optimized_length / Math.max(intent.length, 1)
-            : finalResult.prompt.length / Math.max(intent.length, 1)),
-        spec_completeness: (specCompleteness ?? 0) / 100,
+          (finalResult.prompt.length / Math.max(intent.length, 1)),
+        spec_completeness: specCompleteness ?? 0,
         quality_indicators:
           finalResult.comparison?.quality_indicators ??
           (qualityScore ? [`Quality Score: ${qualityScore}/10`] : []),
@@ -356,7 +364,7 @@ export function AskMeWizard() {
               )}
               {specCompleteness != null && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
-                  {specCompleteness}% spec coverage
+                  {Math.round((specCompleteness ?? 0) * 100)}% spec coverage
                 </span>
               )}
               {finalResult.credits_used != null && (

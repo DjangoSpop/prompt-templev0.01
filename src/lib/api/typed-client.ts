@@ -1034,8 +1034,7 @@ export interface AskMeQuestion {
   qid: string;
   title: string;
   help_text?: string;
-  /** 'long_text' | 'short_text' | 'choice' | 'boolean' */
-  kind: string;
+  kind: 'long_text' | 'short_text' | 'choice' | 'boolean' | 'number';
   options: string[];
   variable: string;
   required: boolean;
@@ -1089,6 +1088,8 @@ export interface AskMeSubmitAllResult {
   prompt_history_id?: string;
   comparison?: {
     original_intent?: string;
+    original_length?: number;
+    optimized_length?: number;
     improvement_ratio?: number;
     quality_indicators?: string[];
     spec_completeness?: number;
@@ -1097,6 +1098,7 @@ export interface AskMeSubmitAllResult {
     spec?: Record<string, unknown>;
     variables_used?: string[];
     completion_percentage?: number;
+    answered_qids?: string[];
   };
   /** Fields also present on AskMeFinalResult for UI compatibility */
   explanation?: string;

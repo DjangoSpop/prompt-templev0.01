@@ -41,6 +41,7 @@ import { HowItWorksLanding } from '@/components/landing/HowItWorksLanding';
 import { StatsSection } from '@/components/landing/StatsSection';
 import { TestimonialsCarousel } from '@/components/TestimonialsCarousel';
 import { ViralCTAFooter } from '@/components/ViralCTAFooter';
+import { AIBrainstormerBanner } from '@/components/landing/AIBrainstormerBanner';
 
 export default function DashboardPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -114,6 +115,12 @@ export default function DashboardPage() {
 
           {/* 5. STATS — Counting numbers */}
           <StatsSection />
+
+          {/* Divider */}
+          <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #F5C518, transparent)' }} />
+
+          {/* 5.5. AI BRAINSTORMER BANNER — Extension + 500 credits CTA */}
+          <AIBrainstormerBanner />
 
           {/* Divider */}
           <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #F5C518, transparent)' }} />

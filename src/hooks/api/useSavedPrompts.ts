@@ -382,6 +382,58 @@ export function useDiscoverCategories() {
   });
 }
 
+// ============================================
+// RAG Semantic Search — POST /api/v2/ai/rag/search/
+// ============================================
+
+export interface RagSearchResult {
+  id: string;
+  title: string;
+  description: string;
+  content: string;
+  category: string;
+  category_slug: string;
+  subcategory: string;
+  framework: string;
+  tags: string[];
+  similarity_score: number;
+}
+
+export interface RagSearchResponse {
+  results: RagSearchResult[];
+  total: number;
+  query: string;
+  mode: 'semantic' | 'fallback';
+}
+
+export function useRagSearch() {
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.prompt-temple.com';
+
+  return useMutation({
+    mutationFn: async ({
+      query,
+      top_k = 20,
+      category,
+    }: {
+      query: string;
+      top_k?: number;
+      category?: string;
+    }): Promise<RagSearchResponse> => {
+      const res = await fetch(`${apiBase}/api/v2/ai/rag/search/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, top_k, category: category || undefined }),
+      });
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        throw new Error(text || `RAG search failed (${res.status})`);
+      }
+      return res.json() as Promise<RagSearchResponse>;
+    },
+  });
+}
+
 export function useCopyFromTemplate() {
   const queryClient = useQueryClient();
 

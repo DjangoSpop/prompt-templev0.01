@@ -115,6 +115,16 @@ export function AskMeQuestion({ question, value, onAnswer, disabled = false }: P
           disabled={disabled}
           className="w-full min-h-[80px] p-3 rounded-lg border bg-background text-foreground resize-none focus:ring-2 focus:ring-[#C9A227]/50 focus:border-[#C9A227] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         />
+      ) : question.kind === 'number' ? (
+        <input
+          type="number"
+          value={localValue}
+          onChange={(e) => setLocalValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={question.suggested || '0'}
+          disabled={disabled}
+          className="w-full p-3 rounded-lg border bg-background text-foreground focus:ring-2 focus:ring-[#C9A227]/50 focus:border-[#C9A227] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        />
       ) : (
         <input
           type="text"

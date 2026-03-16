@@ -36,6 +36,8 @@ import {
   Share2,
   Wand2,
   Save,
+  Brain,
+  Zap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -43,6 +45,8 @@ import {
   useDiscoverCategories,
   useCopyFromTemplate,
   useCreateSavedPrompt,
+  useRagSearch,
+  type RagSearchResult,
 } from '@/hooks/api/useSavedPrompts';
 import { PROMPT_CATEGORIES, type SavedPrompt } from '@/types/saved-prompts';
 import {
@@ -291,12 +295,14 @@ function PublicPromptCard({
   isCopying,
   onOpen,
   onEnhance,
+  similarityScore,
 }: {
   prompt: SavedPrompt;
   onCopy: (id: string) => void;
   isCopying: boolean;
   onOpen: (prompt: SavedPrompt) => void;
   onEnhance: (prompt: SavedPrompt) => void;
+  similarityScore?: number;
 }) {
   const preview = prompt.content.slice(0, 160);
   const isTruncated = prompt.content.length > 160;
@@ -317,9 +323,26 @@ function PublicPromptCard({
           className="flex items-start justify-between gap-3 text-left w-full group"
         >
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-sm leading-snug line-clamp-1 break-words group-hover:text-primary transition-colors">
-              {prompt.title}
-            </h3>
+            <div className="flex items-start gap-2">
+              <h3 className="font-semibold text-sm leading-snug line-clamp-1 break-words group-hover:text-primary transition-colors flex-1">
+                {prompt.title}
+              </h3>
+              {similarityScore !== undefined && (
+                <span
+                  className={cn(
+                    'shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold',
+                    similarityScore >= 0.85
+                      ? 'bg-green-500/15 text-green-600 dark:text-green-400'
+                      : similarityScore >= 0.70
+                      ? 'bg-[#C9A227]/15 text-[#C9A227]'
+                      : 'bg-muted text-muted-foreground'
+                  )}
+                >
+                  <Brain className="h-2.5 w-2.5" />
+                  {Math.round(similarityScore * 100)}%
+                </span>
+              )}
+            </div>
             {prompt.description && (
               <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2 break-words">
                 {prompt.description}
@@ -424,6 +447,25 @@ function DiscoverSkeleton() {
 // Discover Page
 // ============================================
 
+// Map a RAG result to the SavedPrompt shape expected by cards/modals
+function ragToPrompt(r: RagSearchResult): SavedPrompt {
+  return {
+    id: r.id,
+    title: r.title,
+    description: r.description,
+    content: r.content,
+    category: r.category,
+    tags: r.tags ?? [],
+    use_count: 0,
+    is_public: true,
+    is_featured: false,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    prompt_framework: r.framework || '',
+    extracted_keywords: [],
+  } as unknown as SavedPrompt;
+}
+
 export default function DiscoverPage() {
   const [searchInput, setSearchInput] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -433,6 +475,9 @@ export default function DiscoverPage() {
   const [selectedPrompt, setSelectedPrompt] = useState<SavedPrompt | null>(null);
   const [extensionInstalled, setExtensionInstalled] = useState<boolean | null>(null);
   const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [searchMode, setSearchMode] = useState<'keyword' | 'semantic'>('keyword');
+
+  const ragSearch = useRagSearch();
 
   // AI Enhance state — same pattern as PromptLibrary
   const [enhancingPrompt, setEnhancingPrompt] = useState<SavedPrompt | null>(null);
@@ -463,6 +508,19 @@ export default function DiscoverPage() {
     const timer = setTimeout(() => setDebouncedSearch(searchInput), 300);
     return () => clearTimeout(timer);
   }, [searchInput]);
+
+  // Fire RAG search when in semantic mode and debounced query is ready
+  useEffect(() => {
+    if (searchMode === 'semantic' && debouncedSearch.trim().length >= 2) {
+      ragSearch.mutate({
+        query: debouncedSearch.trim(),
+        top_k: 30,
+        category: activeCategory !== 'all' ? activeCategory : undefined,
+      });
+    }
+  // ragSearch.mutate is stable across renders
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchMode, debouncedSearch, activeCategory]);
 
   useEffect(() => {
     detectExtension().then(setExtensionInstalled);
@@ -512,6 +570,22 @@ export default function DiscoverPage() {
         p.tags.some((t) => t.toLowerCase().includes(q))
     );
   }, [prompts, searchInput, debouncedSearch]);
+
+  // RAG results mapped to SavedPrompt shape, with score lookup
+  const ragResults = useMemo(
+    () => (ragSearch.data?.results ?? []).map(ragToPrompt),
+    [ragSearch.data]
+  );
+  const ragScoreMap = useMemo(() => {
+    const map = new Map<string, number>();
+    (ragSearch.data?.results ?? []).forEach((r) => map.set(r.id, r.similarity_score));
+    return map;
+  }, [ragSearch.data]);
+  const ragMode = ragSearch.data?.mode;
+  const isSemanticMode = searchMode === 'semantic';
+  const displayPrompts = isSemanticMode ? ragResults : filteredPrompts;
+  const isSemanticLoading = ragSearch.isPending;
+  const isSemanticError = ragSearch.isError;
 
   const handleCopy = async (id: string) => {
     setCopyingId(id);
@@ -634,16 +708,71 @@ export default function DiscoverPage() {
         </p>
       </div>
 
-      {/* Search */}
-      <div className="relative mb-5">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <input
-          type="text"
-          placeholder="Search public prompts..."
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          className="w-full pl-9 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary bg-background text-foreground"
-        />
+      {/* Search + mode toggle */}
+      <div className="mb-5 space-y-2">
+        <div className="relative">
+          {isSemanticMode ? (
+            <Brain className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#C9A227]" />
+          ) : (
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          )}
+          <input
+            type="text"
+            placeholder={isSemanticMode ? 'Describe what you need… (semantic search)' : 'Search public prompts...'}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className={cn(
+              'w-full pl-9 pr-4 py-2 border rounded-lg focus:ring-2 focus:border-primary bg-background text-foreground transition-colors',
+              isSemanticMode
+                ? 'border-[#C9A227]/40 focus:ring-[#C9A227]/20'
+                : 'focus:ring-primary/20'
+            )}
+          />
+          {isSemanticLoading && (
+            <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-[#C9A227]" />
+          )}
+        </div>
+
+        {/* Search mode toggle */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 rounded-lg border p-1">
+            <button
+              type="button"
+              onClick={() => setSearchMode('keyword')}
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-1 rounded-md text-xs transition-colors',
+                searchMode === 'keyword'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              <Search className="h-3 w-3" />
+              Keyword
+            </button>
+            <button
+              type="button"
+              onClick={() => setSearchMode('semantic')}
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-1 rounded-md text-xs transition-colors',
+                searchMode === 'semantic'
+                  ? 'bg-[#C9A227] text-black font-semibold'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              <Brain className="h-3 w-3" />
+              Semantic
+            </button>
+          </div>
+          {isSemanticMode && (
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              <Zap className="h-3 w-3 text-[#C9A227]" />
+              AI finds prompts by meaning, not exact words
+              {ragMode === 'fallback' && (
+                <span className="text-orange-500 ml-1">(fallback mode)</span>
+              )}
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Category filter */}
@@ -671,53 +800,74 @@ export default function DiscoverPage() {
       {!isLoading && !isError && (
         <div className="flex items-center gap-3 mb-4 flex-wrap">
           <div className="flex items-center gap-2 text-sm text-muted-foreground min-w-0">
-            <BookOpen className="h-4 w-4 shrink-0" />
+            {isSemanticMode ? (
+              <Brain className="h-4 w-4 shrink-0 text-[#C9A227]" />
+            ) : (
+              <BookOpen className="h-4 w-4 shrink-0" />
+            )}
             <span className="min-w-0 truncate">
-              {filteredPrompts.length} of {totalCount.toLocaleString()} prompt{totalCount !== 1 ? 's' : ''}
-              {searchInput && ` matching "${searchInput}"`}
+              {isSemanticMode
+                ? ragResults.length > 0
+                  ? `${ragResults.length} semantic result${ragResults.length !== 1 ? 's' : ''}${searchInput ? ` for "${searchInput}"` : ''}`
+                  : debouncedSearch
+                  ? 'No semantic results'
+                  : 'Type to search semantically'
+                : `${filteredPrompts.length} of ${totalCount.toLocaleString()} prompt${totalCount !== 1 ? 's' : ''}${searchInput ? ` matching "${searchInput}"` : ''}`
+              }
             </span>
           </div>
-          <div className="sm:ml-auto flex items-center gap-1 rounded-lg border p-1 w-full sm:w-auto overflow-x-auto">
-            <button
-              type="button"
-              onClick={() => setSortBy('use_count')}
-              className={cn(
-                'flex items-center gap-1.5 px-3 py-1 rounded-md text-xs transition-colors',
-                sortBy === 'use_count'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              <TrendingUp className="h-3 w-3" />
-              Trending
-            </button>
-            <button
-              type="button"
-              onClick={() => setSortBy('created_at')}
-              className={cn(
-                'flex items-center gap-1.5 px-3 py-1 rounded-md text-xs transition-colors',
-                sortBy === 'created_at'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              <Clock className="h-3 w-3" />
-              Newest
-            </button>
-          </div>
+          {!isSemanticMode && (
+            <div className="sm:ml-auto flex items-center gap-1 rounded-lg border p-1 w-full sm:w-auto overflow-x-auto">
+              <button
+                type="button"
+                onClick={() => setSortBy('use_count')}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1 rounded-md text-xs transition-colors',
+                  sortBy === 'use_count'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <TrendingUp className="h-3 w-3" />
+                Trending
+              </button>
+              <button
+                type="button"
+                onClick={() => setSortBy('created_at')}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1 rounded-md text-xs transition-colors',
+                  sortBy === 'created_at'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <Clock className="h-3 w-3" />
+                Newest
+              </button>
+            </div>
+          )}
         </div>
       )}
 
       {/* Content */}
-      {isLoading ? (
+      {(isSemanticMode ? isSemanticLoading && !ragSearch.data : isLoading) ? (
         <DiscoverSkeleton />
-      ) : isError ? (
+      ) : (isSemanticMode ? isSemanticError : isError) ? (
         <Card className="p-8 text-center">
           <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
-          <h3 className="text-lg font-medium mb-2">Failed to load public prompts</h3>
-          <p className="text-muted-foreground mb-4">Could not connect to the server.</p>
+          <h3 className="text-lg font-medium mb-2">
+            {isSemanticMode ? 'Semantic search failed' : 'Failed to load public prompts'}
+          </h3>
+          <p className="text-muted-foreground mb-4">
+            {isSemanticMode
+              ? (ragSearch.error as Error)?.message || 'Could not reach the RAG service.'
+              : 'Could not connect to the server.'}
+          </p>
           <Button
-            onClick={() => refetch()}
+            onClick={() => isSemanticMode
+              ? debouncedSearch && ragSearch.mutate({ query: debouncedSearch, top_k: 30 })
+              : refetch()
+            }
             variant="outline"
             className="flex items-center gap-2 mx-auto"
           >
@@ -725,18 +875,28 @@ export default function DiscoverPage() {
             Retry
           </Button>
         </Card>
-      ) : filteredPrompts.length === 0 ? (
+      ) : displayPrompts.length === 0 ? (
         <Card className="p-8 md:p-12 text-center">
           <div className="w-16 h-16 bg-[#C9A227]/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#C9A227]/20">
-            <Globe className="h-8 w-8 text-[#C9A227]/50" />
+            {isSemanticMode ? (
+              <Brain className="h-8 w-8 text-[#C9A227]/50" />
+            ) : (
+              <Globe className="h-8 w-8 text-[#C9A227]/50" />
+            )}
           </div>
           <h3 className="text-lg font-medium mb-2">
-            {searchInput || activeCategory !== 'all'
+            {isSemanticMode && !debouncedSearch
+              ? 'Describe what you need'
+              : searchInput || activeCategory !== 'all'
               ? 'No prompts match your filters'
               : 'No public prompts yet'}
           </h3>
           <p className="text-muted-foreground text-sm">
-            {searchInput || activeCategory !== 'all'
+            {isSemanticMode && !debouncedSearch
+              ? 'Type a natural-language description — the AI will find the most relevant prompts.'
+              : isSemanticMode
+              ? 'Try a different description or switch to Keyword search.'
+              : searchInput || activeCategory !== 'all'
               ? 'Try adjusting your search or category filter.'
               : 'Be the first to share a prompt with the community.'}
           </p>
@@ -745,7 +905,7 @@ export default function DiscoverPage() {
         <>
           <AnimatePresence mode="popLayout">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-              {filteredPrompts.map((prompt) => (
+              {displayPrompts.map((prompt) => (
                 <PublicPromptCard
                   key={prompt.id}
                   prompt={prompt}
@@ -753,13 +913,14 @@ export default function DiscoverPage() {
                   isCopying={copyingId === prompt.id}
                   onOpen={setSelectedPrompt}
                   onEnhance={handleEnhance}
+                  similarityScore={isSemanticMode ? ragScoreMap.get(prompt.id) : undefined}
                 />
               ))}
             </div>
           </AnimatePresence>
 
-          {/* Load More */}
-          {hasNextPage && (
+          {/* Load More — keyword mode only; RAG returns all results at once */}
+          {!isSemanticMode && hasNextPage && (
             <div className="flex flex-col items-center gap-2 mt-8">
               <Button
                 onClick={() => fetchNextPage()}
