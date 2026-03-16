@@ -153,7 +153,7 @@ export async function GET(request: NextRequest) {
               <span style={{ color: '#C5A55A', fontFamily: 'monospace' }}>{code}</span>
             </div>
           )}
-          <div style={{ display: 'flex' }}>prompttemple.vercel.app/academy</div>
+          <div style={{ display: 'flex' }}>prompt-temple.com/academy</div>
         </div>
       </div>
     ),

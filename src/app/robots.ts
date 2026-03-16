@@ -15,6 +15,6 @@ export default function robots(): MetadataRoute.Robots {
         ],
       },
     ],
-    sitemap: 'https://prompttemple2030.com/sitemap.xml',
+    sitemap: 'https://prompt-temple.com/sitemap.xml',
   };
 }

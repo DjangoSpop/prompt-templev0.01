@@ -21,7 +21,7 @@ import { InsufficientCreditsModal } from "@/components/credits/InsufficientCredi
 import { DailyRefillToast } from "@/components/credits/DailyRefillToast";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://prompttemple2030.com"),
+  metadataBase: new URL("https://prompt-temple.com"),
   title: {
     default: "Prompt Temple — AI Prompt Optimizer & Template Library",
     template: "%s | Prompt Temple",
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     "prompt temple", "prompt craft", "AI tools", "prompt improvement",
     "ai productivity", "how to write better prompts", "prompt engineering",
   ],
-  authors: [{ name: "Prompt Temple", url: "https://prompttemple2030.com" }],
+  authors: [{ name: "Prompt Temple", url: "https://prompt-temple.com" }],
   creator: "Prompt Temple",
   publisher: "Prompt Temple",
   manifest: "/manifest.webmanifest",
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: "https://prompttemple2030.com",
+    canonical: "https://prompt-temple.com",
   },
   verification: {
     google: "9080aa2e20ef498a",
@@ -57,13 +57,13 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://prompttemple2030.com",
+    url: "https://prompt-temple.com",
     siteName: "Prompt Temple",
     title: "Prompt Temple — AI Prompt Optimizer & Template Library",
     description: "Transform bad prompts into Pharaoh-level masterpieces. Free. Average 1.8 → 9.4/10 improvement.",
     images: [
       {
-        url: "/og-image.png",
+        url: "/api/og/share",
         width: 1200,
         height: 630,
         alt: "Prompt Temple — AI Prompt Optimizer",
@@ -74,7 +74,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Prompt Temple — AI Prompt Optimizer",
     description: "Transform any prompt from Apprentice to Pharaoh level. Free. No card needed.",
-    images: ["/og-image.png"],
+    images: ["/api/og/share"],
     creator: "@prompttemple",
   },
   appleWebApp: {
@@ -123,7 +123,7 @@ export default function RootLayout({
               name: "Prompt Temple",
               applicationCategory: "ProductivityApplication",
               operatingSystem: "Web",
-              url: "https://prompttemple2030.com",
+              url: "https://prompt-temple.com",
               description: "AI prompt optimization platform with 5000+ templates for ChatGPT, Claude, and Gemini.",
               offers: {
                 "@type": "Offer",
@@ -140,7 +140,7 @@ export default function RootLayout({
               author: {
                 "@type": "Organization",
                 name: "Prompt Temple",
-                url: "https://prompttemple2030.com",
+                url: "https://prompt-temple.com",
               },
             }),
           }}

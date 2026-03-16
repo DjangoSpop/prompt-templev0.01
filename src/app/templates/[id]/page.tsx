@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import TemplateDetailView from '@/components/TemplateDetailView';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.prompt-temple.com';
-const SITE_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://prompttemple2030.com').replace(/\/$/, '');
+const SITE_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://prompt-temple.com').replace(/\/$/, '');
 
 export async function generateMetadata(
   { params }: { params: Promise<{ id: string }> }
@@ -68,9 +68,9 @@ export default async function TemplateDetailPage(
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://prompttemple2030.com' },
-      { '@type': 'ListItem', position: 2, name: 'Templates', item: 'https://prompttemple2030.com/templates' },
-      { '@type': 'ListItem', position: 3, name: 'Template', item: `https://prompttemple2030.com/templates/${id}` },
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://prompt-temple.com' },
+      { '@type': 'ListItem', position: 2, name: 'Templates', item: 'https://prompt-temple.com/templates' },
+      { '@type': 'ListItem', position: 3, name: 'Template', item: `https://prompt-temple.com/templates/${id}` },
     ],
   };
 

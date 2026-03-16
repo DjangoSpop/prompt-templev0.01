@@ -4,7 +4,7 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: '50 Best ChatGPT Prompt Templates for Business in 2025',
   description: 'Ready-to-use ChatGPT prompt templates for marketing, sales, HR, content creation, coding, and more. Copy and paste to get professional results instantly.',
-  alternates: { canonical: 'https://prompttemple2030.com/blog/chatgpt-prompt-templates' },
+  alternates: { canonical: 'https://prompt-temple.com/blog/chatgpt-prompt-templates' },
   openGraph: {
     type: 'article',
     title: '50 Best ChatGPT Prompt Templates for Business in 2025',
@@ -17,10 +17,10 @@ const articleSchema = {
   '@type': 'Article',
   headline: '50 Best ChatGPT Prompt Templates for Business in 2025',
   description: 'Ready-to-use ChatGPT prompt templates for marketing, sales, HR, content creation, coding, and more.',
-  author: { '@type': 'Organization', name: 'Prompt Temple', url: 'https://prompttemple2030.com' },
-  publisher: { '@type': 'Organization', name: 'Prompt Temple', url: 'https://prompttemple2030.com' },
+  author: { '@type': 'Organization', name: 'Prompt Temple', url: 'https://prompt-temple.com' },
+  publisher: { '@type': 'Organization', name: 'Prompt Temple', url: 'https://prompt-temple.com' },
   datePublished: '2025-03-05',
-  url: 'https://prompttemple2030.com/blog/chatgpt-prompt-templates',
+  url: 'https://prompt-temple.com/blog/chatgpt-prompt-templates',
 };
 
 const templates = [

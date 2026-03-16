@@ -66,7 +66,7 @@ export default async function Image() {
             color: '#4B5563',
           }}
         >
-          prompttemple2030.com
+          prompt-temple.com
         </div>
       </div>
     ),

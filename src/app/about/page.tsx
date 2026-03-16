@@ -4,7 +4,7 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'About Prompt Temple — AI Prompt Optimization Platform',
   description: 'Learn about Prompt Temple — our mission to make AI accessible through better prompts. Built for AI builders, marketers, developers, and creators worldwide.',
-  alternates: { canonical: 'https://prompttemple2030.com/about' },
+  alternates: { canonical: 'https://prompt-temple.com/about' },
 };
 
 export default function AboutPage() {

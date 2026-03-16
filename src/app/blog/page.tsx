@@ -4,7 +4,7 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'Prompt Engineering Blog — AI Prompt Tips & Guides',
   description: 'Learn prompt engineering techniques, discover the best ChatGPT templates, and master AI prompt writing with our expert guides and tutorials.',
-  alternates: { canonical: 'https://prompttemple2030.com/blog' },
+  alternates: { canonical: 'https://prompt-temple.com/blog' },
 };
 
 const posts = [

@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Bot, AlertTriangle, Database, Zap } from 'lucide-react';
+import { Bot, Database, Zap } from 'lucide-react';
 import SSEChatInterface from '@/components/SSEChatInterface';
 import SSEHealthCheck from '@/components/SSEHealthCheck';
 import { toast } from 'sonner';
@@ -16,41 +16,12 @@ interface RagOptimizeResult {
 }
 
 export default function RagPage() {
-  const [isEnabled, setIsEnabled] = useState(false /* RAG enabled status */);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Check RAG status
-    const checkRagStatus = async () => {
-      try {
-        const response = await fetch('https://api.prompt-temple.com/api/v2/core/rag/status/');
-        const data = await response.json();
-        // Backend returns { feature_enabled, service_ready, ... } — support that shape,
-        // but fall back to old `enabled` key if present for compatibility.
-        const featureEnabled =
-          typeof data === 'object' && data !== null
-            ? ('feature_enabled' in data ? (data as any).feature_enabled : (data as any).enabled)
-            : false;
-        const serviceReady =
-          typeof data === 'object' && data !== null
-            ? ('service_ready' in data ? (data as any).service_ready : true)
-            : false;
-        setIsEnabled(Boolean(featureEnabled && serviceReady));
-      } catch (error) {
-        console.error('Failed to check RAG status:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkRagStatus();
-  }, []);
-
   // RAG Optimize form state
   const [promptInput, setPromptInput] = useState('');
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizeResult, setOptimizeResult] = useState<RagOptimizeResult | null>(null);
   const [optimizeError, setOptimizeError] = useState<string | null>(null);
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
 
   const callRagOptimize = useCallback(async () => {
     const p = promptInput.trim();
@@ -76,48 +47,13 @@ export default function RagPage() {
       toast.success('RAG optimization complete — copied to result area');
     } catch (err: unknown) {
       console.error('RAG optimize failed', err);
-  const message = err instanceof Error ? err.message : String(err);
+      const message = err instanceof Error ? err.message : String(err);
       setOptimizeError(message || 'Optimization failed');
       toast.error('RAG optimization failed');
     } finally {
       setIsOptimizing(false);
     }
   }, [promptInput]);
-
-  if (isLoading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-muted rounded mb-4"></div>
-          <div className="h-64 bg-muted rounded"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isEnabled) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <Card className="max-w-2xl mx-auto border-gold-accent">
-          <CardHeader className="text-center">
-            <div className="flex justify-center mb-4">
-              <AlertTriangle className="h-12 w-12 text-gold-accent" />
-            </div>
-            <CardTitle className="text-2xl">RAG Temporarily Unavailable</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="text-muted-foreground mb-6">
-              The Retrieval-Augmented Generation feature is currently disabled or not ready.
-              Please check back later or contact support for more information.
-            </p>
-            <Badge variant="outline" className="border-gold-accent text-gold-accent">
-              Feature Disabled
-            </Badge>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-primary/5">
@@ -139,8 +75,8 @@ export default function RagPage() {
             RAG Knowledge Oracle
           </h1>
           <p className="text-lg text-muted-foreground mb-6 max-w-2xl mx-auto">
-            Retrieval-Augmented Generation chat powered by SSE streaming. 
-            Query your knowledge base with enhanced AI responses.
+            Retrieval-augmented chat for faster, higher-quality answers.
+            Query your knowledge base with grounded AI responses.
           </p>
 
           {/* RAG Optimize quick action */}
@@ -206,7 +142,7 @@ export default function RagPage() {
             </Badge>
             <Badge variant="secondary" className="flex items-center gap-2 px-4 py-2">
               <Zap className="h-4 w-4" />
-              SSE Streaming
+              Realtime Responses
             </Badge>
             <Badge variant="secondary" className="flex items-center gap-2 px-4 py-2">
               <Bot className="h-4 w-4" />
@@ -215,9 +151,18 @@ export default function RagPage() {
           </div>
         </div>
 
-        {/* Health Check */}
-        <div className="max-w-md mx-auto mb-6">
-          <SSEHealthCheck />
+        {/* Optional diagnostics */}
+        <div className="max-w-2xl mx-auto mb-6">
+          <div className="flex justify-end mb-2">
+            <button
+              type="button"
+              onClick={() => setShowDiagnostics((prev) => !prev)}
+              className="text-xs rounded-md border border-slate-200 dark:border-slate-700 px-3 py-1 text-slate-600 dark:text-slate-300"
+            >
+              {showDiagnostics ? 'Hide Diagnostics' : 'Show Diagnostics'}
+            </button>
+          </div>
+          {showDiagnostics && <SSEHealthCheck />}
         </div>
 
         {/* Main RAG Chat Interface */}
@@ -226,8 +171,8 @@ export default function RagPage() {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Database className="w-5 h-5 text-blue-500" />
-                <span>RAG Chat Interface</span>
-                <Badge variant="secondary">SSE Powered</Badge>
+                <span>RAG Assistant</span>
+                <Badge variant="secondary">Live</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent className="h-full p-0">

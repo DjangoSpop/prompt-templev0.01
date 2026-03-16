@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://prompttemple2030.com';
+  const baseUrl = 'https://prompt-temple.com';
 
   const staticPages: MetadataRoute.Sitemap = [
     {

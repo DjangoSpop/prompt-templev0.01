@@ -10,7 +10,7 @@ import { ReactNode } from 'react';
 export const metadata: Metadata = {
   title: 'Prompt Engineering Academy — Learn AI Prompt Techniques',
   description: 'Master prompt engineering with guided courses. Learn Chain of Thought, Few-Shot, Role Prompting, and advanced techniques. Earn certificates.',
-  alternates: { canonical: 'https://prompttemple2030.com/academy' },
+  alternates: { canonical: 'https://prompt-temple.com/academy' },
 };
 
 interface AcademyLayoutProps {

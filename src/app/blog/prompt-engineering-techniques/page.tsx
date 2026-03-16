@@ -4,7 +4,7 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: '7 Prompt Engineering Techniques That Get 10x Better AI Results',
   description: 'Master Chain of Thought, Few-Shot Learning, Role Prompting, and 4 more proven prompt engineering techniques. With real examples for ChatGPT, Claude, and Gemini.',
-  alternates: { canonical: 'https://prompttemple2030.com/blog/prompt-engineering-techniques' },
+  alternates: { canonical: 'https://prompt-temple.com/blog/prompt-engineering-techniques' },
   openGraph: {
     type: 'article',
     title: '7 Prompt Engineering Techniques That Get 10x Better AI Results',
@@ -17,10 +17,10 @@ const articleSchema = {
   '@type': 'Article',
   headline: '7 Prompt Engineering Techniques That Get 10x Better AI Results',
   description: 'Master Chain of Thought, Few-Shot Learning, Role Prompting, and 4 more proven prompt engineering techniques.',
-  author: { '@type': 'Organization', name: 'Prompt Temple', url: 'https://prompttemple2030.com' },
-  publisher: { '@type': 'Organization', name: 'Prompt Temple', url: 'https://prompttemple2030.com' },
+  author: { '@type': 'Organization', name: 'Prompt Temple', url: 'https://prompt-temple.com' },
+  publisher: { '@type': 'Organization', name: 'Prompt Temple', url: 'https://prompt-temple.com' },
   datePublished: '2025-02-28',
-  url: 'https://prompttemple2030.com/blog/prompt-engineering-techniques',
+  url: 'https://prompt-temple.com/blog/prompt-engineering-techniques',
 };
 
 const techniques = [

@@ -5,7 +5,7 @@ import { Crown, Twitter, Linkedin, Link2, Share2, Trophy } from 'lucide-react';
 import Link from 'next/link';
 
 export function ViralCTAFooter() {
-  const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://prompttemple.vercel.app';
+  const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://prompt-temple.com';
 
   const tweetText = encodeURIComponent(
     `🏛️ Just discovered @PromptTemple — transforms bad AI prompts into Pharaoh-level masterpieces. Try it free → ${APP_URL}\n#PromptEngineering #AI`

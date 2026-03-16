@@ -22,14 +22,16 @@ export interface ShareCard {
   copyText: string;
 }
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://prompttemple.vercel.app';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://prompt-temple.com';
 
 export function generateShareCard(optimization: ShareableOptimization): ShareCard {
   const shareId = optimization.shareId || optimization.id;
-  const shareUrl = `${APP_URL}/share/${shareId}`;
-  const imageUrl = `${APP_URL}/api/og/share?id=${shareId}&before=${encodeURIComponent(
+  const shareUrl = `${APP_URL}/p/${shareId}`;
+  const imageUrl = `${APP_URL}/api/og/share/optimization?beforeScore=${encodeURIComponent(
     optimization.beforeScore.toString()
-  )}&after=${encodeURIComponent(optimization.afterScore.toString())}`;
+  )}&afterScore=${encodeURIComponent(
+    optimization.afterScore.toString()
+  )}&improvements=${encodeURIComponent(optimization.improvements.slice(0, 3).join('|'))}`;
 
   const scoreJump = `${optimization.beforeScore.toFixed(1)} → ${optimization.afterScore.toFixed(1)}`;
   const handle = optimization.userHandle ? `@${optimization.userHandle}` : '';

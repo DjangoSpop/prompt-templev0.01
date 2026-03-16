@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, Shield, Lock, Eye, FileText, Sparkles } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ChevronDown, ChevronUp, Shield, Lock, Eye, FileText, Sparkles, Database, Globe, Clock, Users } from 'lucide-react';
 
 interface Section {
   id: string;
@@ -29,7 +28,7 @@ export function PrivacyPolicyContent() {
         <div className="space-y-4">
           <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-lg p-4">
             <p className="text-green-700 dark:text-green-400 font-semibold mb-2">
-              ✓ Single Purpose Confirmed
+              Single Purpose Confirmed
             </p>
             <p className="text-sm text-gray-700 dark:text-gray-300">
               Prompt Temple Broadcaster is designed with a single, narrow purpose: to help users research and craft better prompts by opening selected AI provider tabs, injecting user prompts into active pages on request, and saving/reusing prompt templates locally.
@@ -67,7 +66,7 @@ export function PrivacyPolicyContent() {
                     activeTab
                   </h5>
                   <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-                    Used only when the user clicks "Broadcast" to access the currently active AI provider tab and insert the user's prompt into the page.
+                    Used only when the user clicks &quot;Broadcast&quot; to access the currently active AI provider tab and insert the user&apos;s prompt into the page.
                   </p>
                   <div className="bg-blue-50/50 dark:bg-blue-950/20 border-l-2 border-blue-400 px-3 py-2 rounded text-xs text-gray-600 dark:text-gray-400">
                     <strong>User-initiated only:</strong> Permission is only used when user explicitly triggers the broadcast action.
@@ -110,7 +109,7 @@ export function PrivacyPolicyContent() {
                     Used to store user settings, selected providers, prompt history, templates, and saved prompts locally in the browser.
                   </p>
                   <div className="bg-blue-50/50 dark:bg-blue-950/20 border-l-2 border-blue-400 px-3 py-2 rounded text-xs text-gray-600 dark:text-gray-400">
-                    <strong>Local only:</strong> All data stored locally on user's device. No data synced to servers without explicit user authentication.
+                    <strong>Local only:</strong> All data stored locally on user&apos;s device. No data synced to servers without explicit user authentication.
                   </div>
                 </div>
               </div>
@@ -147,7 +146,7 @@ export function PrivacyPolicyContent() {
                     clipboardWrite
                   </h5>
                   <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-                    Enables the "Copy" button to copy generated prompts/templates/results to the clipboard when the user explicitly clicks copy.
+                    Enables the &quot;Copy&quot; button to copy generated prompts/templates/results to the clipboard when the user explicitly clicks copy.
                   </p>
                   <div className="bg-blue-50/50 dark:bg-blue-950/20 border-l-2 border-blue-400 px-3 py-2 rounded text-xs text-gray-600 dark:text-gray-400">
                     <strong>Explicit action:</strong> Only triggered when user explicitly clicks the copy button.
@@ -170,7 +169,7 @@ export function PrivacyPolicyContent() {
                     Provides an optional side panel UI to access prompt library, saved prompts, and research tools while browsing without interrupting the current tab.
                   </p>
                   <div className="bg-blue-50/50 dark:bg-blue-950/20 border-l-2 border-blue-400 px-3 py-2 rounded text-xs text-gray-600 dark:text-gray-400">
-                    <strong>Non-intrusive:</strong> Optional side panel that doesn't interrupt user workflow. Can be dismissed anytime.
+                    <strong>Non-intrusive:</strong> Optional side panel that doesn&apos;t interrupt user workflow. Can be dismissed anytime.
                   </div>
                 </div>
               </div>
@@ -260,80 +259,73 @@ export function PrivacyPolicyContent() {
       ),
     },
     {
-      id: 'data-usage',
-      title: 'Data Collection & Usage',
+      id: 'data-collection',
+      title: 'Data We Collect',
       icon: <Eye className="w-6 h-6" />,
       content: (
         <div className="space-y-4">
-          <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-lg p-4">
-            <p className="text-purple-700 dark:text-purple-400 font-semibold mb-2">
-              ✓ Privacy Guaranteed
+          <div className="bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border border-blue-500/30 rounded-lg p-4">
+            <p className="text-blue-700 dark:text-blue-400 font-semibold mb-2">
+              Full Transparency
             </p>
             <p className="text-sm text-gray-700 dark:text-gray-300">
-              Prompt Temple Broadcaster does NOT collect, track, or share any personally identifiable user data. All data remains local on your device.
+              Prompt Temple Broadcaster collects certain data to provide its core functionality. Below is a complete disclosure of what we collect and why.
             </p>
           </div>
 
           <div className="space-y-3">
-            <h4 className="font-semibold text-gray-900 dark:text-white">We DO NOT Collect:</h4>
-            <div className="grid gap-3">
-              {[
-                'Personally identifiable information (name, address, email, age)',
-                'Health information (heart rate, medical history, symptoms)',
-                'Financial and payment information (transactions, credit cards)',
-                'Authentication information (passwords, credentials, PINs)',
-                'Personal communications (emails, texts, chat messages)',
-                'Location data (IP address, GPS coordinates)',
-                'Web history (pages visited, browsing history)',
-                'User activity (keystroke logging, mouse tracking, network monitoring)',
-                'Website content or AI responses',
-              ].map((item, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700"
-                >
-                  <span className="text-red-500 font-bold text-lg flex-shrink-0">✕</span>
-                  <p className="text-sm text-gray-700 dark:text-gray-300">{item}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-3 mt-6">
-            <h4 className="font-semibold text-gray-900 dark:text-white">What We Store Locally:</h4>
-            <div className="space-y-3">
+            <h4 className="font-semibold text-gray-900 dark:text-white">Data Categories:</h4>
+            <div className="grid gap-4">
               {[
                 {
-                  title: 'Prompt Templates',
-                  desc: 'Stored locally in your browser only',
+                  title: 'Account Information',
+                  desc: 'Email address and display name obtained from Google or GitHub OAuth.',
+                  purpose: 'Authentication and cross-device sync. Only collected if you choose to sign in.',
+                  color: 'amber',
                 },
                 {
-                  title: 'Broadcast History',
-                  desc: 'Your past broadcast records, kept local',
+                  title: 'User-Created Content',
+                  desc: 'Prompts you write, templates you save, and broadcast configurations you set up.',
+                  purpose: 'Core functionality — storing and broadcasting your prompts across AI platforms.',
+                  color: 'amber',
                 },
                 {
-                  title: 'User Preferences',
-                  desc: 'Extension settings you configure',
+                  title: 'Browsing Data (Limited)',
+                  desc: 'DOM content from AI provider pages only (e.g., ChatGPT, Claude, Gemini) to read AI-generated responses.',
+                  purpose: 'Displaying AI responses side-by-side in the results view. This data is never stored on our servers.',
+                  color: 'amber',
                 },
                 {
-                  title: 'Selected AI Providers',
-                  desc: 'Your chosen broadcast destinations',
+                  title: 'Analytics Data',
+                  desc: 'Page URL, user agent string, and anonymized usage events (e.g., feature usage counts).',
+                  purpose: 'Improving the extension, debugging issues, and understanding feature adoption. Retained for 12 months.',
+                  color: 'amber',
                 },
                 {
-                  title: 'Session State',
-                  desc: 'Temporary data for current session only',
+                  title: 'Search Queries',
+                  desc: 'Queries you submit through the extension\'s built-in search features (powered by DuckDuckGo and Bing).',
+                  purpose: 'Returning search results to you within the extension. Queries are forwarded to the search provider.',
+                  color: 'amber',
+                },
+                {
+                  title: 'Billing Information',
+                  desc: 'Payment details for subscriptions are processed entirely by Stripe. Prompt Temple never stores your card number.',
+                  purpose: 'Processing subscription payments. Stripe handles all PCI compliance.',
+                  color: 'amber',
                 },
               ].map((item, idx) => (
                 <div
                   key={idx}
-                  className="flex items-start gap-3 p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800"
+                  className="border border-amber-300/50 dark:border-amber-600/50 rounded-lg p-4 bg-amber-50/30 dark:bg-amber-900/10"
                 >
-                  <span className="text-green-600 dark:text-green-400 font-bold text-lg flex-shrink-0">✓</span>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                      {item.title}
-                    </p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">{item.desc}</p>
+                  <h5 className="font-semibold text-gray-900 dark:text-white mb-1">
+                    {item.title}
+                  </h5>
+                  <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                    {item.desc}
+                  </p>
+                  <div className="bg-amber-50/50 dark:bg-amber-950/20 border-l-2 border-amber-400 px-3 py-2 rounded text-xs text-gray-600 dark:text-gray-400">
+                    <strong>Why:</strong> {item.purpose}
                   </div>
                 </div>
               ))}
@@ -343,110 +335,273 @@ export function PrivacyPolicyContent() {
       ),
     },
     {
-      id: 'data-sharing',
-      title: 'Data Sharing & Third Parties',
-      icon: <Shield className="w-6 h-6" />,
+      id: 'data-storage',
+      title: 'How Data is Stored',
+      icon: <Database className="w-6 h-6" />,
       content: (
         <div className="space-y-4">
-          <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-lg p-4 space-y-2">
-            <p className="text-green-700 dark:text-green-400 font-semibold">
-              ✓ We Certify All Three Disclosures:
-            </p>
-            <div className="space-y-2">
-              <div className="flex items-start gap-2 text-sm">
-                <span className="text-green-600 dark:text-green-400 font-bold">1.</span>
-                <p className="text-gray-700 dark:text-gray-300">
-                  We do not sell or transfer user data to third parties
-                </p>
-              </div>
-              <div className="flex items-start gap-2 text-sm">
-                <span className="text-green-600 dark:text-green-400 font-bold">2.</span>
-                <p className="text-gray-700 dark:text-gray-300">
-                  We do not use or transfer user data for purposes unrelated to the extension's single purpose
-                </p>
-              </div>
-              <div className="flex items-start gap-2 text-sm">
-                <span className="text-green-600 dark:text-green-400 font-bold">3.</span>
-                <p className="text-gray-700 dark:text-gray-300">
-                  We do not use or transfer user data to determine creditworthiness or for lending purposes
-                </p>
-              </div>
-            </div>
-          </div>
-
           <div className="space-y-3">
-            <h4 className="font-semibold text-gray-900 dark:text-white">Third-Party Integrations:</h4>
-            <p className="text-sm text-gray-700 dark:text-gray-300">
-              Our extension integrates with AI platforms only as requested by the user:
-            </p>
-            <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300 text-sm">
-              <li>
-                <strong>ChatGPT, Claude, Gemini, etc.:</strong> User prompts are sent directly to these platforms as if the user typed them manually. No data is intercepted or logged by our extension.
-              </li>
-              <li>
-                <strong>Authentication Services (Optional):</strong> Google/GitHub authentication is used only for optional cross-device sync. Users remain completely local without authentication.
-              </li>
-              <li>
-                <strong>No Analytics Tracking:</strong> We do not use Google Analytics, Mixpanel, or any third-party analytics service to track user behavior.
-              </li>
-              <li>
-                <strong>No Advertisement Networks:</strong> No integration with ad networks. No behavioral advertising. No targeted marketing.
-              </li>
-            </ul>
-          </div>
+            <h4 className="font-semibold text-gray-900 dark:text-white">Storage Locations:</h4>
+            <div className="grid gap-4">
+              <div className="border border-gray-300/50 dark:border-gray-600/50 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Lock className="w-4 h-4 text-green-600 dark:text-green-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h5 className="font-semibold text-gray-900 dark:text-white mb-1">
+                      Local Storage (chrome.storage.local)
+                    </h5>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                      Prompt templates, user preferences, selected AI providers, broadcast history, and saved prompts are stored locally on your device.
+                    </p>
+                    <div className="bg-green-50/50 dark:bg-green-950/20 border-l-2 border-green-400 px-3 py-2 rounded text-xs text-gray-600 dark:text-gray-400">
+                      <strong>Retention:</strong> Data persists until you uninstall the extension or manually clear it through extension settings.
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-          <div className="space-y-3 mt-6">
-            <h4 className="font-semibold text-gray-900 dark:text-white">Data Access Control:</h4>
-            <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-              <p>
-                The extension respects user privacy at every level:
-              </p>
-              <ul className="list-disc list-inside space-y-1">
-                <li>Prompts sent to AI providers are handled directly by those services</li>
-                <li>Saved prompts and templates are encrypted in local browser storage</li>
-                <li>No extension developer has access to user data unless explicitly shared for sync</li>
-                <li>Users can clear all local data at any time</li>
-              </ul>
+              <div className="border border-gray-300/50 dark:border-gray-600/50 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h5 className="font-semibold text-gray-900 dark:text-white mb-1">
+                      In-Memory (Session)
+                    </h5>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                      Temporary data such as AI response text read from provider pages and current session state is held in memory only.
+                    </p>
+                    <div className="bg-blue-50/50 dark:bg-blue-950/20 border-l-2 border-blue-400 px-3 py-2 rounded text-xs text-gray-600 dark:text-gray-400">
+                      <strong>Retention:</strong> Cleared automatically when the extension context resets or the browser is closed.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border border-gray-300/50 dark:border-gray-600/50 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Globe className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h5 className="font-semibold text-gray-900 dark:text-white mb-1">
+                      Server-Side (api.prompt-temple.com)
+                    </h5>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                      For authenticated users only: synced prompts, account data, and subscription status are stored on our servers.
+                    </p>
+                    <div className="bg-purple-50/50 dark:bg-purple-950/20 border-l-2 border-purple-400 px-3 py-2 rounded text-xs text-gray-600 dark:text-gray-400">
+                      <strong>Retention:</strong> Data persists until you delete your account. You can request full deletion at any time.
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       ),
     },
     {
-      id: 'user-controls',
-      title: 'Your Privacy Controls',
+      id: 'data-sharing',
+      title: 'Data Sharing & Third Parties',
+      icon: <Users className="w-6 h-6" />,
+      content: (
+        <div className="space-y-4">
+          <div className="bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border border-blue-500/30 rounded-lg p-4 space-y-2">
+            <p className="text-blue-700 dark:text-blue-400 font-semibold">
+              We Certify:
+            </p>
+            <div className="space-y-2">
+              <div className="flex items-start gap-2 text-sm">
+                <span className="text-green-600 dark:text-green-400 font-bold">1.</span>
+                <p className="text-gray-700 dark:text-gray-300">
+                  We do <strong>not sell</strong> user data to third parties, advertisers, or data brokers
+                </p>
+              </div>
+              <div className="flex items-start gap-2 text-sm">
+                <span className="text-green-600 dark:text-green-400 font-bold">2.</span>
+                <p className="text-gray-700 dark:text-gray-300">
+                  We do <strong>not use</strong> or transfer user data for purposes unrelated to the extension&apos;s stated functionality
+                </p>
+              </div>
+              <div className="flex items-start gap-2 text-sm">
+                <span className="text-green-600 dark:text-green-400 font-bold">3.</span>
+                <p className="text-gray-700 dark:text-gray-300">
+                  We do <strong>not use</strong> or transfer user data to determine creditworthiness or for lending purposes
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <h4 className="font-semibold text-gray-900 dark:text-white">Third Parties That Receive Data:</h4>
+            <div className="grid gap-4">
+              <div className="border border-gray-300/50 dark:border-gray-600/50 rounded-lg p-4">
+                <h5 className="font-semibold text-gray-900 dark:text-white mb-1">
+                  Prompt Temple Servers
+                </h5>
+                <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                  <code className="text-xs bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">api.prompt-temple.com</code> — Receives synced prompts, account information, and subscription data for authenticated users only.
+                </p>
+              </div>
+
+              <div className="border border-gray-300/50 dark:border-gray-600/50 rounded-lg p-4">
+                <h5 className="font-semibold text-gray-900 dark:text-white mb-1">
+                  AI Providers (11 platforms)
+                </h5>
+                <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                  Your prompts are injected into the following AI provider websites as if you typed them manually. DOM content is read from these pages to display responses in the results view:
+                </p>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {[
+                    'ChatGPT (OpenAI)',
+                    'Claude (Anthropic)',
+                    'Gemini (Google)',
+                    'Perplexity',
+                    'DeepSeek',
+                    'Grok (xAI)',
+                    'Meta AI',
+                    'Mistral (Le Chat)',
+                    'HuggingChat',
+                    'Copilot (Microsoft)',
+                    'You.com',
+                  ].map((provider) => (
+                    <span
+                      key={provider}
+                      className="inline-block px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-xs text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700"
+                    >
+                      {provider}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="border border-gray-300/50 dark:border-gray-600/50 rounded-lg p-4">
+                <h5 className="font-semibold text-gray-900 dark:text-white mb-1">
+                  Stripe
+                </h5>
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  Payment processing for subscriptions. Prompt Temple never sees or stores your full card number. Stripe handles all PCI compliance.
+                </p>
+              </div>
+
+              <div className="border border-gray-300/50 dark:border-gray-600/50 rounded-lg p-4">
+                <h5 className="font-semibold text-gray-900 dark:text-white mb-1">
+                  Google &amp; GitHub
+                </h5>
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  OAuth authentication providers. Only your email address and display name are received when you choose to sign in. No data is sent to these providers beyond the standard OAuth flow.
+                </p>
+              </div>
+
+              <div className="border border-gray-300/50 dark:border-gray-600/50 rounded-lg p-4">
+                <h5 className="font-semibold text-gray-900 dark:text-white mb-1">
+                  DuckDuckGo &amp; Bing
+                </h5>
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  Search queries you submit through the extension&apos;s built-in search features are forwarded to these search providers to return results.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'data-retention',
+      title: 'Data Retention',
+      icon: <Clock className="w-6 h-6" />,
+      content: (
+        <div className="space-y-4">
+          <div className="space-y-3">
+            <h4 className="font-semibold text-gray-900 dark:text-white">How Long We Keep Your Data:</h4>
+            <div className="grid gap-4">
+              {[
+                {
+                  title: 'Local Data',
+                  retention: 'Until extension uninstall or manual clear',
+                  desc: 'Prompt templates, preferences, provider selections, and broadcast history stored in chrome.storage.local.',
+                  badgeClass: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400',
+                },
+                {
+                  title: 'Server-Synced Data',
+                  retention: 'Until account deletion',
+                  desc: 'Synced prompts, account information, and subscription data stored at api.prompt-temple.com. Deleted within 30 days of account deletion request.',
+                  badgeClass: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400',
+                },
+                {
+                  title: 'Analytics Data',
+                  retention: '12 months',
+                  desc: 'Page URLs, user agent strings, and anonymized usage events are automatically purged after 12 months.',
+                  badgeClass: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400',
+                },
+                {
+                  title: 'Billing Records',
+                  retention: 'As required by law',
+                  desc: 'Transaction records may be retained by Stripe as required by financial regulations (typically up to 7 years).',
+                  badgeClass: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400',
+                },
+              ].map((item, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-start gap-3 p-4 rounded-lg border border-gray-300/50 dark:border-gray-600/50"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-1">
+                      <h5 className="font-semibold text-gray-900 dark:text-white">
+                        {item.title}
+                      </h5>
+                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${item.badgeClass}`}>
+                        {item.retention}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'user-rights',
+      title: 'Your Rights & Controls',
       icon: <FileText className="w-6 h-6" />,
       content: (
         <div className="space-y-4">
           <p className="text-sm text-gray-700 dark:text-gray-300">
-            You have complete control over your data and how the extension operates:
+            You have the following rights regarding your data:
           </p>
 
           <div className="space-y-3">
             {[
               {
+                title: 'Access Your Data',
+                desc: 'View all data stored about you through your account settings or by contacting us.',
+              },
+              {
+                title: 'Export Your Data',
+                desc: 'Download your prompts, templates, and saved configurations at any time.',
+              },
+              {
+                title: 'Delete Your Data',
+                desc: 'Request full account deletion. All server-side data will be removed within 30 days of your request.',
+              },
+              {
+                title: 'Clear Local Data',
+                desc: 'Remove all locally stored data through the extension settings page, or by uninstalling the extension.',
+              },
+              {
                 title: 'Manage Permissions',
-                desc: 'You can enable/disable permissions at any time through your browser extension settings',
+                desc: 'Enable or disable individual browser permissions at any time through your browser\'s extension settings.',
               },
               {
-                title: 'Clear Local Storage',
-                desc: 'Remove all saved prompts, templates, and settings through the extension options',
-              },
-              {
-                title: 'Choose AI Providers',
-                desc: 'Select which platforms you want to broadcast to. No defaults without your consent',
-              },
-              {
-                title: 'Opt-In Sync',
-                desc: 'Authentication and cross-device sync is completely optional. The extension works 100% offline',
-              },
-              {
-                title: 'Disable Side Panel',
-                desc: 'Close the side panel anytime or disable it entirely from settings',
-              },
-              {
-                title: 'Uninstall Anytime',
-                desc: 'Remove the extension from your browser, and all data is immediately deleted',
+                title: 'Opt Out of Sync',
+                desc: 'Use the extension entirely offline without authentication. No data will be sent to our servers.',
               },
             ].map((control, idx) => (
               <div
@@ -472,7 +627,7 @@ export function PrivacyPolicyContent() {
     },
     {
       id: 'policy-updates',
-      title: 'Policy Updates & Compliance',
+      title: 'Policy Updates & Contact',
       icon: <Shield className="w-6 h-6" />,
       content: (
         <div className="space-y-4">
@@ -484,7 +639,7 @@ export function PrivacyPolicyContent() {
             <ul className="list-disc list-inside space-y-1 text-sm text-gray-700 dark:text-gray-300">
               <li>A notice in the extension when you update to a new version</li>
               <li>Updates on our website and Chrome Web Store extension page</li>
-              <li>Changes to the "Last Updated" date below</li>
+              <li>Changes to the &quot;Last Updated&quot; date at the top of this page</li>
             </ul>
           </div>
 
@@ -492,12 +647,11 @@ export function PrivacyPolicyContent() {
             <h4 className="font-semibold text-gray-900 dark:text-white">Chrome Web Store Compliance:</h4>
             <div className="bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 space-y-2">
               <p className="text-sm text-gray-700 dark:text-gray-300">
-                This extension fully complies with:
+                This extension and privacy policy comply with:
               </p>
               <ul className="list-disc list-inside space-y-1 text-sm text-gray-700 dark:text-gray-300">
                 <li>Chrome Web Store Developer Program Policies</li>
-                <li>Google Privacy Policy requirements</li>
-                <li>User data and privacy protection standards</li>
+                <li>Google User Data Policy (including Limited Use requirements)</li>
                 <li>Transparency and disclosure requirements</li>
               </ul>
             </div>
@@ -540,37 +694,21 @@ export function PrivacyPolicyContent() {
           <strong>Prompt Temple Broadcaster</strong> — Professional Extension for Broadcasting Prompts Across AI Platforms
         </p>
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          <strong>Last Updated:</strong> {new Date().toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          })}
+          <strong>Last Updated:</strong> March 17, 2026
         </p>
       </div>
 
       {/* Quick Summary */}
       <div className="grid md:grid-cols-3 gap-4">
-        <div className="p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-          <div className="flex items-center gap-3 mb-2">
-            <Lock className="w-5 h-5 text-green-600 dark:text-green-400" />
-            <h3 className="font-semibold text-green-900 dark:text-green-100">
-              No Data Collection
-            </h3>
-          </div>
-          <p className="text-sm text-green-800 dark:text-green-200">
-            We don't collect or sell any personal data
-          </p>
-        </div>
-
         <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
           <div className="flex items-center gap-3 mb-2">
             <Eye className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             <h3 className="font-semibold text-blue-900 dark:text-blue-100">
-              Local Storage Only
+              Transparent Data Practices
             </h3>
           </div>
           <p className="text-sm text-blue-800 dark:text-blue-200">
-            All data stays on your device. No cloud sync without your consent
+            We collect only what&apos;s needed for core features. Full disclosure below.
           </p>
         </div>
 
@@ -578,11 +716,23 @@ export function PrivacyPolicyContent() {
           <div className="flex items-center gap-3 mb-2">
             <Shield className="w-5 h-5 text-purple-600 dark:text-purple-400" />
             <h3 className="font-semibold text-purple-900 dark:text-purple-100">
-              Your Control
+              You Control Your Data
             </h3>
           </div>
           <p className="text-sm text-purple-800 dark:text-purple-200">
-            Full control over permissions, data, and features
+            Access, export, or delete your data at any time. Sync is optional.
+          </p>
+        </div>
+
+        <div className="p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+          <div className="flex items-center gap-3 mb-2">
+            <Lock className="w-5 h-5 text-green-600 dark:text-green-400" />
+            <h3 className="font-semibold text-green-900 dark:text-green-100">
+              No Data Sales
+            </h3>
+          </div>
+          <p className="text-sm text-green-800 dark:text-green-200">
+            We never sell your personal data to advertisers or third parties.
           </p>
         </div>
       </div>
@@ -595,6 +745,7 @@ export function PrivacyPolicyContent() {
             className="border border-gray-300/50 dark:border-gray-600/50 rounded-xl hover:border-blue-400/50 transition overflow-hidden bg-white dark:bg-gray-900/50 shadow-sm hover:shadow-md transition-shadow"
           >
             <button
+              type="button"
               onClick={() => toggleSection(section.id)}
               className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800/50 transition"
             >
@@ -634,10 +785,10 @@ export function PrivacyPolicyContent() {
               By using Prompt Temple Broadcaster, you acknowledge that you have read and understood this Privacy Policy. You agree to our data practices as described above.
             </p>
             <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-              <p>✓ You understand the extension's single purpose</p>
-              <p>✓ You consent to the permissions being used</p>
-              <p>✓ You accept local storage of your prompt templates and settings</p>
-              <p>✓ You understand that authentication and sync are optional</p>
+              <p>✓ You understand what data is collected and why</p>
+              <p>✓ You consent to the permissions described above</p>
+              <p>✓ You understand that server sync requires authentication</p>
+              <p>✓ You know how to access, export, or delete your data</p>
             </div>
           </div>
         </div>
@@ -649,7 +800,7 @@ export function PrivacyPolicyContent() {
           © 2024-2026 Prompt Temple. All rights reserved.
         </p>
         <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
-          This privacy policy complies with Chrome Web Store Developer Program Policies and Google Privacy requirements.
+          This privacy policy complies with Chrome Web Store Developer Program Policies and Google User Data Policy requirements.
         </p>
       </div>
     </div>

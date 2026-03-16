@@ -4,7 +4,7 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'Pricing — Free AI Prompt Optimizer | Prompt Temple',
   description: 'Start free with 5 daily AI prompt optimizations. Upgrade to Pro for unlimited access. No credit card required to get started.',
-  alternates: { canonical: 'https://prompttemple2030.com/pricing' },
+  alternates: { canonical: 'https://prompt-temple.com/pricing' },
 };
 
 const pricingFaq = [

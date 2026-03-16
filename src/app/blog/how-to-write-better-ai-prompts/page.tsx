@@ -4,7 +4,7 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'How to Write Better AI Prompts — Complete 2025 Guide',
   description: 'A comprehensive guide to writing better AI prompts for ChatGPT, Claude, and Gemini. Learn the key elements, common mistakes, and proven techniques with real examples.',
-  alternates: { canonical: 'https://prompttemple2030.com/blog/how-to-write-better-ai-prompts' },
+  alternates: { canonical: 'https://prompt-temple.com/blog/how-to-write-better-ai-prompts' },
   openGraph: {
     type: 'article',
     title: 'How to Write Better AI Prompts — Complete 2025 Guide',
@@ -17,10 +17,10 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'How to Write Better AI Prompts — Complete 2025 Guide',
   description: 'A comprehensive guide to writing better AI prompts for ChatGPT, Claude, and Gemini.',
-  author: { '@type': 'Organization', name: 'Prompt Temple', url: 'https://prompttemple2030.com' },
-  publisher: { '@type': 'Organization', name: 'Prompt Temple', url: 'https://prompttemple2030.com' },
+  author: { '@type': 'Organization', name: 'Prompt Temple', url: 'https://prompt-temple.com' },
+  publisher: { '@type': 'Organization', name: 'Prompt Temple', url: 'https://prompt-temple.com' },
   datePublished: '2025-03-10',
-  url: 'https://prompttemple2030.com/blog/how-to-write-better-ai-prompts',
+  url: 'https://prompt-temple.com/blog/how-to-write-better-ai-prompts',
 };
 
 export default function HowToWritePromptsPage() {

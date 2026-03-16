@@ -15,7 +15,7 @@ import {
   ACADEMY_CONSTANTS,
 } from './types';
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://prompttemple.vercel.app';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://prompt-temple.com';
 const STORAGE_KEY = 'promptcraft-certificates';
 
 // ============================================================================
