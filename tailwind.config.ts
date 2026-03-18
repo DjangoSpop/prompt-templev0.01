@@ -26,6 +26,9 @@ const config: Config = {
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
         arabic: ["Cairo", "Arial", "sans-serif"],
+        display: ["var(--font-display)", "Playfair Display", "serif"],
+        body: ["var(--font-body)", "Inter", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "JetBrains Mono", "monospace"],
       },
       colors: {
         // Core design system tokens
@@ -120,6 +123,24 @@ const config: Config = {
           800: '#927123',
           900: '#7F611D',
         },
+        // Landing page warm sand palette
+        sand: {
+          50: '#fdf8f0',
+          100: '#f5efe3',
+          200: '#e8dfd0',
+          300: '#d4c8b5',
+          600: '#8a7d6b',
+          800: '#4a4035',
+          900: '#2d251d',
+        },
+        'indigo-royal': '#667eea',
+        'temple-purple': '#764ba2',
+        'accent-gold': {
+          DEFAULT: '#d4a853',
+          hover: '#c49a45',
+          amber: '#f0c674',
+        },
+        nile: '#50c878',
         'obsidian': {
           DEFAULT: '#0E0E10',
           50: '#F7F7F8',
@@ -194,6 +215,7 @@ const config: Config = {
         'pyramid-gradient': 'linear-gradient(135deg, #CBA135 0%, #A58129 50%, #7F611D 100%)',
         'nile-gradient': 'linear-gradient(135deg, #0E7490 0%, #0B5D73 50%, #084656 100%)',
         'desert-gradient': 'linear-gradient(135deg, #EBD5A7 0%, #E0C68A 50%, #D5B76D 100%)',
+        'pharaonic': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       },
       boxShadow: {
         'pyramid': '0 4px 20px rgba(203, 161, 53, 0.15)',
@@ -202,6 +224,8 @@ const config: Config = {
         'temple': '0 2px 10px rgba(14, 14, 16, 0.1)',
         'assistant': '0 2px 8px rgba(99, 102, 241, 0.1)',
         'message': '0 1px 4px rgba(0, 0, 0, 0.05)',
+        'gold-glow': '0 0 20px rgba(212, 168, 83, 0.3)',
+        'gold-glow-lg': '0 0 40px rgba(212, 168, 83, 0.4)',
       },
       typography: {
         DEFAULT: {

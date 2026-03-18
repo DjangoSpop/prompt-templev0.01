@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/providers/AuthProvider';
 import { useEventTracker } from '@/providers/AnalyticsProvider';
 import { useDashboard } from '@/lib/hooks';
@@ -32,16 +32,17 @@ import { ProgressIndicator } from '@/components/animations/ProgressIndicator';
 import { PromptIQTestModal } from '@/components/academy/PromptIQTestModal';
 import { useAcademyStore } from '@/lib/stores/academyStore';
 
-// New landing page components
-import { TempleOpening } from '@/components/animations/TempleOpening';
+// Landing page components (warm sand theme)
 import { LandingHeroSection } from '@/components/landing/HeroSection';
-import { TransformationShowcase } from '@/components/landing/TransformationShowcase';
-import { TemplatePreviewSection } from '@/components/landing/TemplatePreviewSection';
-import { HowItWorksLanding } from '@/components/landing/HowItWorksLanding';
-import { StatsSection } from '@/components/landing/StatsSection';
-import { TestimonialsCarousel } from '@/components/TestimonialsCarousel';
-import { ViralCTAFooter } from '@/components/ViralCTAFooter';
-import { AIBrainstormerBanner } from '@/components/landing/AIBrainstormerBanner';
+import { ProblemSection } from '@/components/landing/ProblemSection';
+import { PromptTransformer } from '@/components/landing/PromptTransformer';
+import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
+import { TemplateLibrary } from '@/components/landing/TemplateLibrary';
+import { Playground } from '@/components/landing/Playground';
+import { ExtensionShowcase } from '@/components/landing/ExtensionShowcase';
+import { SocialProof } from '@/components/landing/SocialProof';
+import { FinalCTA } from '@/components/landing/FinalCTA';
+import { PharaonicDivider } from '@/components/landing/shared/PharaonicDivider';
 
 export default function DashboardPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -51,9 +52,7 @@ export default function DashboardPage() {
   const promptIQScore = useAcademyStore((s) => s.promptIQScore);
   const promptIQCompleted = useAcademyStore((s) => s.promptIQCompleted);
 
-  // Temple Opening state
-  const [templeReady, setTempleReady] = useState(false);
-  const handleTempleComplete = useCallback(() => setTempleReady(true), []);
+  // (Temple Opening removed — warm landing page replaces cinematic intro)
 
   useEffect(() => {
     trackPageView('dashboard');
@@ -69,72 +68,50 @@ export default function DashboardPage() {
 
   if (!isAuthenticated) {
     return (
-      <>
-        {/* Cinematic Temple Opening — plays once per session */}
-        {!templeReady && <TempleOpening onComplete={handleTempleComplete} />}
+      <main className="min-h-screen bg-sand-50">
+        {/* 1. HERO — Auto-type search demo + template cards */}
+        <LandingHeroSection />
 
-        <ProgressIndicator color="#F5C518" height={3} className="z-50" />
+        <PharaonicDivider variant="lotus" />
 
-        <div
-          className="min-h-screen relative"
-          style={{ background: 'linear-gradient(180deg, #0D0D0D 0%, #0A0A18 50%, #0D0D0D 100%)' }}
-        >
-          {/* Background grid pattern */}
-          <div
-            className="fixed inset-0 pointer-events-none opacity-[0.03]"
-            style={{
-              backgroundImage: `linear-gradient(rgba(245,197,24,0.5) 1px, transparent 1px),
-                                linear-gradient(90deg, rgba(245,197,24,0.5) 1px, transparent 1px)`,
-              backgroundSize: '60px 60px',
-            }}
-          />
+        {/* 2. PROBLEM — Pain validation cards */}
+        <ProblemSection />
 
-          {/* 1. HERO — Animated prompt transformer demo */}
-          <LandingHeroSection />
+        <PharaonicDivider variant="papyrus" />
 
-          {/* Divider */}
-          <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #F5C518, transparent)' }} />
+        {/* 3. TRANSFORMER — CO-STAR viral demo (the wow moment) */}
+        <PromptTransformer />
 
-          {/* 2. TRANSFORMATION SHOWCASE — Before/After horizontal scroll */}
-          <TransformationShowcase />
+        <PharaonicDivider variant="lotus" />
 
-          {/* Divider */}
-          <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #F5C518, transparent)' }} />
+        {/* 4. HOW IT WORKS — 3-step visual story */}
+        <HowItWorksSection />
 
-          {/* 3. TEMPLATE PREVIEW — Featured template cards */}
-          <TemplatePreviewSection />
+        <PharaonicDivider variant="papyrus" />
 
-          {/* Divider */}
-          <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #F5C518, transparent)' }} />
+        {/* 5. TEMPLATE LIBRARY — 9,000+ template discovery */}
+        <TemplateLibrary />
 
-          {/* 4. HOW IT WORKS — 3-step pillar animation */}
-          <HowItWorksLanding />
+        <PharaonicDivider variant="lotus" />
 
-          {/* Divider */}
-          <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #F5C518, transparent)' }} />
+        {/* 6. PLAYGROUND — SSE enhancement loop (3 free tries) */}
+        <Playground />
 
-          {/* 5. STATS — Counting numbers */}
-          <StatsSection />
+        <PharaonicDivider variant="papyrus" />
 
-          {/* Divider */}
-          <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #F5C518, transparent)' }} />
+        {/* 7. EXTENSION — Scribe showcase animation */}
+        <ExtensionShowcase />
 
-          {/* 5.5. AI BRAINSTORMER BANNER — Extension + 500 credits CTA */}
-          <AIBrainstormerBanner />
+        <PharaonicDivider variant="lotus" />
 
-          {/* Divider */}
-          <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #F5C518, transparent)' }} />
+        {/* 8. SOCIAL PROOF — Stats + testimonials + trust */}
+        <SocialProof />
 
-          {/* 6. TESTIMONIALS */}
-          <TestimonialsCarousel />
+        <PharaonicDivider variant="simple" />
 
-          {/* Divider */}
-          <div className="w-full h-px max-w-5xl mx-auto opacity-10" style={{ background: 'linear-gradient(90deg, transparent, #10B981, transparent)' }} />
-
-          {/* 7. VIRAL CTA FOOTER */}
-          <ViralCTAFooter />
-        </div>
-      </>
+        {/* 9. FINAL CTA + FOOTER + Mobile sticky bar */}
+        <FinalCTA />
+      </main>
     );
   }
 
