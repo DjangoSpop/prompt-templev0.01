@@ -34,6 +34,18 @@ export const LANDING_EVENTS = {
   // CTA
   FINAL_CTA_CLICK: 'final_cta_click',
   STICKY_BAR_CTA_CLICK: 'sticky_bar_cta_click',
+  STICKY_BAR_DISMISSED: 'sticky_bar_dismissed',
+  // v2 Hero
+  HERO_OPTIMIZER_SUBMIT: 'hero_optimizer_submit',
+  HERO_OPTIMIZER_COPY: 'hero_optimizer_copy',
+  HERO_TAB_SWITCH: 'hero_tab_switch',
+  // v2 Template Search
+  TEMPLATE_SEARCH_QUERY: 'template_search_query',
+  TEMPLATE_SEARCH_CATEGORY: 'template_search_category',
+  TEMPLATE_SEARCH_USE: 'template_search_use',
+  // v2 Feature Showcase
+  FEATURE_TAB_SWITCH: 'feature_tab_switch',
+  FEATURE_SECTION_VIEWED: 'feature_section_viewed',
   // Scroll depth
   SCROLL_DEPTH_25: 'scroll_depth_25',
   SCROLL_DEPTH_50: 'scroll_depth_50',

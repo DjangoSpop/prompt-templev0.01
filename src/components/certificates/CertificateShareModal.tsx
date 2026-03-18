@@ -111,6 +111,7 @@ export function CertificateShareModal({
                   <h3 className="font-semibold text-royal-gold-400">Share Certificate</h3>
                 </div>
                 <button
+                title='Share'
                   onClick={onClose}
                   className="p-1 rounded-lg hover:bg-obsidian-800 transition-colors"
                 >

@@ -157,8 +157,44 @@
     --oasis-blue: 220 85% 70%;         /* Lighter blue */
     --pharaoh-gold: 45 70% 65%;        /* Soft gold */
     --temple-shadow: 0 0% 0% / 0.3;    /* Deeper shadows */
+
+    /* Dark Viral Design Spec Tokens */
+    --gold-primary: #E9C25A;
+    --gold-light: #F5D68A;
+    --gold-dark: #B8922F;
+    --lapis-deep: #2E4A9E;
+    --lapis-mid: #4A6BBF;
+    --sand-warm: #1A1A2E;
+    --sand-mid: #2A2E38;
+    --obsidian-pure: #0D0D0D;
+    --obsidian-mid: #1A1A2E;
+
+    /* Dark gradients */
+    --gradient-pharaoh: linear-gradient(135deg, #E9C25A 0%, #B8922F 50%, #8B6914 100%);
+    --gradient-temple: linear-gradient(180deg, #1B2B6B 0%, #0D0D0D 100%);
+    --gradient-papyrus: linear-gradient(120deg, #1A1A2E 0%, #2A2E38 100%);
+
+    /* Dark glass morphism */
+    --glass-bg: rgba(245, 197, 24, 0.08);
+    --glass-border: rgba(245, 197, 24, 0.2);
+    --glass-blur: blur(20px);
   }
 }
+
+/* ── Landing Page Dark Mode Tokens ──────────────────────── */
+/* Sand palette in dark mode — used by v2 landing components */
+.dark .bg-sand-50 { background-color: #0E0F12 !important; }
+.dark .bg-sand-100 { background-color: #14161B !important; }
+.dark .bg-sand-200 { background-color: #1C1F26 !important; }
+.dark .text-sand-300 { color: #6B7280 !important; }
+.dark .text-sand-400 { color: #6B7280 !important; }
+.dark .text-sand-500 { color: #9CA3AF !important; }
+.dark .text-sand-600 { color: #9CA3AF !important; }
+.dark .text-sand-800 { color: #E5E7EB !important; }
+.dark .text-sand-900 { color: #F3F4F6 !important; }
+.dark .border-sand-200 { border-color: #2A2E38 !important; }
+.dark .border-sand-300 { border-color: #3A3F4B !important; }
+.dark .bg-pharaonic { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
 
   /* Egyptian themed copy highlighting */
   
@@ -1029,6 +1065,90 @@ select:focus-visible {
 /* Scrollbar hide */
 .scrollbar-none::-webkit-scrollbar { display: none; }
 .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Landing Page v2 — Dark Mode Enhancements ──────────── */
+
+/* Hero section dark background */
+.dark .landing-hero-bg {
+  background: linear-gradient(180deg, #0E0F12 0%, #14161B 100%) !important;
+}
+
+/* Dark mode for white cards/inputs */
+.dark .landing-card {
+  background-color: #161A22;
+  border-color: #2A2E38;
+}
+.dark .landing-card-elevated {
+  background-color: #1C1F26;
+  border-color: #2A2E38;
+}
+.dark .landing-input {
+  background-color: #14161B;
+  border-color: #2A2E38;
+  color: #EDEFF3;
+}
+.dark .landing-input::placeholder {
+  color: #6B7280;
+}
+.dark .landing-input:focus {
+  border-color: rgba(108, 160, 255, 0.5);
+  box-shadow: 0 0 0 4px rgba(108, 160, 255, 0.1);
+}
+
+/* Demo panels dark mode */
+.dark .demo-before {
+  background-color: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+.dark .demo-after {
+  background-color: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+.dark .demo-neutral {
+  background-color: #1C1F26;
+  border-color: #2A2E38;
+}
+
+/* Footer already dark — lighten in light mode consistency */
+.dark .landing-footer {
+  background-color: #0A0B0D;
+}
+
+/* Mobile sticky bar dark mode */
+.dark .landing-sticky {
+  background-color: rgba(14, 15, 18, 0.95);
+  border-color: #2A2E38;
+}
+
+/* Gold accents — slightly brighter in dark mode */
+.dark .text-gold-gradient {
+  background: linear-gradient(135deg, #E9C25A 0%, #F5D68A 50%, #E9C25A 100%);
+}
+
+/* Pharaonic divider dark mode */
+.dark .pharaonic-divider-line {
+  opacity: 0.4;
+}
+
+/* ── Mobile Performance ─────────────────────────────────── */
+
+/* Disable backdrop-blur on mobile for performance */
+@media (max-width: 767px) {
+  .glass-effect,
+  .glass-pharaoh {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    background-color: rgba(14, 15, 18, 0.95) !important;
+  }
+  .dark .glass-effect,
+  .dark .glass-pharaoh {
+    background-color: rgba(14, 15, 18, 0.97) !important;
+  }
+}
+
+/* Scrollbar hide for horizontal scroll containers */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
 
 

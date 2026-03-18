@@ -66,13 +66,13 @@ export const costarStaggerContainer: Variants = {
   },
 };
 
-export const cardHover = {
+export const cardHover: { scale: number; y: number; transition: { duration: number; ease: string } } = {
   scale: 1.02,
   y: -2,
   transition: { duration: 0.2, ease: 'easeOut' },
 };
 
-export const cardTap = {
+export const cardTap: { scale: number; transition: { duration: number } } = {
   scale: 0.98,
   transition: { duration: 0.1 },
 };

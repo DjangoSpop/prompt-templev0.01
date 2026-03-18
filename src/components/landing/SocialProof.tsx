@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { COPY } from '@/lib/landing/copy';
+import { COPY_V1 as COPY } from '@/lib/landing/copy';
 import { GSAP_SCROLL_TRIGGER_DEFAULTS } from '@/lib/landing/motion';
 import { trackLanding, LANDING_EVENTS } from '@/lib/landing/analytics';
 

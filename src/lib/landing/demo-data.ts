@@ -98,6 +98,53 @@ export const ENHANCEMENT_DEMOS: EnhancementDemo[] = [
   },
 ];
 
+// ── Optimizer Demo (Hero Tab 2) ──────────────────────────
+
+export const OPTIMIZER_DEMO = {
+  input: 'Help me write a cold email to a potential client',
+  optimized: `You are a B2B sales copywriter with 10 years of experience writing cold emails that achieve 40%+ open rates.
+
+Task: Write a personalized cold email to a potential client for [company/service].
+
+Structure:
+1. Subject line that creates curiosity without clickbait
+2. Opening line that references something specific about their business
+3. One sentence connecting their pain point to your solution
+4. Social proof — one client result with a specific number
+5. Low-friction CTA asking for a 15-minute call
+
+Tone: Professional, conversational, not salesy.
+Length: Under 150 words. No attachments mentioned.`,
+  badges: [
+    { label: 'Role defined', icon: 'check' },
+    { label: 'Structure added', icon: 'check' },
+    { label: 'Context included', icon: 'check' },
+    { label: 'Tone specified', icon: 'check' },
+    { label: '4.2x more detailed', icon: 'trending' },
+  ],
+};
+
+export function simulateOptimization(input: string): string {
+  const trimmed = input.trim();
+  if (!trimmed) return '';
+  return `You are a senior expert in the relevant field with 10+ years of practical experience.
+
+Task: ${trimmed}
+
+Requirements:
+- Be specific, actionable, and thorough
+- Include relevant context and real-world examples
+- Structure the response with clear sections
+- Consider the target audience and their knowledge level
+
+Constraints:
+- Keep the tone professional yet approachable
+- Provide concrete, implementable advice
+- Include metrics or benchmarks where applicable
+
+Format: Organized response with headers, bullet points, and a clear conclusion.`;
+}
+
 // ── Featured Template Cards ───────────────────────────────
 
 export interface TemplateCard {
@@ -106,74 +153,62 @@ export interface TemplateCard {
   preview: string;
   category: string;
   rating: number;
+  uses?: number;
+  tags?: string[];
 }
 
 export const FEATURED_TEMPLATES: TemplateCard[] = [
-  // Writing
-  { id: 't1', title: 'Cold Email Opener', preview: 'Craft attention-grabbing cold emails that get replies.', category: 'Marketing', rating: 4.8 },
-  { id: 't2', title: 'Sales Follow-Up Sequence', preview: 'Write a 3-part follow-up sequence that converts leads.', category: 'Business', rating: 4.9 },
-  { id: 't3', title: 'LinkedIn Outreach Message', preview: 'Connect with professionals using warm, personal messages.', category: 'Marketing', rating: 4.7 },
-  { id: 't4', title: 'Blog Post Outline', preview: 'Structure SEO-friendly blog posts that rank and engage.', category: 'Writing', rating: 4.8 },
-  { id: 't5', title: 'Product Description', preview: 'Write product descriptions that highlight benefits, not features.', category: 'Marketing', rating: 4.6 },
-  { id: 't6', title: 'Meeting Summary Email', preview: 'Turn messy meeting notes into clear action-item emails.', category: 'Business', rating: 4.9 },
-  // Code
-  { id: 't7', title: 'Code Review Checklist', preview: 'Systematic review covering security, performance, and style.', category: 'Code', rating: 4.8 },
-  { id: 't8', title: 'API Documentation Writer', preview: 'Generate clear API docs from endpoint descriptions.', category: 'Code', rating: 4.7 },
-  { id: 't9', title: 'Bug Report Template', preview: 'Create detailed bug reports that developers can act on.', category: 'Code', rating: 4.6 },
-  // Creative
-  { id: 't10', title: 'Story Plot Generator', preview: 'Build compelling story arcs with character development.', category: 'Creative', rating: 4.8 },
-  { id: 't11', title: 'Social Media Caption', preview: 'Write scroll-stopping captions for any platform.', category: 'Creative', rating: 4.7 },
-  { id: 't12', title: 'YouTube Script Writer', preview: 'Structure engaging video scripts with hooks and CTAs.', category: 'Creative', rating: 4.9 },
-  // Education
-  { id: 't13', title: 'Study Guide Builder', preview: 'Create topic summaries with practice questions.', category: 'Education', rating: 4.8 },
-  { id: 't14', title: 'Exam Prep Flashcards', preview: 'Generate Q&A flashcards for any subject.', category: 'Education', rating: 4.7 },
-  { id: 't15', title: 'Essay Outline Helper', preview: 'Plan essays with thesis, arguments, and evidence.', category: 'Education', rating: 4.6 },
-  // Business
-  { id: 't16', title: 'Pitch Deck Outline', preview: 'Structure startup pitches that investors remember.', category: 'Business', rating: 4.9 },
-  { id: 't17', title: 'SWOT Analysis Prompt', preview: 'Run a complete SWOT analysis for any business idea.', category: 'Business', rating: 4.7 },
-  { id: 't18', title: 'Customer Survey Questions', preview: 'Design survey questions that get honest, useful feedback.', category: 'Business', rating: 4.6 },
-  // More Marketing
-  { id: 't19', title: 'Ad Copy Generator', preview: 'Write high-converting ad copy for any platform.', category: 'Marketing', rating: 4.8 },
-  { id: 't20', title: 'Email Newsletter Template', preview: 'Build weekly newsletters that people actually read.', category: 'Marketing', rating: 4.7 },
-  // More Writing
-  { id: 't21', title: 'Resume Bullet Points', preview: 'Turn job duties into achievement-focused resume bullets.', category: 'Writing', rating: 4.9 },
-  { id: 't22', title: 'Cover Letter Builder', preview: 'Write cover letters that match the job description.', category: 'Writing', rating: 4.8 },
-  { id: 't23', title: 'Thank You Note Writer', preview: 'Craft genuine thank-you notes for any occasion.', category: 'Writing', rating: 4.6 },
-  { id: 't24', title: 'Press Release Template', preview: 'Write newsworthy press releases that journalists use.', category: 'Writing', rating: 4.7 },
-  // More Code
-  { id: 't25', title: 'SQL Query Builder', preview: 'Generate complex SQL queries from plain English.', category: 'Code', rating: 4.8 },
-  { id: 't26', title: 'Unit Test Generator', preview: 'Create comprehensive test cases for your functions.', category: 'Code', rating: 4.7 },
-  // More Creative
-  { id: 't27', title: 'Podcast Episode Planner', preview: 'Plan podcast episodes with segments and questions.', category: 'Creative', rating: 4.6 },
-  { id: 't28', title: 'Brand Name Generator', preview: 'Generate catchy brand names with meaning and availability.', category: 'Creative', rating: 4.8 },
-  // More Education
-  { id: 't29', title: 'Lesson Plan Creator', preview: 'Build structured lesson plans with activities and goals.', category: 'Education', rating: 4.9 },
-  { id: 't30', title: 'Research Paper Outline', preview: 'Structure academic papers with proper methodology.', category: 'Education', rating: 4.7 },
+  { id: 't1', title: 'Marketing Email Writer', preview: 'Create persuasive emails that convert readers into customers.', category: 'Marketing', rating: 4.9, uses: 12400, tags: ['email', 'marketing', 'conversion'] },
+  { id: 't2', title: 'Code Review Assistant', preview: 'Get thorough code reviews with security and performance analysis.', category: 'Code', rating: 4.8, uses: 8700, tags: ['code', 'review', 'development'] },
+  { id: 't3', title: 'Social Media Post Creator', preview: 'Generate engaging posts for Instagram, Twitter, and LinkedIn.', category: 'Creative', rating: 4.7, uses: 15200, tags: ['social', 'content', 'instagram'] },
+  { id: 't4', title: 'Business Proposal Generator', preview: 'Write professional proposals that win clients.', category: 'Business', rating: 4.9, uses: 9800, tags: ['business', 'proposal', 'sales'] },
+  { id: 't5', title: 'SEO Blog Writer', preview: 'Create SEO-optimized blog posts that rank on Google.', category: 'Writing', rating: 4.6, uses: 11300, tags: ['seo', 'blog', 'content'] },
+  { id: 't6', title: 'Customer Support Reply', preview: 'Craft professional and empathetic support responses.', category: 'Support', rating: 4.8, uses: 7600, tags: ['support', 'email', 'customer'] },
+  { id: 't7', title: 'Resume Optimizer', preview: 'Transform your resume to pass ATS and impress recruiters.', category: 'Career', rating: 4.9, uses: 18500, tags: ['resume', 'career', 'job'] },
+  { id: 't8', title: 'Product Description Writer', preview: 'Write compelling product descriptions that sell.', category: 'Marketing', rating: 4.7, uses: 6900, tags: ['product', 'ecommerce', 'copywriting'] },
+  { id: 't9', title: 'Meeting Summary Generator', preview: 'Turn messy notes into clear, actionable meeting summaries.', category: 'Business', rating: 4.8, uses: 13100, tags: ['meeting', 'notes', 'productivity'] },
+  { id: 't10', title: 'Legal Document Reviewer', preview: 'Analyze contracts and legal documents for key terms.', category: 'Business', rating: 4.6, uses: 5400, tags: ['legal', 'contract', 'review'] },
+  { id: 't11', title: 'Lesson Plan Builder', preview: 'Create engaging lesson plans for any subject or grade.', category: 'Education', rating: 4.9, uses: 8200, tags: ['education', 'teaching', 'lesson'] },
+  { id: 't12', title: 'Sales Pitch Script', preview: 'Craft persuasive sales pitches that close deals.', category: 'Business', rating: 4.7, uses: 10600, tags: ['sales', 'pitch', 'presentation'] },
+  // Extended set
+  { id: 't13', title: 'Cold Email Opener', preview: 'Craft attention-grabbing cold emails that get replies.', category: 'Marketing', rating: 4.8, uses: 9200, tags: ['email', 'cold', 'outreach'] },
+  { id: 't14', title: 'LinkedIn Outreach Message', preview: 'Connect with professionals using warm, personal messages.', category: 'Marketing', rating: 4.7, uses: 7800, tags: ['linkedin', 'networking', 'social'] },
+  { id: 't15', title: 'Blog Post Outline', preview: 'Structure SEO-friendly blog posts that rank and engage.', category: 'Writing', rating: 4.8, uses: 10100, tags: ['blog', 'seo', 'outline'] },
+  { id: 't16', title: 'API Documentation Writer', preview: 'Generate clear API docs from endpoint descriptions.', category: 'Code', rating: 4.7, uses: 6300, tags: ['api', 'documentation', 'code'] },
+  { id: 't17', title: 'Story Plot Generator', preview: 'Build compelling story arcs with character development.', category: 'Creative', rating: 4.8, uses: 8900, tags: ['story', 'writing', 'fiction'] },
+  { id: 't18', title: 'YouTube Script Writer', preview: 'Structure engaging video scripts with hooks and CTAs.', category: 'Creative', rating: 4.9, uses: 11700, tags: ['youtube', 'video', 'script'] },
+  { id: 't19', title: 'Study Guide Builder', preview: 'Create topic summaries with practice questions.', category: 'Education', rating: 4.8, uses: 7400, tags: ['study', 'education', 'exam'] },
+  { id: 't20', title: 'Pitch Deck Outline', preview: 'Structure startup pitches that investors remember.', category: 'Business', rating: 4.9, uses: 8600, tags: ['pitch', 'startup', 'investor'] },
+  { id: 't21', title: 'Ad Copy Generator', preview: 'Write high-converting ad copy for any platform.', category: 'Marketing', rating: 4.8, uses: 9500, tags: ['ad', 'copy', 'marketing'] },
+  { id: 't22', title: 'Cover Letter Builder', preview: 'Write cover letters that match the job description.', category: 'Career', rating: 4.8, uses: 14200, tags: ['cover letter', 'career', 'job'] },
+  { id: 't23', title: 'SQL Query Builder', preview: 'Generate complex SQL queries from plain English.', category: 'Code', rating: 4.8, uses: 7100, tags: ['sql', 'database', 'query'] },
+  { id: 't24', title: 'Unit Test Generator', preview: 'Create comprehensive test cases for your functions.', category: 'Code', rating: 4.7, uses: 6800, tags: ['test', 'unit test', 'code'] },
 ];
 
 // ── Hero demo cards (shown during auto-type) ─────────────
 
 export const HERO_DEMO_CARDS: TemplateCard[] = [
-  FEATURED_TEMPLATES[0], // Cold Email Opener
-  FEATURED_TEMPLATES[1], // Sales Follow-Up Sequence
-  FEATURED_TEMPLATES[2], // LinkedIn Outreach Message
+  FEATURED_TEMPLATES[0], // Marketing Email Writer
+  FEATURED_TEMPLATES[3], // Business Proposal Generator
+  FEATURED_TEMPLATES[12], // Cold Email Opener
 ];
 
 // ── Category template mapping ─────────────────────────────
 
-export function getTemplatesByCategory(category: string): TemplateCard[] {
-  if (category === 'All') return FEATURED_TEMPLATES.slice(0, 6);
-  return FEATURED_TEMPLATES.filter((t) => t.category === category).slice(0, 6);
+export function getTemplatesByCategory(category: string, limit = 8): TemplateCard[] {
+  if (category === 'All') return FEATURED_TEMPLATES.slice(0, limit);
+  return FEATURED_TEMPLATES.filter((t) => t.category === category).slice(0, limit);
 }
 
 // ── Search simulation ─────────────────────────────────────
 
-export function searchTemplates(query: string): TemplateCard[] {
+export function searchTemplates(query: string, limit = 8): TemplateCard[] {
   const q = query.toLowerCase();
   return FEATURED_TEMPLATES.filter(
     (t) =>
       t.title.toLowerCase().includes(q) ||
       t.preview.toLowerCase().includes(q) ||
-      t.category.toLowerCase().includes(q)
-  ).slice(0, 6);
+      t.category.toLowerCase().includes(q) ||
+      (t.tags && t.tags.some((tag) => tag.toLowerCase().includes(q)))
+  ).slice(0, limit);
 }

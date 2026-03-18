@@ -28,12 +28,12 @@ export function GradientButton({
   };
 
   const baseClasses =
-    'inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-gold focus:ring-offset-2 focus:ring-offset-sand-50 min-h-[44px]';
+    'inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-gold focus:ring-offset-2 focus:ring-offset-sand-50 dark:focus:ring-offset-[#0E0F12] min-h-[44px]';
 
   const variantClasses =
     variant === 'primary'
       ? 'bg-pharaonic text-white border border-accent-gold/40 hover:shadow-gold-glow hover:border-accent-gold active:scale-[0.98]'
-      : 'bg-transparent text-sand-800 border-2 border-sand-300 hover:border-accent-gold hover:text-sand-900 active:scale-[0.98]';
+      : 'bg-transparent text-sand-800 dark:text-stone-200 border-2 border-sand-300 dark:border-stone-600 hover:border-accent-gold dark:hover:border-[#E9C25A] hover:text-sand-900 dark:hover:text-white active:scale-[0.98]';
 
   const classes = `${baseClasses} ${sizeClasses[size]} ${variantClasses} ${className}`;
 

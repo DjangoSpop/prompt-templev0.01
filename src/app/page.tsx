@@ -32,17 +32,19 @@ import { ProgressIndicator } from '@/components/animations/ProgressIndicator';
 import { PromptIQTestModal } from '@/components/academy/PromptIQTestModal';
 import { useAcademyStore } from '@/lib/stores/academyStore';
 
-// Landing page components (warm sand theme)
-import { LandingHeroSection } from '@/components/landing/HeroSection';
-import { ProblemSection } from '@/components/landing/ProblemSection';
-import { PromptTransformer } from '@/components/landing/PromptTransformer';
-import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
-import { TemplateLibrary } from '@/components/landing/TemplateLibrary';
-import { Playground } from '@/components/landing/Playground';
-import { ExtensionShowcase } from '@/components/landing/ExtensionShowcase';
-import { SocialProof } from '@/components/landing/SocialProof';
-import { FinalCTA } from '@/components/landing/FinalCTA';
+// Landing page v2 components
+import dynamic from 'next/dynamic';
+import { HeroSection } from '@/components/landing/v2/HeroSection';
 import { PharaonicDivider } from '@/components/landing/shared/PharaonicDivider';
+
+// Lazy-load everything below the fold
+const ProblemSection = dynamic(() => import('@/components/landing/v2/ProblemSection').then(m => m), { ssr: false });
+const CTABlock = dynamic(() => import('@/components/landing/v2/CTABlock').then(m => m), { ssr: false });
+const TemplateSearchSection = dynamic(() => import('@/components/landing/v2/TemplateSearchSection').then(m => m), { ssr: false });
+const FeatureShowcase = dynamic(() => import('@/components/landing/v2/FeatureShowcase').then(m => m), { ssr: false });
+const SocialProofSection = dynamic(() => import('@/components/landing/v2/SocialProofSection').then(m => m), { ssr: false });
+const FooterSection = dynamic(() => import('@/components/landing/v2/FooterSection').then(m => m), { ssr: false });
+const MobileStickyBar = dynamic(() => import('@/components/landing/v2/MobileStickyBar').then(m => m), { ssr: false });
 
 export default function DashboardPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -69,48 +71,54 @@ export default function DashboardPage() {
   if (!isAuthenticated) {
     return (
       <main className="min-h-screen bg-sand-50">
-        {/* 1. HERO — Auto-type search demo + template cards */}
-        <LandingHeroSection />
+        {/* 1. HERO — Merged search + optimizer with pain-point headline */}
+        <HeroSection />
 
         <PharaonicDivider variant="lotus" />
 
         {/* 2. PROBLEM — Pain validation cards */}
         <ProblemSection />
 
-        <PharaonicDivider variant="papyrus" />
-
-        {/* 3. TRANSFORMER — CO-STAR viral demo (the wow moment) */}
-        <PromptTransformer />
-
-        <PharaonicDivider variant="lotus" />
-
-        {/* 4. HOW IT WORKS — 3-step visual story */}
-        <HowItWorksSection />
+        {/* 3. CTA — After problem */}
+        <CTABlock
+          headline="Ready to stop wasting time on prompts?"
+          primaryText="Start Free — No Credit Card"
+          primaryHref="/auth/register"
+          sub="5 free optimizations daily"
+        />
 
         <PharaonicDivider variant="papyrus" />
 
-        {/* 5. TEMPLATE LIBRARY — 9,000+ template discovery */}
-        <TemplateLibrary />
-
+        {/* 4. TEMPLATE SEARCH — Live search with category pills */}
+        <TemplateSearchSection />
+     
         <PharaonicDivider variant="lotus" />
 
-        {/* 6. PLAYGROUND — SSE enhancement loop (3 free tries) */}
-        <Playground />
+        {/* 5. FEATURE SHOWCASE — 4-tab interactive demo */}
+        <FeatureShowcase />
+
+        {/* 6. CTA — After features */}
+        <CTABlock
+          headline="Stop guessing. Start getting the AI results you actually need."
+          primaryText="Get Started Free"
+          primaryHref="/auth/register"
+          secondaryText="Install Chrome Extension"
+          secondaryHref="/download"
+          variant="dark"
+        />
 
         <PharaonicDivider variant="papyrus" />
 
-        {/* 7. EXTENSION — Scribe showcase animation */}
-        <ExtensionShowcase />
-
-        <PharaonicDivider variant="lotus" />
-
-        {/* 8. SOCIAL PROOF — Stats + testimonials + trust */}
-        <SocialProof />
+        {/* 7. SOCIAL PROOF — Stats + testimonials + trust */}
+        <SocialProofSection />
 
         <PharaonicDivider variant="simple" />
 
-        {/* 9. FINAL CTA + FOOTER + Mobile sticky bar */}
-        <FinalCTA />
+        {/* 8. FOOTER */}
+        <FooterSection />
+
+        {/* Mobile sticky CTA bar */}
+        <MobileStickyBar />
       </main>
     );
   }
@@ -166,6 +174,7 @@ export default function DashboardPage() {
                 <p className="text-sm text-gray-300 mt-1 leading-snug">
                   Craft, save &amp; optimize AI prompts — your sacred toolkit awaits.
                 </p>
+                
               </div>
 
               {/* Quick-action buttons */}

@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { COPY } from '@/lib/landing/copy';
+import { COPY_V1 as COPY } from '@/lib/landing/copy';
 import { fadeIn } from '@/lib/landing/motion';
 import { connectSSE, simulateSSEStream } from '@/lib/landing/sse';
 import { ENHANCEMENT_DEMOS } from '@/lib/landing/demo-data';

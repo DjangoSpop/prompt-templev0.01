@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { COPY } from '@/lib/landing/copy';
+import { COPY_V1 as COPY } from '@/lib/landing/copy';
 import { TIMING, staggerContainer, slideUp, fadeIn } from '@/lib/landing/motion';
 import { HERO_DEMO_CARDS, searchTemplates, type TemplateCard } from '@/lib/landing/demo-data';
 import { trackLanding, LANDING_EVENTS } from '@/lib/landing/analytics';
