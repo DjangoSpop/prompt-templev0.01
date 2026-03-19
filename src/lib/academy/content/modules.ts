@@ -1,7 +1,7 @@
 /**
  * PromptCraft Academy - Module Definitions
  *
- * All 6 modules with metadata, lessons, and quizzes
+ * All 7 modules with metadata, lessons, and quizzes
  */
 
 import type { Module } from '../types';
@@ -17,6 +17,8 @@ import { module5Lessons } from './lessons/module-5-lessons';
 import { module5Quiz } from './quizzes/module-5-quiz';
 import { module6Lessons } from './lessons/module-6-lessons';
 import { module6Quiz } from './quizzes/module-6-quiz';
+import { module7Lessons } from './lessons/module-7-lessons';
+import { module7Quiz } from './quizzes/module-7-quiz';
 
 export const modules: Module[] = [
   {
@@ -138,6 +140,26 @@ export const modules: Module[] = [
     lessons: module6Lessons,
     quiz: module6Quiz,
     prerequisites: ['module-1', 'module-2', 'module-3', 'module-4', 'module-5'],
+  },
+  {
+    id: 'module-7',
+    title: 'MCP & AI Agents: The Agentic Era',
+    shortTitle: 'MCP & Agents',
+    duration: 30,
+    description: 'Master the Model Context Protocol, AI agents, and context engineering — the future of AI',
+    objectives: [
+      'Explain MCP architecture and its three capability types (tools, resources, prompts)',
+      'Design AI agent workflows using the observe-think-act-evaluate loop',
+      'Apply context engineering techniques to optimize agent performance',
+      'Build a complete agent system prompt using CCCEFI for tool orchestration',
+    ],
+    badge: '⚡',
+    xpReward: 250,
+    order: 7,
+    locked: true,
+    lessons: module7Lessons,
+    quiz: module7Quiz,
+    prerequisites: ['module-1', 'module-2', 'module-3', 'module-4', 'module-5', 'module-6'],
   },
 ];
 

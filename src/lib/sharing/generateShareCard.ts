@@ -25,13 +25,28 @@ export interface ShareCard {
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://prompt-temple.com';
 
 export function generateShareCard(optimization: ShareableOptimization): ShareCard {
-  const shareId = optimization.shareId || optimization.id;
-  const shareUrl = `${APP_URL}/p/${shareId}`;
+  // Build stateless share URL — all data is encoded in params so crawlers
+  // can render OG metadata without any backend/auth dependency.
+  const title = `Prompt Optimized: ${optimization.beforeScore.toFixed(1)} → ${optimization.afterScore.toFixed(1)}/10`;
+  const contentPreview = optimization.afterPrompt.slice(0, 300);
+  const improvementsList = optimization.improvements.slice(0, 3).join('|');
+
+  const shareParams = new URLSearchParams({
+    t: title,
+    type: 'optimization',
+    bs: optimization.beforeScore.toString(),
+    s: optimization.afterScore.toString(),
+    c: contentPreview,
+    ...(improvementsList ? { imp: improvementsList } : {}),
+    ...(optimization.shareId || optimization.id ? { id: optimization.shareId || optimization.id } : {}),
+  });
+  const shareUrl = `${APP_URL}/share?${shareParams.toString()}`;
+
   const imageUrl = `${APP_URL}/api/og/share/optimization?beforeScore=${encodeURIComponent(
     optimization.beforeScore.toString()
   )}&afterScore=${encodeURIComponent(
     optimization.afterScore.toString()
-  )}&improvements=${encodeURIComponent(optimization.improvements.slice(0, 3).join('|'))}`;
+  )}&improvements=${encodeURIComponent(improvementsList)}`;
 
   const scoreJump = `${optimization.beforeScore.toFixed(1)} → ${optimization.afterScore.toFixed(1)}`;
   const handle = optimization.userHandle ? `@${optimization.userHandle}` : '';
@@ -62,6 +77,35 @@ export function generateShareCard(optimization: ShareableOptimization): ShareCar
   }/10 | Made with PromptTemple ${shareUrl}`;
 
   return { imageUrl, tweetText, linkedinText, shareUrl, copyText };
+}
+
+/**
+ * Generate a stateless share URL for any content type.
+ * All data is embedded in query params — no backend dependency.
+ */
+export function generateShareUrl(params: {
+  title: string;
+  description?: string;
+  content?: string;
+  score?: number;
+  beforeScore?: number;
+  type?: 'prompt' | 'optimization' | 'template' | 'broadcast';
+  category?: string;
+  improvements?: string[];
+  id?: string;
+}): string {
+  const searchParams = new URLSearchParams();
+  searchParams.set('t', params.title.slice(0, 200));
+  if (params.type) searchParams.set('type', params.type);
+  if (params.description) searchParams.set('d', params.description.slice(0, 300));
+  if (params.content) searchParams.set('c', params.content.slice(0, 500));
+  if (params.score !== undefined) searchParams.set('s', params.score.toString());
+  if (params.beforeScore !== undefined) searchParams.set('bs', params.beforeScore.toString());
+  if (params.category) searchParams.set('cat', params.category);
+  if (params.improvements?.length) searchParams.set('imp', params.improvements.slice(0, 5).join('|'));
+  if (params.id) searchParams.set('id', params.id);
+
+  return `${APP_URL}/share?${searchParams.toString()}`;
 }
 
 export function openTwitterShare(text: string): void {

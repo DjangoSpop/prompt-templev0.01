@@ -245,13 +245,15 @@ export const useAcademyStore = create<AcademyState>()(
 
       unlockModules: (method, email) => {
         set((state) => {
-          // Unlock all modules 2-5
+          // Unlock all modules
           const newUnlockedModules = [
             'module-1',
             'module-2',
             'module-3',
             'module-4',
             'module-5',
+            'module-6',
+            'module-7',
           ];
 
           return {
@@ -421,19 +423,19 @@ export const selectLessonCompleted = (moduleId: string, lessonId: string) => (st
   state.moduleProgress[moduleId]?.lessonsCompleted.includes(lessonId) || false;
 
 export const selectOverallProgress = (state: AcademyState) => {
-  const totalModules = 6;
+  const totalModules = 7;
   const completedCount = state.completedModules.length;
   return Math.round((completedCount / totalModules) * 100);
 };
 
 export const selectCanGenerateCertificate = (state: AcademyState) => {
-  const requiredModules = ['module-1', 'module-2', 'module-3', 'module-4', 'module-5', 'module-6'];
+  const requiredModules = ['module-1', 'module-2', 'module-3', 'module-4', 'module-5', 'module-6', 'module-7'];
   const allCompleted = requiredModules.every((m) => state.completedModules.includes(m));
   return allCompleted && !state.certificateGenerated;
 };
 
 export const selectIsCourseComplete = (state: AcademyState) => {
-  const requiredModules = ['module-1', 'module-2', 'module-3', 'module-4', 'module-5', 'module-6'];
+  const requiredModules = ['module-1', 'module-2', 'module-3', 'module-4', 'module-5', 'module-6', 'module-7'];
   return requiredModules.every((m) => state.completedModules.includes(m));
 };
 

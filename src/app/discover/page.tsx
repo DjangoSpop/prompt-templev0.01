@@ -238,9 +238,18 @@ function PromptDetailModal({
 // ============================================
 
 function PromptShareMenu({ prompt }: { prompt: SavedPrompt }) {
-  const shareUrl = `${SITE_URL}/p/${prompt.id}`;
+  // Stateless share URL — encodes all metadata in params so crawlers
+  // get rich OG data without needing backend auth.
+  const shareParams = new URLSearchParams({
+    t: prompt.title,
+    type: 'prompt',
+    c: (prompt.content || '').slice(0, 500),
+    cat: prompt.category || '',
+    ...(prompt.metadata?.quality_score ? { s: String(prompt.metadata.quality_score) } : {}),
+    id: prompt.id,
+  });
+  const shareUrl = `${SITE_URL}/share?${shareParams.toString()}`;
   const shareText = `Check out "${prompt.title}" on Prompt Temple`;
-  const ogUrl = `${SITE_URL}/api/og/share/prompt?title=${encodeURIComponent(prompt.title)}&category=${encodeURIComponent(prompt.category)}&uses=${prompt.use_count}`;
 
   const handleShare = async (channel: string) => {
     if (channel === 'x') {
@@ -282,7 +291,7 @@ function PromptShareMenu({ prompt }: { prompt: SavedPrompt }) {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <a href={ogUrl} target="_blank" rel="noopener noreferrer">Preview OG Card</a>
+          <a href={shareUrl} target="_blank" rel="noopener noreferrer">Preview Share Page</a>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

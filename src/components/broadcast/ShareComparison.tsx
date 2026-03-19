@@ -41,14 +41,15 @@ export const ShareComparison: React.FC<ShareComparisonProps> = ({
       return '';
     }
 
+    // Stateless share URL — OG metadata is encoded in the params
     const params = new URLSearchParams({
-      prompt,
-      bestModel: winnerName ?? '',
-      providers: String(successfulModels.length),
-      providerNames: successfulModels.map((model) => model.name).join(','),
+      t: `AI Broadcast: ${winnerName ?? 'Comparison'}`,
+      type: 'broadcast',
+      d: `Compared ${successfulModels.length} AI models. Winner: ${winnerName ?? 'Pending'}`,
+      c: prompt.slice(0, 500),
     });
 
-    return `${window.location.origin}/api/og/share/broadcast?${params.toString()}`;
+    return `${window.location.origin}/share?${params.toString()}`;
   }, [prompt, successfulModels, winnerName]);
 
   const handleShare = async () => {

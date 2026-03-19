@@ -144,7 +144,7 @@ export function CourseCompletionScreen({ onContinue }: CourseCompletionScreenPro
             Congratulations!
           </h1>
           <p className="text-desert-sand-200 text-lg mb-2">
-            You have completed all 6 modules of
+            You have completed all 7 modules of
           </p>
           <p className="text-nile-teal-400 font-semibold text-xl mb-8">
             {ACADEMY_CONSTANTS.COURSE_TITLE}

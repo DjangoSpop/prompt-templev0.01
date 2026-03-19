@@ -82,7 +82,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose, onSkip, on
               <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
                 <Star className="h-8 w-8 text-green-600 mx-auto mb-2" aria-hidden />
                 <h3 className="font-semibold text-green-900 dark:text-green-100">Academy</h3>
-                <p className="text-sm text-green-700 dark:text-green-300">6 modules from novice to Oracle</p>
+                <p className="text-sm text-green-700 dark:text-green-300">7 modules from novice to Oracle</p>
               </div>
             </div>
 
@@ -282,7 +282,7 @@ const LimitHitModal: React.FC<LimitHitModalProps> = ({ isOpen, onClose }) => {
                 'Unlimited prompt enhancement credits',
                 'AI-powered walkthrough assistance',
                 '20 custom templates (vs 5 free)',
-                'Full Academy — all 6 modules',
+                'Full Academy — all 7 modules',
               ].map((item) => (
                 <div key={item} className="flex items-center gap-2 text-sm">
                   <span className="text-green-500">✓</span>

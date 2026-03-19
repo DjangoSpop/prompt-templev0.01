@@ -83,6 +83,14 @@ const navigationGroups: NavGroup[] = [
         icon: BookOpen,
         description: 'Prompt library & manager',
         priority: 'primary'
+      },
+      {
+        href: '/mcp',
+        label: 'MCP Library',
+        icon: Zap,
+        description: 'MCP prompts, docs & agents',
+        badge: 'New',
+        priority: 'primary'
       }
     ]
   },

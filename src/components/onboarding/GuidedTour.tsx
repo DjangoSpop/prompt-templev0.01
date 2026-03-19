@@ -307,7 +307,7 @@ const tourSteps: TourStep[] = [
           <GraduationCap className="h-8 w-8 text-amber-500" />
           <div>
             <h3 className="text-lg font-bold">The Sacred Academy</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">6 modules from novice to Prompt Oracle</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">7 modules from novice to Prompt Oracle</p>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -322,7 +322,7 @@ const tourSteps: TourStep[] = [
         </div>
         <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border border-amber-300 dark:border-amber-700">
           <p className="text-sm">
-            🎓 Module 1 is free. Unlock all 6 modules with <strong>Temple Scribe</strong> or higher.
+            🎓 Module 1 is free. Unlock all 7 modules with <strong>Temple Scribe</strong> or higher.
           </p>
         </div>
       </div>
@@ -415,7 +415,7 @@ const tourSteps: TourStep[] = [
             'Unlimited prompt enhancement credits',
             'AI-powered walkthrough assistance',
             '20 custom templates (vs 5 free)',
-            'Full Academy access — all 6 modules',
+            'Full Academy access — all 7 modules',
           ].map((item) => (
             <div key={item} className="flex items-center gap-2 text-sm">
               <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />

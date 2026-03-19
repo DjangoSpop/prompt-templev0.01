@@ -380,7 +380,7 @@ function QuizResults({ score, passingScore, passed, xpReward, moduleId, onRetry 
               All Modules Complete!
             </h3>
             <p className="text-desert-sand-300 text-sm mb-4">
-              You&apos;ve mastered all 6 modules. Claim your professional certificate now!
+              You&apos;ve mastered all 7 modules. Claim your professional certificate now!
             </p>
             <Link href="/academy/completion">
               <Button className="bg-gradient-to-r from-royal-gold-500 to-royal-gold-600 hover:from-royal-gold-600 hover:to-royal-gold-700 text-obsidian-950 font-semibold px-8">

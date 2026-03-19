@@ -84,6 +84,15 @@ const navigationItems: NavItem[] = [
     category: 'resources',
   },
   {
+    id: 'mcp-library',
+    label: 'MCP Library',
+    href: '/mcp',
+    icon: Zap,
+    description: 'MCP prompts, docs & search',
+    badge: 'New',
+    category: 'main',
+  },
+  {
     id: 'templates',
     label: 'Templates',
     href: '/templates',
