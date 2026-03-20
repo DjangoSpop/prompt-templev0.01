@@ -12,8 +12,8 @@ import {
   BrainCircuit,
   ChevronLeft,
   ChevronRight,
-  Crown,
   Database,
+  GraduationCap,
   Download,
   Globe,
   HelpCircle,
@@ -75,21 +75,12 @@ const navigationItems: NavItem[] = [
     description: 'Overview and analytics',
     category: 'main',
   },
-    {
+  {
     id: 'academy',
     label: 'Academy',
     href: '/academy',
-    icon: Crown,
-    description: 'Learning & Tutorials',
-    category: 'resources',
-  },
-  {
-    id: 'mcp-library',
-    label: 'MCP Library',
-    href: '/mcp',
-    icon: Zap,
-    description: 'MCP prompts, docs & search',
-    badge: 'New',
+    icon: GraduationCap,
+    description: 'Courses, lessons & prompt IQ',
     category: 'main',
   },
   {
@@ -421,6 +412,7 @@ export function AppSidebar({ className }: AppSidebarProps) {
                     glow={true}
                     glowIntensity="high"
                     showLabel={false}
+                    animated={true}
                   />
                 </div>
               </div>
@@ -452,6 +444,7 @@ export function AppSidebar({ className }: AppSidebarProps) {
                         glow={true}
                         glowIntensity="medium"
                         showLabel={false}
+                        animated={true}
                       />
                     </div>
                   </div>

@@ -113,7 +113,22 @@ export function TemplateSearchSection() {
   );
 
   return (
-    <section className="py-16 md:py-24 px-4 bg-sand-50">
+    <section id="templates-section" className="relative overflow-hidden scroll-mt-24 py-16 md:py-24 px-4 bg-sand-50">
+      <div className="pointer-events-none absolute inset-0">
+        {[0, 1, 2, 3, 4].map((idx) => (
+          <motion.span
+            key={`template-particle-${idx}`}
+            className="absolute h-1.5 w-1.5 rounded-full bg-[#CBA135]/50"
+            style={{
+              top: `${12 + idx * 16}%`,
+              left: `${8 + (idx % 3) * 28}%`,
+            }}
+            animate={{ y: [0, -8, 0], opacity: [0.25, 0.8, 0.25] }}
+            transition={{ duration: 2.8, repeat: Infinity, delay: idx * 0.3 }}
+          />
+        ))}
+      </div>
+
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-10">

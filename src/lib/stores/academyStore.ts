@@ -55,7 +55,12 @@ interface AcademyState extends AcademyProgress {
 const initialState: AcademyProgress = {
   completedModules: [],
   moduleProgress: {},
-  unlockedModules: ['module-1'],  // Module 1 is always free
+  unlockedModules: [
+    'module-1', 'module-2', 'module-3', 'module-4', 'module-5',
+    'module-6', 'module-7', 'module-8', 'module-9', 'module-10',
+    'module-11', 'module-12', 'module-13', 'module-14', 'module-15',
+    'module-16', 'module-17',
+  ],  // All modules unlocked for free users
   emailSubmitted: null,
   promptIQScore: null,
   promptIQCompleted: false,
@@ -247,13 +252,10 @@ export const useAcademyStore = create<AcademyState>()(
         set((state) => {
           // Unlock all modules
           const newUnlockedModules = [
-            'module-1',
-            'module-2',
-            'module-3',
-            'module-4',
-            'module-5',
-            'module-6',
-            'module-7',
+            'module-1', 'module-2', 'module-3', 'module-4', 'module-5',
+            'module-6', 'module-7', 'module-8', 'module-9', 'module-10',
+            'module-11', 'module-12', 'module-13', 'module-14', 'module-15',
+            'module-16', 'module-17',
           ];
 
           return {
@@ -267,9 +269,9 @@ export const useAcademyStore = create<AcademyState>()(
         // trackAcademyEvent('academy_unlock_success', { method, email });
       },
 
-      checkModuleUnlock: (moduleId) => {
-        const state = get();
-        return state.unlockedModules.includes(moduleId);
+      checkModuleUnlock: (_moduleId) => {
+        // All modules are currently free
+        return true;
       },
 
       // ========================================================================
@@ -410,8 +412,11 @@ function createEmptyModuleProgress(): ModuleProgress {
 // SELECTORS (for easier state access)
 // ============================================================================
 
-export const selectIsModuleUnlocked = (moduleId: string) => (state: AcademyState) =>
-  state.unlockedModules.includes(moduleId);
+export const selectIsModuleUnlocked = (moduleId: string) => (state: AcademyState) => {
+  // All modules are currently free — always return true
+  // When re-introducing locks, check: state.unlockedModules.includes(moduleId)
+  return true;
+};
 
 export const selectIsModuleCompleted = (moduleId: string) => (state: AcademyState) =>
   state.completedModules.includes(moduleId);
@@ -423,19 +428,29 @@ export const selectLessonCompleted = (moduleId: string, lessonId: string) => (st
   state.moduleProgress[moduleId]?.lessonsCompleted.includes(lessonId) || false;
 
 export const selectOverallProgress = (state: AcademyState) => {
-  const totalModules = 7;
+  const totalModules = 17;
   const completedCount = state.completedModules.length;
   return Math.round((completedCount / totalModules) * 100);
 };
 
 export const selectCanGenerateCertificate = (state: AcademyState) => {
-  const requiredModules = ['module-1', 'module-2', 'module-3', 'module-4', 'module-5', 'module-6', 'module-7'];
+  const requiredModules = [
+    'module-1', 'module-2', 'module-3', 'module-4', 'module-5',
+    'module-6', 'module-7', 'module-8', 'module-9', 'module-10',
+    'module-11', 'module-12', 'module-13', 'module-14', 'module-15',
+    'module-16', 'module-17',
+  ];
   const allCompleted = requiredModules.every((m) => state.completedModules.includes(m));
   return allCompleted && !state.certificateGenerated;
 };
 
 export const selectIsCourseComplete = (state: AcademyState) => {
-  const requiredModules = ['module-1', 'module-2', 'module-3', 'module-4', 'module-5', 'module-6', 'module-7'];
+  const requiredModules = [
+    'module-1', 'module-2', 'module-3', 'module-4', 'module-5',
+    'module-6', 'module-7', 'module-8', 'module-9', 'module-10',
+    'module-11', 'module-12', 'module-13', 'module-14', 'module-15',
+    'module-16', 'module-17',
+  ];
   return requiredModules.every((m) => state.completedModules.includes(m));
 };
 

@@ -19,7 +19,6 @@ import {
   Trophy,
   RotateCcw,
   Library,
-  Download,
   Puzzle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -32,19 +31,24 @@ import { ProgressIndicator } from '@/components/animations/ProgressIndicator';
 import { PromptIQTestModal } from '@/components/academy/PromptIQTestModal';
 import { useAcademyStore } from '@/lib/stores/academyStore';
 
-// Landing page v2 components
+// Landing page V3 — clarity-first redesign
 import dynamic from 'next/dynamic';
-import { HeroSection } from '@/components/landing/v2/HeroSection';
-import { PharaonicDivider } from '@/components/landing/shared/PharaonicDivider';
+import { HeroSection as HeroSectionV3 } from '@/components/landing/v3/HeroSection';
 
-// Lazy-load everything below the fold
-const ProblemSection = dynamic(() => import('@/components/landing/v2/ProblemSection').then(m => m), { ssr: false });
-const CTABlock = dynamic(() => import('@/components/landing/v2/CTABlock').then(m => m), { ssr: false });
-const TemplateSearchSection = dynamic(() => import('@/components/landing/v2/TemplateSearchSection').then(m => m), { ssr: false });
-const FeatureShowcase = dynamic(() => import('@/components/landing/v2/FeatureShowcase').then(m => m), { ssr: false });
-const SocialProofSection = dynamic(() => import('@/components/landing/v2/SocialProofSection').then(m => m), { ssr: false });
-const FooterSection = dynamic(() => import('@/components/landing/v2/FooterSection').then(m => m), { ssr: false });
-const MobileStickyBar = dynamic(() => import('@/components/landing/v2/MobileStickyBar').then(m => m), { ssr: false });
+// Lazy-load below-fold sections
+const TrustStrip = dynamic(() => import('@/components/landing/v3/TrustStrip'), { ssr: false });
+const HowItWorksSection = dynamic(() => import('@/components/landing/v3/HowItWorksSection'), { ssr: false });
+const FeatureCardsSection = dynamic(() => import('@/components/landing/v3/FeatureCardsSection'), { ssr: false });
+const UseCasesSection = dynamic(() => import('@/components/landing/v3/UseCasesSection'), { ssr: false });
+const SocialProofSectionV3 = dynamic(() => import('@/components/landing/v3/SocialProofSection'), { ssr: false });
+const FinalCTASection = dynamic(() => import('@/components/landing/v3/FinalCTASection'), { ssr: false });
+const FaqSectionV3 = dynamic(() => import('@/components/landing/v3/FaqSection'), { ssr: false });
+const FooterSectionV3 = dynamic(() => import('@/components/landing/v3/FooterSection'), { ssr: false });
+const MobileStickyBar = dynamic(() => import('@/components/landing/v2/MobileStickyBar'), { ssr: false });
+const LandingNavbar = dynamic(() => import('@/components/landing/v3/LandingNavbar'), { ssr: false });
+
+// Onboarding slider (authenticated dashboard only)
+const OnboardingSlider = dynamic(() => import('@/components/onboarding/OnboardingSlider'), { ssr: false });
 
 export default function DashboardPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -70,52 +74,35 @@ export default function DashboardPage() {
 
   if (!isAuthenticated) {
     return (
-      <main className="min-h-screen bg-sand-50">
-        {/* 1. HERO — Merged search + optimizer with pain-point headline */}
-        <HeroSection />
+      <main className="min-h-screen bg-white dark:bg-stone-950">
+        <LandingNavbar />
 
-        <PharaonicDivider variant="lotus" />
+        {/* 1. HERO — Clear value proposition + before/after demo */}
+        <HeroSectionV3 />
 
-        {/* 2. PROBLEM — Pain validation cards */}
-        <ProblemSection />
+        {/* 2. TRUST — Platform logos */}
+        <TrustStrip />
 
-        {/* 3. CTA — After problem */}
-        <CTABlock
-          headline="Ready to stop wasting time on prompts?"
-          primaryText="Start Free — No Credit Card"
-          primaryHref="/auth/register"
-          sub="5 free optimizations daily"
-        />
+        {/* 3. HOW IT WORKS — 3 simple steps */}
+        <HowItWorksSection />
 
-        <PharaonicDivider variant="papyrus" />
+        {/* 4. FEATURES — 2x2 card grid */}
+        <FeatureCardsSection />
 
-        {/* 4. TEMPLATE SEARCH — Live search with category pills */}
-        <TemplateSearchSection />
-     
-        <PharaonicDivider variant="lotus" />
+        {/* 5. USE CASES — Who it's for */}
+        <UseCasesSection />
 
-        {/* 5. FEATURE SHOWCASE — 4-tab interactive demo */}
-        <FeatureShowcase />
+        {/* 6. SOCIAL PROOF — Stats + testimonials */}
+        <SocialProofSectionV3 />
 
-        {/* 6. CTA — After features */}
-        <CTABlock
-          headline="Stop guessing. Start getting the AI results you actually need."
-          primaryText="Get Started Free"
-          primaryHref="/auth/register"
-          secondaryText="Install Chrome Extension"
-          secondaryHref="/download"
-          variant="dark"
-        />
+        {/* 7. FINAL CTA — Closing conversion */}
+        <FinalCTASection />
 
-        <PharaonicDivider variant="papyrus" />
+        {/* 8. FAQ */}
+        <FaqSectionV3 />
 
-        {/* 7. SOCIAL PROOF — Stats + testimonials + trust */}
-        <SocialProofSection />
-
-        <PharaonicDivider variant="simple" />
-
-        {/* 8. FOOTER */}
-        <FooterSection />
+        {/* 9. FOOTER */}
+        <FooterSectionV3 />
 
         {/* Mobile sticky CTA bar */}
         <MobileStickyBar />
@@ -224,6 +211,11 @@ export default function DashboardPage() {
             </div>
           </div>
         </RevealOnScroll>
+      </div>
+
+      {/* ONBOARDING SLIDER — personalized "continue" cards for returning users */}
+      <div className="scrollify-section mb-6">
+        <OnboardingSlider isAuthenticated={true} />
       </div>
 
       {/* Prompt IQ Test CTA */}

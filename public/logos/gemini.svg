@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 32" fill="none">
+  <rect width="160" height="32" rx="8" fill="#F5F0E4"/>
+  <path d="M16 7l2.3 6.7L25 16l-6.7 2.3L16 25l-2.3-6.7L7 16l6.7-2.3L16 7z" fill="#4285F4"/>
+  <text x="32" y="21" fill="#1F2937" font-size="13" font-family="Arial, sans-serif">Gemini</text>
+</svg>

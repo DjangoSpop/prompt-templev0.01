@@ -1,4 +1,138 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useRef } from "react";
+import { motion, useAnimation, useMotionValue, useTransform, animate } from "framer-motion";
+
+// Internal component for natural blinking behavior
+function BlinkingEye({
+	variant,
+	children,
+}: {
+	variant: string | number;
+	children: React.ReactNode;
+}) {
+	const eyelidControls = useAnimation();
+	const blinkIntervalRef = useRef<NodeJS.Timeout>();
+
+	// Natural blinking behavior with randomized intervals
+	const scheduleNextBlink = () => {
+		// Random interval between 2-6 seconds for natural feel
+		const nextBlinkTime = Math.random() * 4000 + 2000;
+
+		blinkIntervalRef.current = setTimeout(async () => {
+			// Close eyelid
+			await eyelidControls.start({
+				scaleY: 0.05,
+				transition: {
+					duration: 0.08,
+					ease: "easeIn",
+				},
+			});
+
+			// Open eyelid (slower for natural feel)
+			await eyelidControls.start({
+				scaleY: 1,
+				transition: {
+					duration: 0.12,
+					ease: "easeOut",
+				},
+			});
+
+			// Schedule next blink
+			scheduleNextBlink();
+		}, nextBlinkTime);
+	};
+
+	useEffect(() => {
+		scheduleNextBlink();
+		return () => {
+			if (blinkIntervalRef.current) {
+				clearTimeout(blinkIntervalRef.current);
+			}
+		};
+	}, []);
+
+	return <motion.g animate={eyelidControls}>{children}</motion.g>;
+}
+
+// Internal component for iris tracking (optional subtle movement)
+function IrisTracking({
+	variant,
+}: {
+	variant: string | number;
+}) {
+	const irisX = useMotionValue(0);
+	const irisY = useMotionValue(0);
+
+	useEffect(() => {
+		// Subtle random eye movement for engagement
+		const moveIris = async () => {
+			const targetX = (Math.random() - 0.5) * 4; // ±2px movement
+			const targetY = (Math.random() - 0.5) * 2; // ±1px movement
+
+			await animate(irisX, targetX, {
+				duration: 1.5,
+				ease: [0.4, 0, 0.2, 1],
+			});
+			await animate(irisY, targetY, {
+				duration: 1.5,
+				ease: [0.4, 0, 0.2, 1],
+			});
+
+			// Pause briefly before next movement
+			setTimeout(moveIris, 500 + Math.random() * 1000);
+		};
+
+		moveIris();
+	}, [irisX, irisY]);
+
+	const transformStyle = useTransform(
+		[irisX, irisY],
+		([x, y]) => `translate(${x}px, ${y}px)`
+	);
+
+	return (
+		<motion.g style={{ transform: transformStyle }}>
+			<motion.ellipse
+				cx="60"
+				cy="55"
+				rx="12"
+				ry="12"
+				fill={`url(#inner-glow-${variant})`}
+				animate={{
+					scale: [1, 1.05, 1],
+					opacity: [1, 0.85, 1],
+				}}
+				transition={{
+					duration: 3,
+					repeat: Infinity,
+					ease: "easeInOut",
+				}}
+			/>
+			<motion.circle
+				cx="60"
+				cy="55"
+				r="5"
+				fill="rgba(10, 10, 10, 0.95)"
+			/>
+			<motion.ellipse
+				cx="62"
+				cy="53"
+				rx="2"
+				ry="2.5"
+				fill="rgba(255, 255, 255, 0.6)"
+				animate={{
+					opacity: [0.6, 1, 0.6],
+				}}
+				transition={{
+					duration: 2,
+					repeat: Infinity,
+					ease: "easeInOut",
+				}}
+			/>
+		</motion.g>
+	);
+}
 
 type Props = {
 	size?: number;
@@ -30,11 +164,8 @@ export default function Eyehorus({
 
 	// Animation durations — all deliberately slow so they read beautifully on screen
 	// speedMultiplier > 1 makes everything slower (easier to see / iterate)
-	const orbitDur = `${8 * speedMultiplier}s`;
-	const orbitDurReverse = `${12 * speedMultiplier}s`;
-	const pulseDur = `${4 * speedMultiplier}s`;
-	const blinkDur = `${6 * speedMultiplier}s`;
-	const shimmerDur = `${3 * speedMultiplier}s`;
+	const orbitDuration = 8 * speedMultiplier;
+	const orbitDurationReverse = 12 * speedMultiplier;
 
 	return (
 		<div className={`inline-flex flex-col items-center ${className}`}>
@@ -48,28 +179,13 @@ export default function Eyehorus({
 						from { transform: rotate(0deg); }
 						to   { transform: rotate(-360deg); }
 					}
-					@keyframes eoh-iris-pulse {
-						0%, 100% { transform: scale(1);   opacity: 1; }
-						50%       { transform: scale(1.18); opacity: 0.85; }
-					}
-					@keyframes eoh-blink {
-						0%, 85%, 100% { transform: scaleY(1); }
-						90%           { transform: scaleY(0.08); }
-					}
-					@keyframes eoh-shimmer {
-						0%, 100% { opacity: 0.6; }
-						50%       { opacity: 1; }
-					}
 					@keyframes eoh-outer-glow {
 						0%, 100% { filter: blur(6px); opacity: 0.3; }
 						50%       { filter: blur(14px); opacity: 0.7; }
 					}
-					.eoh-orbit          { animation: eoh-orbit         ${orbitDur} linear infinite; transform-origin: 60px 60px; }
-					.eoh-orbit-reverse  { animation: eoh-orbit-reverse  ${orbitDurReverse} linear infinite; transform-origin: 60px 60px; }
-					.eoh-iris-pulse     { animation: eoh-iris-pulse     ${pulseDur} ease-in-out infinite; transform-origin: 60px 55px; }
-					.eoh-blink          { animation: eoh-blink          ${blinkDur} ease-in-out infinite; transform-origin: 60px 55px; }
-					.eoh-shimmer        { animation: eoh-shimmer        ${shimmerDur} ease-in-out infinite; }
-					.eoh-outer-glow     { animation: eoh-outer-glow     ${pulseDur} ease-in-out infinite; }
+					.eoh-orbit          { animation: eoh-orbit         ${orbitDuration}s linear infinite; transform-origin: 60px 60px; }
+					.eoh-orbit-reverse  { animation: eoh-orbit-reverse  ${orbitDurationReverse}s linear infinite; transform-origin: 60px 60px; }
+					.eoh-outer-glow     { animation: eoh-outer-glow     ${4 * speedMultiplier}s ease-in-out infinite; }
 				`}</style>
 			)}
 			<svg
@@ -151,66 +267,104 @@ export default function Eyehorus({
 				)}
 
 				<g filter={glow ? `url(#pharaonic-glow-${variant})` : undefined}>
-					{/* Eyelids wrap — blink animation applied here */}
-					<g className={animated ? "eoh-blink" : undefined}>
-					{/* Upper Eye Lid - Iconic Horus Shape */}
-					<path
-						d="M 20 60 Q 30 35, 60 35 Q 90 35, 100 60"
-						fill="none"
-						stroke={`url(#royal-gold-${variant})`}
-						strokeWidth="3.5"
-						strokeLinecap="round"
-						strokeLinejoin="round"
-					/>
+					{/* Eyelids wrap — blink animation using Framer Motion when animated */}
+					{animated ? (
+						<BlinkingEye variant={variant}>
+							{/* Upper Eye Lid - Iconic Horus Shape */}
+							<path
+								d="M 20 60 Q 30 35, 60 35 Q 90 35, 100 60"
+								fill="none"
+								stroke={`url(#royal-gold-${variant})`}
+								strokeWidth="3.5"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+							/>
 
-					{/* Lower Eye Lid */}
-					<path
-						d="M 20 60 Q 30 75, 60 75 Q 90 75, 100 60"
-						fill="none"
-						stroke={`url(#royal-gold-${variant})`}
-						strokeWidth="3.5"
-						strokeLinecap="round"
-						strokeLinejoin="round"
-					/>
+							{/* Lower Eye Lid */}
+							<path
+								d="M 20 60 Q 30 75, 60 75 Q 90 75, 100 60"
+								fill="none"
+								stroke={`url(#royal-gold-${variant})`}
+								strokeWidth="3.5"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+							/>
 
-					{/* Eye Fill - Dark Background */}
-					<ellipse
-						cx="60"
-						cy="55"
-						rx="35"
-						ry="18"
-						fill="rgba(15, 15, 20, 0.8)"
-					/>
-					</g>{/* end blink group */}
+							{/* Eye Fill - Dark Background */}
+							<ellipse
+								cx="60"
+								cy="55"
+								rx="35"
+								ry="18"
+								fill="rgba(15, 15, 20, 0.8)"
+							/>
+						</BlinkingEye>
+					) : (
+						<g>
+							{/* Upper Eye Lid - Iconic Horus Shape (static) */}
+							<path
+								d="M 20 60 Q 30 35, 60 35 Q 90 35, 100 60"
+								fill="none"
+								stroke={`url(#royal-gold-${variant})`}
+								strokeWidth="3.5"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+							/>
 
-					{/* Iris - Glowing Center — pulse animation */}
-					<ellipse
-						cx="60"
-						cy="55"
-						rx="12"
-						ry="12"
-						fill={`url(#inner-glow-${variant})`}
-						filter={`url(#drop-shadow-${variant})`}
-						className={animated ? "eoh-iris-pulse" : undefined}
-					/>
+							{/* Lower Eye Lid */}
+							<path
+								d="M 20 60 Q 30 75, 60 75 Q 90 75, 100 60"
+								fill="none"
+								stroke={`url(#royal-gold-${variant})`}
+								strokeWidth="3.5"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+							/>
 
-					{/* Pupil - Deep Black */}
-					<circle
-						cx="60"
-						cy="55"
-						r="5"
-						fill="rgba(10, 10, 10, 0.95)"
-					/>
+							{/* Eye Fill - Dark Background */}
+							<ellipse
+								cx="60"
+								cy="55"
+								rx="35"
+								ry="18"
+								fill="rgba(15, 15, 20, 0.8)"
+							/>
+						</g>
+					)}
 
-					{/* Inner Eye Highlight — shimmer when animated */}
-					<ellipse
-						cx="62"
-						cy="53"
-						rx="2"
-						ry="2.5"
-						fill="rgba(255, 255, 255, 0.6)"
-						className={animated ? "eoh-shimmer" : undefined}
-					/>
+					{/* Iris - with Framer Motion animations when animated */}
+					{animated ? (
+						<IrisTracking variant={variant} />
+					) : (
+						<>
+							{/* Iris - Glowing Center (static) */}
+							<ellipse
+								cx="60"
+								cy="55"
+								rx="12"
+								ry="12"
+								fill={`url(#inner-glow-${variant})`}
+								filter={`url(#drop-shadow-${variant})`}
+							/>
+
+							{/* Pupil - Deep Black */}
+							<circle
+								cx="60"
+								cy="55"
+								r="5"
+								fill="rgba(10, 10, 10, 0.95)"
+							/>
+
+							{/* Inner Eye Highlight (static) */}
+							<ellipse
+								cx="62"
+								cy="53"
+								rx="2"
+								ry="2.5"
+								fill="rgba(255, 255, 255, 0.6)"
+							/>
+						</>
+					)}
 
 					{/* Horus Markings - Right Side Extension */}
 					<path

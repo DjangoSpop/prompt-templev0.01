@@ -111,8 +111,15 @@ export function ProblemSection() {
     <section
       ref={sectionRef}
       id="problem-section"
-      className="py-16 md:py-24 px-4 bg-sand-50"
+      className="relative overflow-hidden py-16 md:py-24 px-4 bg-sand-50"
     >
+      <div className="pointer-events-none absolute inset-0">
+        <span className="absolute left-[10%] top-[16%] h-2 w-2 rounded-full bg-red-300/35 animate-pulse" />
+        <span className="absolute left-[80%] top-[36%] h-2 w-2 rounded-full bg-red-300/35 animate-pulse [animation-delay:0.4s]" />
+        <span className="absolute left-[10%] top-[56%] h-2 w-2 rounded-full bg-red-300/35 animate-pulse [animation-delay:0.8s]" />
+        <span className="absolute left-[80%] top-[76%] h-2 w-2 rounded-full bg-red-300/35 animate-pulse [animation-delay:1.2s]" />
+      </div>
+
       <div className="max-w-4xl mx-auto">
         <h2 className="font-display text-2xl md:text-4xl font-bold text-sand-900 text-center mb-12">
           {COPY.problem.title}
@@ -124,9 +131,12 @@ export function ProblemSection() {
             return (
               <div
                 key={i}
-                className="problem-card-v2 bg-sand-100 dark:bg-[#161A22] rounded-xl p-6 border border-sand-200 hover:border-accent-gold/40 hover:shadow-gold-glow transition-all duration-200"
+                className="problem-card-v2 bg-red-50/80 dark:bg-red-900/15 rounded-xl p-6 border border-red-100 hover:border-red-200 hover:shadow-lg transition-all duration-200"
               >
-                <div className="mb-3">
+                <div className="mb-3 flex items-start gap-3">
+                  <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-red-100 text-red-500 text-sm font-bold">
+                    ✕
+                  </span>
                   <IconComponent />
                 </div>
                 <p className="font-body text-sand-800 text-base leading-relaxed">
@@ -137,8 +147,19 @@ export function ProblemSection() {
           })}
         </div>
 
-        <p className="text-center font-body text-lg md:text-xl text-sand-600 italic">
-          {COPY.problem.transition}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          <div className="rounded-xl border border-red-200 bg-red-50 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-red-500 mb-2">Before</p>
+            <p className="text-sm text-red-700">"20 minutes writing a prompt... still mediocre output."</p>
+          </div>
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-emerald-600 mb-2">After</p>
+            <p className="text-sm text-emerald-700">"10 seconds. Search, click, optimize, and use it anywhere."</p>
+          </div>
+        </div>
+
+        <p className="text-center font-body text-lg md:text-xl text-sand-700 italic">
+          There&apos;s a smarter way. And 5,031 people already found it.
         </p>
       </div>
     </section>

@@ -1,7 +1,7 @@
 /**
  * PromptCraft Academy - Module Definitions
  *
- * All 7 modules with metadata, lessons, and quizzes
+ * All 17 modules with metadata, lessons, and quizzes
  */
 
 import type { Module } from '../types';
@@ -19,6 +19,26 @@ import { module6Lessons } from './lessons/module-6-lessons';
 import { module6Quiz } from './quizzes/module-6-quiz';
 import { module7Lessons } from './lessons/module-7-lessons';
 import { module7Quiz } from './quizzes/module-7-quiz';
+import { module8Lessons } from './lessons/module-8-lessons';
+import { module8Quiz } from './quizzes/module-8-quiz';
+import { module9Lessons } from './lessons/module-9-lessons';
+import { module9Quiz } from './quizzes/module-9-quiz';
+import { module10Lessons } from './lessons/module-10-lessons';
+import { module10Quiz } from './quizzes/module-10-quiz';
+import { module11Lessons } from './lessons/module-11-lessons';
+import { module11Quiz } from './quizzes/module-11-quiz';
+import { module12Lessons } from './lessons/module-12-lessons';
+import { module12Quiz } from './quizzes/module-12-quiz';
+import { module13Lessons } from './lessons/module-13-lessons';
+import { module13Quiz } from './quizzes/module-13-quiz';
+import { module14Lessons } from './lessons/module-14-lessons';
+import { module14Quiz } from './quizzes/module-14-quiz';
+import { module15Lessons } from './lessons/module-15-lessons';
+import { module15Quiz } from './quizzes/module-15-quiz';
+import { module16Lessons } from './lessons/module-16-lessons';
+import { module16Quiz } from './quizzes/module-16-quiz';
+import { module17Lessons } from './lessons/module-17-lessons';
+import { module17Quiz } from './quizzes/module-17-quiz';
 
 export const modules: Module[] = [
   {
@@ -56,7 +76,7 @@ export const modules: Module[] = [
     badge: '⚡',
     xpReward: 150,
     order: 2,
-    locked: true,
+    locked: false,
     lessons: module2Lessons,
     quiz: module2Quiz,
     prerequisites: ['module-1'],
@@ -76,7 +96,7 @@ export const modules: Module[] = [
     badge: '📚',
     xpReward: 150,
     order: 3,
-    locked: true,
+    locked: false,
     lessons: module3Lessons,
     quiz: module3Quiz,
     prerequisites: ['module-1', 'module-2'],
@@ -96,7 +116,7 @@ export const modules: Module[] = [
     badge: '🎭',
     xpReward: 200,
     order: 4,
-    locked: true,
+    locked: false,
     lessons: module4Lessons,
     quiz: module4Quiz,
     prerequisites: ['module-1', 'module-2', 'module-3'],
@@ -116,7 +136,7 @@ export const modules: Module[] = [
     badge: '🏆',
     xpReward: 200,
     order: 5,
-    locked: true,
+    locked: false,
     lessons: module5Lessons,
     quiz: module5Quiz,
     prerequisites: ['module-1', 'module-2', 'module-3', 'module-4'],
@@ -136,7 +156,7 @@ export const modules: Module[] = [
     badge: '👑',
     xpReward: 300,
     order: 6,
-    locked: true,
+    locked: false,
     lessons: module6Lessons,
     quiz: module6Quiz,
     prerequisites: ['module-1', 'module-2', 'module-3', 'module-4', 'module-5'],
@@ -156,10 +176,210 @@ export const modules: Module[] = [
     badge: '⚡',
     xpReward: 250,
     order: 7,
-    locked: true,
+    locked: false,
     lessons: module7Lessons,
     quiz: module7Quiz,
     prerequisites: ['module-1', 'module-2', 'module-3', 'module-4', 'module-5', 'module-6'],
+  },
+  {
+    id: 'module-8',
+    title: 'LinkedIn Posts Automation with AI',
+    shortTitle: 'LinkedIn AI',
+    duration: 25,
+    description: 'Automate LinkedIn publishing from a Notion content calendar using n8n and AI',
+    objectives: [
+      'Design a Notion content calendar for automated publishing',
+      'Build an n8n workflow for scheduled LinkedIn posting',
+      'Use OpenAI to reformat content for professional tone',
+      'Extend the workflow for multi-platform publishing',
+    ],
+    badge: '🔗',
+    xpReward: 250,
+    order: 8,
+    locked: false,
+    lessons: module8Lessons,
+    quiz: module8Quiz,
+    prerequisites: ['module-1', 'module-2', 'module-3', 'module-4', 'module-5', 'module-6', 'module-7'],
+  },
+  {
+    id: 'module-9',
+    title: 'YouTube AI Summarization & Analysis',
+    shortTitle: 'YouTube AI',
+    duration: 25,
+    description: 'Process YouTube playlists with AI summarization, vector storage, and RAG-powered Q&A',
+    objectives: [
+      'Build a transcript processing pipeline with text splitting',
+      'Implement map-reduce summarization with Gemini AI',
+      'Store content in Qdrant vector database for semantic search',
+      'Create a RAG-powered Q&A chatbot over video content',
+    ],
+    badge: '🎬',
+    xpReward: 250,
+    order: 9,
+    locked: false,
+    lessons: module9Lessons,
+    quiz: module9Quiz,
+    prerequisites: ['module-1', 'module-2', 'module-3', 'module-4', 'module-5', 'module-6', 'module-7', 'module-8'],
+  },
+  {
+    id: 'module-10',
+    title: 'Google Maps Lead Generation',
+    shortTitle: 'Lead Gen',
+    duration: 25,
+    description: 'Automate lead generation by scraping Google Maps businesses and extracting validated emails',
+    objectives: [
+      'Search Google Maps API for targeted business leads',
+      'Scrape websites for email addresses using regex extraction',
+      'Validate and deduplicate leads with multi-layer filtering',
+      'Build a production-ready pipeline with rate limiting and error handling',
+    ],
+    badge: '📍',
+    xpReward: 300,
+    order: 10,
+    locked: false,
+    lessons: module10Lessons,
+    quiz: module10Quiz,
+    prerequisites: ['module-1', 'module-2', 'module-3', 'module-4', 'module-5', 'module-6', 'module-7', 'module-8', 'module-9'],
+  },
+  {
+    id: 'module-11',
+    title: 'AI Agent Chatbot with Long-Term Memory',
+    shortTitle: 'AI Chatbot',
+    duration: 25,
+    description: 'Build a persistent AI assistant with short-term and long-term memory via Telegram',
+    objectives: [
+      'Implement the ReAct framework for AI agent reasoning',
+      'Configure Window Buffer Memory for short-term context',
+      'Use Google Docs as a long-term memory store',
+      'Deploy a multi-LLM Telegram chatbot to production',
+    ],
+    badge: '🤖',
+    xpReward: 250,
+    order: 11,
+    locked: false,
+    lessons: module11Lessons,
+    quiz: module11Quiz,
+    prerequisites: ['module-1', 'module-2', 'module-3', 'module-4', 'module-5', 'module-6', 'module-7'],
+  },
+  {
+    id: 'module-12',
+    title: 'Social Media Publishing Factory',
+    shortTitle: 'Social Factory',
+    duration: 25,
+    description: 'Orchestrate multi-platform content publishing with AI-adapted posts for every channel',
+    objectives: [
+      'Design an AI orchestrator agent for content distribution',
+      'Build platform-specific sub-workflows with toolWorkflow nodes',
+      'Adapt content for X, LinkedIn, Instagram, and Facebook',
+      'Automate scheduled publishing with a Notion content calendar',
+    ],
+    badge: '📱',
+    xpReward: 250,
+    order: 12,
+    locked: false,
+    lessons: module12Lessons,
+    quiz: module12Quiz,
+    prerequisites: ['module-1', 'module-2', 'module-3', 'module-4', 'module-5', 'module-6', 'module-7'],
+  },
+  {
+    id: 'module-13',
+    title: 'WhatsApp AI Chatbot',
+    shortTitle: 'WhatsApp Bot',
+    duration: 25,
+    description: 'Production-ready WhatsApp bot handling text, voice, images, and PDFs with AI',
+    objectives: [
+      'Set up WhatsApp Business API with Meta Developer Portal',
+      'Route messages by type using Switch nodes',
+      'Transcribe voice with Whisper and analyze images with GPT-4 Vision',
+      'Build a unified AI agent that handles all message types',
+    ],
+    badge: '💬',
+    xpReward: 250,
+    order: 13,
+    locked: false,
+    lessons: module13Lessons,
+    quiz: module13Quiz,
+    prerequisites: ['module-1', 'module-2', 'module-3', 'module-4', 'module-5', 'module-6', 'module-7'],
+  },
+  {
+    id: 'module-14',
+    title: 'CV / Resume AI Screening & Tracker',
+    shortTitle: 'CV Screening',
+    duration: 25,
+    description: 'Automated resume screening with AI scoring, folder sorting, and recruiter notifications',
+    objectives: [
+      'Build a Google Drive trigger for automatic CV processing',
+      'Extract text from PDF and DOCX resume files',
+      'Implement AI scoring with Accept/KIV/Reject classification',
+      'Automate recruiter notifications with assessment summaries',
+    ],
+    badge: '📄',
+    xpReward: 250,
+    order: 14,
+    locked: false,
+    lessons: module14Lessons,
+    quiz: module14Quiz,
+    prerequisites: ['module-1', 'module-2', 'module-3', 'module-4', 'module-5', 'module-6', 'module-7'],
+  },
+  {
+    id: 'module-15',
+    title: 'Financial Tracker: Invoices to Reports',
+    shortTitle: 'Finance AI',
+    duration: 25,
+    description: 'Capture invoices via Telegram, extract data with Gemini AI, and generate weekly reports',
+    objectives: [
+      'Process invoice photos with Gemini AI structured extraction',
+      'Store transactions in a categorized Notion database',
+      'Generate weekly financial reports with charts via QuickChart',
+      'Build a complete Telegram-to-Notion finance pipeline',
+    ],
+    badge: '💰',
+    xpReward: 250,
+    order: 15,
+    locked: false,
+    lessons: module15Lessons,
+    quiz: module15Quiz,
+    prerequisites: ['module-1', 'module-2', 'module-3', 'module-4', 'module-5', 'module-6', 'module-7'],
+  },
+  {
+    id: 'module-16',
+    title: 'HR Automation Pipeline with AI',
+    shortTitle: 'HR Pipeline',
+    duration: 25,
+    description: 'End-to-end hiring pipeline from application form to AI-powered candidate evaluation',
+    objectives: [
+      'Build application forms with n8n Form Trigger',
+      'Extract structured data with LangChain Information Extractor',
+      'Implement AI-powered CV summarization and HR evaluation',
+      'Save candidate records to Google Sheets with structured output',
+    ],
+    badge: '👥',
+    xpReward: 250,
+    order: 16,
+    locked: false,
+    lessons: module16Lessons,
+    quiz: module16Quiz,
+    prerequisites: ['module-1', 'module-2', 'module-3', 'module-4', 'module-5', 'module-6', 'module-7'],
+  },
+  {
+    id: 'module-17',
+    title: 'Email Management with AI',
+    shortTitle: 'Email AI',
+    duration: 25,
+    description: 'Intelligent email classification, summarization, vector search, and AI-powered replies',
+    objectives: [
+      'Configure IMAP triggers for automatic email processing',
+      'Classify emails with AI text classification nodes',
+      'Store emails in Qdrant vector database for semantic search',
+      'Draft AI-powered replies with human-in-the-loop review',
+    ],
+    badge: '📧',
+    xpReward: 300,
+    order: 17,
+    locked: false,
+    lessons: module17Lessons,
+    quiz: module17Quiz,
+    prerequisites: ['module-1', 'module-2', 'module-3', 'module-4', 'module-5', 'module-6', 'module-7'],
   },
 ];
 

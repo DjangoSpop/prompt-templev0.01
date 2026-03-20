@@ -40,7 +40,7 @@ export default function AcademyPage() {
               <Crown className="w-6 h-6 text-royal-gold-400" />
             </div>
             <h2 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-royal-gold-400 via-royal-gold-300 to-royal-gold-400 bg-clip-text text-transparent mb-4">
-              7 Modules to Prompt Engineering Mastery
+              17 Modules to Prompt Engineering Mastery
             </h2>
             <p className="text-lg text-desert-sand-200 max-w-2xl mx-auto">
               Progress from beginner to expert through interactive lessons, hands-on exercises, and quizzes. Unlock the secrets of effective prompt engineering.

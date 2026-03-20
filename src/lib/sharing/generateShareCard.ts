@@ -5,6 +5,7 @@
 export interface ShareableOptimization {
   id: string;
   shareId?: string;
+  shareToken?: string;
   beforePrompt: string;
   afterPrompt: string;
   beforeScore: number;
@@ -25,22 +26,29 @@ export interface ShareCard {
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://prompt-temple.com';
 
 export function generateShareCard(optimization: ShareableOptimization): ShareCard {
-  // Build stateless share URL — all data is encoded in params so crawlers
-  // can render OG metadata without any backend/auth dependency.
+  // Prefer backend-backed share URL when a share token is available.
+  // Fall back to stateless URL params for crawlers without backend dependency.
   const title = `Prompt Optimized: ${optimization.beforeScore.toFixed(1)} → ${optimization.afterScore.toFixed(1)}/10`;
   const contentPreview = optimization.afterPrompt.slice(0, 300);
   const improvementsList = optimization.improvements.slice(0, 3).join('|');
 
-  const shareParams = new URLSearchParams({
-    t: title,
-    type: 'optimization',
-    bs: optimization.beforeScore.toString(),
-    s: optimization.afterScore.toString(),
-    c: contentPreview,
-    ...(improvementsList ? { imp: improvementsList } : {}),
-    ...(optimization.shareId || optimization.id ? { id: optimization.shareId || optimization.id } : {}),
-  });
-  const shareUrl = `${APP_URL}/share?${shareParams.toString()}`;
+  let shareUrl: string;
+  if (optimization.shareToken) {
+    // Backend-backed: short, clean URL with proper OG metadata
+    shareUrl = `${APP_URL}/s/${optimization.shareToken}`;
+  } else {
+    // Stateless fallback
+    const shareParams = new URLSearchParams({
+      t: title,
+      type: 'optimization',
+      bs: optimization.beforeScore.toString(),
+      s: optimization.afterScore.toString(),
+      c: contentPreview,
+      ...(improvementsList ? { imp: improvementsList } : {}),
+      ...(optimization.shareId || optimization.id ? { id: optimization.shareId || optimization.id } : {}),
+    });
+    shareUrl = `${APP_URL}/share?${shareParams.toString()}`;
+  }
 
   const imageUrl = `${APP_URL}/api/og/share/optimization?beforeScore=${encodeURIComponent(
     optimization.beforeScore.toString()
