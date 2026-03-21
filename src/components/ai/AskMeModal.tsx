@@ -9,7 +9,7 @@
  * Cost: 2 credits (start) + 3 credits (submit-all) = 5 total
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Dialog,
@@ -117,13 +117,27 @@ export function AskMeModal({ open, onOpenChange }: AskMeModalProps) {
 
   const [finalResult, setFinalResult] = useState<AskMeSubmitAllResult | null>(null);
 
+  // Streaming compose state
+  const [streamedText, setStreamedText] = useState('');
+  const [streamStatus, setStreamStatus] = useState<'idle' | 'thinking' | 'streaming' | 'done'>('idle');
+  const eventSourceRef = useRef<EventSource | null>(null);
+
   const startMutation = useStartAskMe();
   const submitAllMutation = useSubmitAllAskMe();
   const deductOptimistic = useCreditsStore((s) => s.deductOptimistic);
   const refundOptimistic = useCreditsStore((s) => s.refundOptimistic);
 
+  // ---- Cleanup streaming ----
+  const stopStream = useCallback(() => {
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
+  }, []);
+
   // ---- Reset ----
   const reset = useCallback(() => {
+    stopStream();
     setStep('goal');
     setGoal('');
     setContext('');
@@ -133,7 +147,12 @@ export function AskMeModal({ open, onOpenChange }: AskMeModalProps) {
     setLocalAnswers(new Map());
     setMissingQids([]);
     setFinalResult(null);
-  }, []);
+    setStreamedText('');
+    setStreamStatus('idle');
+  }, [stopStream]);
+
+  // Cleanup on unmount
+  useEffect(() => () => stopStream(), [stopStream]);
 
   const handleOpenChange = (open: boolean) => {
     if (!open) reset();
@@ -148,7 +167,7 @@ export function AskMeModal({ open, onOpenChange }: AskMeModalProps) {
     }
     try {
       const result = await startMutation.mutateAsync({
-        intent: goal.trim(),
+        goal: goal.trim(),
         context: context.trim() || undefined,
       });
       setSession(result);
@@ -186,6 +205,82 @@ export function AskMeModal({ open, onOpenChange }: AskMeModalProps) {
     }
   };
 
+  // ---- Start compose stream (typewriter effect via GET EventSource) ----
+  const startComposeStream = useCallback(
+    (sessionId: string, result: AskMeSubmitAllResult) => {
+      stopStream();
+      setStreamedText('');
+      setStreamStatus('thinking');
+
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.prompt-temple.com';
+      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+      const url = `${baseUrl}/api/v2/ai/askme/stream/?session_id=${encodeURIComponent(sessionId)}&mode=compose${token ? `&token=${encodeURIComponent(token)}` : ''}`;
+
+      const es = new EventSource(url);
+      eventSourceRef.current = es;
+
+      es.addEventListener('thinking', (e: MessageEvent) => {
+        try {
+          const data = JSON.parse(e.data);
+          // data.step contains status message like "Crafting your optimized prompt..."
+          void data;
+        } catch { /* ignore */ }
+        setStreamStatus('thinking');
+      });
+
+      es.addEventListener('token', (e: MessageEvent) => {
+        setStreamStatus('streaming');
+        try {
+          const data = JSON.parse(e.data);
+          setStreamedText((prev) => prev + (data.t || ''));
+        } catch {
+          setStreamedText((prev) => prev + e.data);
+        }
+      });
+
+      es.addEventListener('prompt_done', (e: MessageEvent) => {
+        try {
+          const data = JSON.parse(e.data);
+          // Replace accumulated text with the final complete prompt for safety
+          if (data.content) setStreamedText(data.content);
+        } catch { /* ignore */ }
+        setStreamStatus('done');
+      });
+
+      es.addEventListener('status', () => {
+        // data.is_complete, data.can_finalize — informational only
+      });
+
+      es.addEventListener('complete', () => {
+        es.close();
+        eventSourceRef.current = null;
+        setStreamStatus('done');
+        // Brief pause so user sees the full prompt before transitioning
+        setTimeout(() => {
+          setFinalResult(result);
+          setStep('result');
+        }, 800);
+      });
+
+      es.addEventListener('error', () => {
+        // SSE error event from server — fallback to result
+        es.close();
+        eventSourceRef.current = null;
+        setFinalResult(result);
+        setStep('result');
+      });
+
+      es.onerror = () => {
+        // EventSource connection error — fallback to showing result immediately
+        es.close();
+        eventSourceRef.current = null;
+        setFinalResult(result);
+        setStep('result');
+      };
+    },
+    [stopStream]
+  );
+
   // ---- Step 3: Submit all answers at once ----
   const handleSubmitAll = async (answers?: Map<string, string>) => {
     if (!session) return;
@@ -213,8 +308,8 @@ export function AskMeModal({ open, onOpenChange }: AskMeModalProps) {
         session_id: session.session_id,
         answers: answersList,
       });
-      setFinalResult(result);
-      setStep('result');
+      // Start streaming typewriter effect instead of jumping to result
+      startComposeStream(session.session_id, result);
     } catch (err: unknown) {
       const apiErr = err as { status?: number; data?: Record<string, unknown> };
 
@@ -428,28 +523,73 @@ export function AskMeModal({ open, onOpenChange }: AskMeModalProps) {
     );
   };
 
-  const renderBuilding = () => (
-    <div className="space-y-4 py-4">
-      <div className="flex flex-col items-center gap-4 text-center">
-        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-          <Wand2 className="h-8 w-8 text-primary animate-pulse" />
+  const renderBuilding = () => {
+    const isThinking = streamStatus === 'thinking' || streamStatus === 'idle';
+    const hasText = streamedText.length > 0;
+
+    return (
+      <div className="space-y-4 py-4">
+        {/* Header */}
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+            <Wand2 className={`h-5 w-5 text-primary ${streamStatus !== 'done' ? 'animate-pulse' : ''}`} />
+          </div>
+          <div>
+            <p className="font-semibold text-sm">
+              {isThinking && !hasText
+                ? 'AI is thinking…'
+                : streamStatus === 'done'
+                ? 'Prompt composed!'
+                : 'Composing your prompt…'}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {isThinking && !hasText
+                ? 'Analyzing your answers'
+                : streamStatus === 'done'
+                ? 'Finalizing…'
+                : 'Streaming live from AI'}
+            </p>
+          </div>
         </div>
-        <div>
-          <p className="font-semibold">Composing your prompt…</p>
-          <p className="text-sm text-muted-foreground mt-1">
-            AI is crafting a high-quality prompt based on your answers
-          </p>
+
+        {/* Streaming text area */}
+        <div className="rounded-lg border bg-muted/30 p-4 font-mono text-sm leading-relaxed max-h-56 overflow-y-auto whitespace-pre-wrap min-h-[6rem]">
+          {hasText ? (
+            <>
+              {streamedText}
+              {streamStatus === 'streaming' && (
+                <motion.span
+                  className="inline-block w-[2px] h-4 bg-primary ml-0.5 align-text-bottom"
+                  animate={{ opacity: [1, 0] }}
+                  transition={{ duration: 0.6, repeat: Infinity, repeatType: 'reverse' }}
+                />
+              )}
+            </>
+          ) : (
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
+              <Skeleton className="h-4 w-4/5" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+            </div>
+          )}
         </div>
+
+        {/* Progress hint */}
+        {hasText && streamStatus === 'streaming' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex items-center gap-2 text-xs text-muted-foreground"
+          >
+            <Loader2 className="h-3 w-3 animate-spin" />
+            <span>{streamedText.length} characters generated</span>
+          </motion.div>
+        )}
       </div>
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-5/6" />
-        <Skeleton className="h-4 w-4/5" />
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-3/4" />
-      </div>
-    </div>
-  );
+    );
+  };
 
   const renderResult = () => {
     if (!finalResult) return null;

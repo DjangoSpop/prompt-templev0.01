@@ -531,8 +531,8 @@ class ApiClient {
   // AskMe — Guided Prompt Builder
   // ============================================
 
-  async askmeStart(data: { intent: string; context?: string }): Promise<AskMeSession> {
-    // Server returns the session shape directly — no field remapping needed.
+  async askmeStart(data: { goal: string; context?: string }): Promise<AskMeSession> {
+    // Server expects { goal, context } — returns session shape directly.
     return this.request<AskMeSession>('/api/v2/ai/askme/start/', {
       method: 'POST',
       body: JSON.stringify(data),

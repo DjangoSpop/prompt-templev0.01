@@ -64,7 +64,7 @@ export function AskMeWizard() {
   const handleStartConfirm = useCallback(() => {
     deductOptimistic(2);
     startMutation.mutate(
-      { intent },
+      { goal: intent },
       {
         onSuccess: (data) => {
           const firstUnansweredIdx = data.questions.findIndex((q) => !q.is_answered);

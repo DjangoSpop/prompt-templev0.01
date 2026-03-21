@@ -22,6 +22,13 @@ export default function RagPage() {
   const [optimizeResult, setOptimizeResult] = useState<RagOptimizeResult | null>(null);
   const [optimizeError, setOptimizeError] = useState<string | null>(null);
   const [showDiagnostics, setShowDiagnostics] = useState(false);
+  const [sessionId] = useState(() => {
+    const stored = localStorage.getItem('rag_session_id');
+    if (stored) return stored;
+    const newId = `rag-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+    localStorage.setItem('rag_session_id', newId);
+    return newId;
+  });
 
   const callRagOptimize = useCallback(async () => {
     const p = promptInput.trim();
@@ -30,13 +37,22 @@ export default function RagPage() {
     setOptimizeError(null);
     try {
       const token = localStorage.getItem('access_token');
-      const resp = await fetch('/api/v2/rag/optimize/', {
+      const baseUrl = (
+        process.env.NEXT_PUBLIC_API_BASE_URL ||
+        process.env.NEXT_PUBLIC_API_URL ||
+        'https://api.prompt-temple.com'
+      ).replace(/\/$/, '');
+      const resp = await fetch(`${baseUrl}/api/v2/ai/agent/optimize/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(token && { 'Authorization': `Bearer ${token}` }),
         },
-        body: JSON.stringify({ prompt: p }),
+        body: JSON.stringify({
+          session_id: sessionId,
+          original: p,
+          mode: 'fast',
+        }),
       });
       if (!resp.ok) {
         const data = await resp.json().catch(() => ({}));
@@ -53,7 +69,7 @@ export default function RagPage() {
     } finally {
       setIsOptimizing(false);
     }
-  }, [promptInput]);
+  }, [promptInput, sessionId]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-primary/5">
@@ -96,7 +112,7 @@ export default function RagPage() {
                 <button
                   onClick={callRagOptimize}
                   disabled={isOptimizing || !promptInput.trim()}
-                  className="rounded-lg bg-pharaoh px-4 py-2 text-sm font-medium text-white hover:brightness-95 disabled:opacity-50"
+                  className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:bg-slate-400 disabled:text-slate-100"
                 >
                   {isOptimizing ? 'Optimizing…' : 'Optimize with RAG'}
                 </button>
