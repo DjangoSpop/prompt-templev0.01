@@ -59,7 +59,9 @@ const initialState: AcademyProgress = {
     'module-1', 'module-2', 'module-3', 'module-4', 'module-5',
     'module-6', 'module-7', 'module-8', 'module-9', 'module-10',
     'module-11', 'module-12', 'module-13', 'module-14', 'module-15',
-    'module-16', 'module-17',
+    'module-16', 'module-17', 'module-18', 'module-19', 'module-20',
+    'module-21', 'module-22', 'module-23', 'module-24', 'module-25',
+    'module-26', 'module-27',
   ],  // All modules unlocked for free users
   emailSubmitted: null,
   promptIQScore: null,
@@ -255,7 +257,9 @@ export const useAcademyStore = create<AcademyState>()(
             'module-1', 'module-2', 'module-3', 'module-4', 'module-5',
             'module-6', 'module-7', 'module-8', 'module-9', 'module-10',
             'module-11', 'module-12', 'module-13', 'module-14', 'module-15',
-            'module-16', 'module-17',
+            'module-16', 'module-17', 'module-18', 'module-19', 'module-20',
+            'module-21', 'module-22', 'module-23', 'module-24', 'module-25',
+            'module-26', 'module-27',
           ];
 
           return {
@@ -428,29 +432,19 @@ export const selectLessonCompleted = (moduleId: string, lessonId: string) => (st
   state.moduleProgress[moduleId]?.lessonsCompleted.includes(lessonId) || false;
 
 export const selectOverallProgress = (state: AcademyState) => {
-  const totalModules = 17;
+  const totalModules = 27;
   const completedCount = state.completedModules.length;
   return Math.round((completedCount / totalModules) * 100);
 };
 
 export const selectCanGenerateCertificate = (state: AcademyState) => {
-  const requiredModules = [
-    'module-1', 'module-2', 'module-3', 'module-4', 'module-5',
-    'module-6', 'module-7', 'module-8', 'module-9', 'module-10',
-    'module-11', 'module-12', 'module-13', 'module-14', 'module-15',
-    'module-16', 'module-17',
-  ];
+  const requiredModules = Array.from({ length: 27 }, (_, i) => `module-${i + 1}`);
   const allCompleted = requiredModules.every((m) => state.completedModules.includes(m));
   return allCompleted && !state.certificateGenerated;
 };
 
 export const selectIsCourseComplete = (state: AcademyState) => {
-  const requiredModules = [
-    'module-1', 'module-2', 'module-3', 'module-4', 'module-5',
-    'module-6', 'module-7', 'module-8', 'module-9', 'module-10',
-    'module-11', 'module-12', 'module-13', 'module-14', 'module-15',
-    'module-16', 'module-17',
-  ];
+  const requiredModules = Array.from({ length: 27 }, (_, i) => `module-${i + 1}`);
   return requiredModules.every((m) => state.completedModules.includes(m));
 };
 

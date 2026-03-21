@@ -39,6 +39,26 @@ import { module16Lessons } from './lessons/module-16-lessons';
 import { module16Quiz } from './quizzes/module-16-quiz';
 import { module17Lessons } from './lessons/module-17-lessons';
 import { module17Quiz } from './quizzes/module-17-quiz';
+import { module18Lessons } from './lessons/module-18-lessons';
+import { module18Quiz } from './quizzes/module-18-quiz';
+import { module19Lessons } from './lessons/module-19-lessons';
+import { module19Quiz } from './quizzes/module-19-quiz';
+import { module20Lessons } from './lessons/module-20-lessons';
+import { module20Quiz } from './quizzes/module-20-quiz';
+import { module21Lessons } from './lessons/module-21-lessons';
+import { module21Quiz } from './quizzes/module-21-quiz';
+import { module22Lessons } from './lessons/module-22-lessons';
+import { module22Quiz } from './quizzes/module-22-quiz';
+import { module23Lessons } from './lessons/module-23-lessons';
+import { module23Quiz } from './quizzes/module-23-quiz';
+import { module24Lessons } from './lessons/module-24-lessons';
+import { module24Quiz } from './quizzes/module-24-quiz';
+import { module25Lessons } from './lessons/module-25-lessons';
+import { module25Quiz } from './quizzes/module-25-quiz';
+import { module26Lessons } from './lessons/module-26-lessons';
+import { module26Quiz } from './quizzes/module-26-quiz';
+import { module27Lessons } from './lessons/module-27-lessons';
+import { module27Quiz } from './quizzes/module-27-quiz';
 
 export const modules: Module[] = [
   {
@@ -380,6 +400,209 @@ export const modules: Module[] = [
     lessons: module17Lessons,
     quiz: module17Quiz,
     prerequisites: ['module-1', 'module-2', 'module-3', 'module-4', 'module-5', 'module-6', 'module-7'],
+  },
+
+  // ==========================================================================
+  // COURSE 3: n8n + AI Agents (Modules 18-21)
+  // ==========================================================================
+  {
+    id: 'module-18',
+    title: 'n8n vs Zapier vs Make — Platform Comparison',
+    shortTitle: 'Platform Compare',
+    duration: 20,
+    description: 'Compare the top automation platforms: features, pricing, AI capabilities, and when to choose each',
+    objectives: [
+      'Compare n8n, Zapier, and Make across key dimensions',
+      'Evaluate pricing models and self-hosting benefits',
+      'Identify which platform fits different use cases',
+    ],
+    badge: '⚖️',
+    xpReward: 200,
+    order: 18,
+    locked: false,
+    lessons: module18Lessons,
+    quiz: module18Quiz,
+    prerequisites: [],
+  },
+  {
+    id: 'module-19',
+    title: 'Native AI Agent Nodes in n8n',
+    shortTitle: 'AI Nodes',
+    duration: 25,
+    description: 'Master n8n\'s built-in AI agent nodes: ReAct framework, tool calling, memory, and LLM integration',
+    objectives: [
+      'Configure AI Agent nodes with the ReAct framework',
+      'Connect built-in tools: Calculator, Code, HTTP, Workflow',
+      'Build a complete AI agent with memory and output parsing',
+    ],
+    badge: '🤖',
+    xpReward: 250,
+    order: 19,
+    locked: false,
+    lessons: module19Lessons,
+    quiz: module19Quiz,
+    prerequisites: ['module-18'],
+  },
+  {
+    id: 'module-20',
+    title: 'MCP Integration in n8n',
+    shortTitle: 'MCP in n8n',
+    duration: 25,
+    description: 'Use MCP Server Trigger to expose workflows to AI clients and MCP Client node to consume external servers',
+    objectives: [
+      'Explain MCP architecture: tools, resources, and prompts',
+      'Expose n8n workflows as MCP tools via MCP Server Trigger',
+      'Consume external MCP servers from within n8n workflows',
+    ],
+    badge: '🔌',
+    xpReward: 250,
+    order: 20,
+    locked: false,
+    lessons: module20Lessons,
+    quiz: module20Quiz,
+    prerequisites: ['module-18', 'module-19'],
+  },
+  {
+    id: 'module-21',
+    title: 'Human-in-the-Loop & Production Guardrails',
+    shortTitle: 'Guardrails',
+    duration: 25,
+    description: 'Implement approval workflows, safety guardrails, monitoring, and production-ready agent patterns',
+    objectives: [
+      'Design human-in-the-loop approval and escalation patterns',
+      'Implement input validation, output filtering, and rate limiting',
+      'Set up monitoring, alerting, and performance tracking',
+    ],
+    badge: '🛡️',
+    xpReward: 250,
+    order: 21,
+    locked: false,
+    lessons: module21Lessons,
+    quiz: module21Quiz,
+    prerequisites: ['module-18', 'module-19', 'module-20'],
+  },
+
+  // ==========================================================================
+  // COURSE 4: AI Awareness & Career Skills (Modules 22-24)
+  // ==========================================================================
+  {
+    id: 'module-22',
+    title: 'Understanding AI Agents — The Big Picture',
+    shortTitle: 'AI Big Picture',
+    duration: 25,
+    description: 'What AI agents are, the major players (Anthropic, OpenAI, Google, Microsoft, Meta), and the agentic era',
+    objectives: [
+      'Explain the difference between chatbots and AI agents',
+      'Map the AI landscape: key companies and their strengths',
+      'Understand core AI concepts without technical jargon',
+      'Describe what the agentic era means for business and society',
+    ],
+    badge: '🧠',
+    xpReward: 200,
+    order: 22,
+    locked: false,
+    lessons: module22Lessons,
+    quiz: module22Quiz,
+    prerequisites: [],
+  },
+  {
+    id: 'module-23',
+    title: 'The AI Tool Ecosystem',
+    shortTitle: 'AI Tools',
+    duration: 20,
+    description: 'MCP explained simply, n8n for everyone, and how Claude Cowork is reshaping enterprise AI',
+    objectives: [
+      'Explain MCP as "USB-C for AI" to non-technical audiences',
+      'Describe what n8n automation can do for any job role',
+      'Compare Claude Cowork, Copilot Cowork, and other AI assistants',
+    ],
+    badge: '🔧',
+    xpReward: 200,
+    order: 23,
+    locked: false,
+    lessons: module23Lessons,
+    quiz: module23Quiz,
+    prerequisites: ['module-22'],
+  },
+  {
+    id: 'module-24',
+    title: 'Career Skills for the Agentic Era',
+    shortTitle: 'AI Careers',
+    duration: 20,
+    description: 'Which jobs change, what skills to build, and your practical action plan for the AI-powered future',
+    objectives: [
+      'Identify which roles are augmented vs automated by AI',
+      'Build the five essential skills for the agentic era',
+      'Create a personal AI action plan with concrete next steps',
+    ],
+    badge: '🚀',
+    xpReward: 200,
+    order: 24,
+    locked: false,
+    lessons: module24Lessons,
+    quiz: module24Quiz,
+    prerequisites: ['module-22', 'module-23'],
+  },
+
+  // ==========================================================================
+  // COURSE 5: Claude Cowork Mastery (Modules 25-27)
+  // ==========================================================================
+  {
+    id: 'module-25',
+    title: 'Introduction to Claude Cowork',
+    shortTitle: 'Cowork Intro',
+    duration: 25,
+    description: 'The January 2026 launch, folder-based sandboxing, and why it triggered a $285B enterprise selloff',
+    objectives: [
+      'Explain what Claude Cowork does and how it was built',
+      'Describe the folder-based sandboxing architecture',
+      'Analyze the market impact and enterprise software disruption',
+    ],
+    badge: '🏗️',
+    xpReward: 200,
+    order: 25,
+    locked: false,
+    lessons: module25Lessons,
+    quiz: module25Quiz,
+    prerequisites: [],
+  },
+  {
+    id: 'module-26',
+    title: 'Connectors & Custom Plugins',
+    shortTitle: 'Connectors',
+    duration: 25,
+    description: 'Google Drive, Slack, DocuSign, Salesforce connectors and building custom Cowork plugins',
+    objectives: [
+      'Configure core connectors: Google Drive, Slack, DocuSign, Salesforce',
+      'Build custom Cowork plugins with the plugin API',
+      'Design multi-connector workflows for enterprise use cases',
+    ],
+    badge: '🔗',
+    xpReward: 250,
+    order: 26,
+    locked: false,
+    lessons: module26Lessons,
+    quiz: module26Quiz,
+    prerequisites: ['module-25'],
+  },
+  {
+    id: 'module-27',
+    title: 'Enterprise Workflows & the AI Coworker Wars',
+    shortTitle: 'Enterprise AI',
+    duration: 25,
+    description: 'Production workflows, Microsoft\'s Copilot Cowork response, and choosing your AI coworker platform',
+    objectives: [
+      'Design production workflows for contract review, sales, and support',
+      'Compare Cowork vs Copilot Cowork vs Manus vs OpenClaw',
+      'Build a decision framework for choosing an AI coworker platform',
+    ],
+    badge: '👑',
+    xpReward: 300,
+    order: 27,
+    locked: false,
+    lessons: module27Lessons,
+    quiz: module27Quiz,
+    prerequisites: ['module-25', 'module-26'],
   },
 ];
 

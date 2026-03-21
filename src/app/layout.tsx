@@ -19,6 +19,7 @@ import { InstallBanner } from "@/components/pwa/InstallBanner";
 import { GlobalCreditBanner } from "@/components/credits/GlobalCreditBanner";
 import { InsufficientCreditsModal } from "@/components/credits/InsufficientCreditsModal";
 import { DailyRefillToast } from "@/components/credits/DailyRefillToast";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://prompt-temple.com"),
@@ -114,6 +115,7 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       </head>
       <body className="font-sans antialiased bg-background text-foreground overflow-x-hidden" suppressHydrationWarning>
+        <GoogleAnalytics />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
