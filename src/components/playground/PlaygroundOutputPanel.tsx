@@ -32,7 +32,7 @@ interface PlaygroundOutputPanelProps {
   result?: OptimizeStreamResult | null;
   originalPrompt?: string;
   suggestions?: string[];
-  ragContext?: { chunks?: Array<{ content: string; source?: string; score?: number }> };
+  ragContext?: { chunks?: Array<{ content?: string; text?: string; source?: string; score?: number }> };
   className?: string;
   onInsertSuggestion?: (text: string) => void;
 }
@@ -256,14 +256,17 @@ export function PlaygroundOutputPanel({
                     <BookOpen className="w-3 h-3" />
                     Retrieved Context
                   </p>
-                  {ragContext.chunks.slice(0, 3).map((chunk, i) => (
-                    <div key={i} className="p-2.5 rounded-lg bg-brand/5 border border-brand/20 text-xs text-text-secondary leading-relaxed">
-                      {chunk.content.slice(0, 200)}…
-                      {chunk.score !== undefined && (
-                        <span className="ml-2 text-brand/60">({(chunk.score * 100).toFixed(0)}% match)</span>
-                      )}
-                    </div>
-                  ))}
+                  {ragContext.chunks.slice(0, 3).map((chunk, i) => {
+                    const chunkText = chunk.content || chunk.text || '';
+                    return (
+                      <div key={i} className="p-2.5 rounded-lg bg-brand/5 border border-brand/20 text-xs text-text-secondary leading-relaxed">
+                        {chunkText.slice(0, 200)}{chunkText.length > 200 ? '…' : ''}
+                        {chunk.score !== undefined && (
+                          <span className="ml-2 text-brand/60">({(chunk.score * 100).toFixed(0)}% match)</span>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
