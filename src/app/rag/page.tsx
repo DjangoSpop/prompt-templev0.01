@@ -23,6 +23,9 @@ export default function RagPage() {
   const [optimizeError, setOptimizeError] = useState<string | null>(null);
   const [showDiagnostics, setShowDiagnostics] = useState(false);
   const [sessionId] = useState(() => {
+    if (typeof window === 'undefined') {
+      return `rag-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+    }
     const stored = localStorage.getItem('rag_session_id');
     if (stored) return stored;
     const newId = `rag-${Date.now()}-${Math.random().toString(36).substring(7)}`;
