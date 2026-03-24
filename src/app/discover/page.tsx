@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
@@ -558,6 +558,29 @@ export default function DiscoverPage() {
   } = useDiscoverTemplatesInfinite(queryFilters);
   const { data: categoryList } = useDiscoverCategories();
 
+  // Infinite scroll — observe a sentinel element near the bottom of the grid
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
+  useEffect(() => {
+    if (observerRef.current) observerRef.current.disconnect();
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { rootMargin: '300px' }
+    );
+
+    if (sentinelRef.current) {
+      observerRef.current.observe(sentinelRef.current);
+    }
+
+    return () => observerRef.current?.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
   // Flatten all pages into a single array
   const prompts = useMemo(
     () => data?.pages?.flatMap((page) => page.results ?? []) ?? [],
@@ -928,24 +951,20 @@ export default function DiscoverPage() {
             </div>
           </AnimatePresence>
 
-          {/* Load More — keyword mode only; RAG returns all results at once */}
-          {!isSemanticMode && hasNextPage && (
+          {/* Infinite scroll sentinel — keyword mode only; RAG returns all results at once */}
+          {!isSemanticMode && (
             <div className="flex flex-col items-center gap-2 mt-8">
-              <Button
-                onClick={() => fetchNextPage()}
-                disabled={isFetchingNextPage}
-                variant="outline"
-                className="border-[#C9A227]/40 text-[#C9A227] hover:bg-[#C9A227]/10 px-8"
-              >
-                {isFetchingNextPage ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Loading more...
-                  </>
-                ) : (
-                  <>Load More Prompts</>
-                )}
-              </Button>
+              {hasNextPage && (
+                <>
+                  <div ref={sentinelRef} className="h-px w-full" />
+                  {isFetchingNextPage && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground py-4">
+                      <Loader2 className="h-4 w-4 animate-spin text-[#C9A227]" />
+                      Loading more prompts…
+                    </div>
+                  )}
+                </>
+              )}
               <p className="text-xs text-muted-foreground">
                 Showing {filteredPrompts.length} of {totalCount.toLocaleString()} prompts
               </p>
