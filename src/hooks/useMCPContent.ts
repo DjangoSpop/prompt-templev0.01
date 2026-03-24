@@ -19,6 +19,18 @@ import type {
 
 const MCP_BASE = '/api/v2/mcp';
 
+/** Strip undefined/null values from a filters object so they don't serialize as "undefined" in query params. */
+function cleanParams(obj?: Record<string, unknown>): Record<string, string | number | boolean> | undefined {
+  if (!obj) return undefined;
+  const cleaned: Record<string, string | number | boolean> = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (v !== undefined && v !== null && v !== '') {
+      cleaned[k] = v as string | number | boolean;
+    }
+  }
+  return Object.keys(cleaned).length > 0 ? cleaned : undefined;
+}
+
 // ─── CATEGORIES ──────────────────────────────────────────
 
 export function useMCPCategories() {
@@ -34,7 +46,7 @@ export function useMCPCategories() {
 export function useMCPPrompts(filters?: MCPPromptFilters) {
   return useQuery<PaginatedResponse<MCPPromptListItem>>({
     queryKey: ['mcp-prompts', filters],
-    queryFn: () => apiClient.get(`${MCP_BASE}/prompts/`, { params: filters as Record<string, string | number | boolean> }),
+    queryFn: () => apiClient.get(`${MCP_BASE}/prompts/`, { params: cleanParams(filters as Record<string, unknown>) }),
     staleTime: 2 * 60 * 1000,
   });
 }
@@ -42,7 +54,14 @@ export function useMCPPrompts(filters?: MCPPromptFilters) {
 export function useMCPFeaturedPrompts() {
   return useQuery<PaginatedResponse<MCPPromptListItem>>({
     queryKey: ['mcp-prompts-featured'],
-    queryFn: () => apiClient.get(`${MCP_BASE}/prompts/featured/`),
+    queryFn: async () => {
+      const res = await apiClient.get<MCPPromptListItem[] | PaginatedResponse<MCPPromptListItem>>(`${MCP_BASE}/prompts/featured/`);
+      // API may return array directly or paginated wrapper
+      if (Array.isArray(res)) {
+        return { count: res.length, next: null, previous: null, results: res };
+      }
+      return res;
+    },
     staleTime: 5 * 60 * 1000,
   });
 }
@@ -60,7 +79,7 @@ export function useMCPPromptDetail(slug: string) {
 export function useMCPDocuments(filters?: MCPDocumentFilters) {
   return useQuery<PaginatedResponse<MCPDocumentListItem>>({
     queryKey: ['mcp-docs', filters],
-    queryFn: () => apiClient.get(`${MCP_BASE}/documents/`, { params: filters as Record<string, string | number | boolean> }),
+    queryFn: () => apiClient.get(`${MCP_BASE}/documents/`, { params: cleanParams(filters as Record<string, unknown>) }),
     staleTime: 2 * 60 * 1000,
   });
 }
@@ -106,12 +125,18 @@ export function useAcademyProgress() {
   return useQuery<AcademyEnrollment[]>({
     queryKey: ['academy-progress'],
     queryFn: async () => {
-      const res = await apiClient.get<AcademyEnrollment[] | PaginatedResponse<AcademyEnrollment>>(`${MCP_BASE}/academy/progress/`);
-      // Handle both paginated and plain array responses
-      if (Array.isArray(res)) return res;
-      if (res && typeof res === 'object' && 'results' in res) return (res as PaginatedResponse<AcademyEnrollment>).results;
-      return [];
+      try {
+        const res = await apiClient.get<AcademyEnrollment[] | PaginatedResponse<AcademyEnrollment>>(`${MCP_BASE}/academy/progress/`);
+        // Handle both paginated and plain array responses
+        if (Array.isArray(res)) return res;
+        if (res && typeof res === 'object' && 'results' in res) return (res as PaginatedResponse<AcademyEnrollment>).results;
+        return [];
+      } catch {
+        // Progress is auth-gated; return empty for unauthenticated users
+        return [];
+      }
     },
+    staleTime: 60 * 1000,
   });
 }
 

@@ -4,16 +4,18 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion';
-import { Menu, X, Download, ArrowRight, Compass, BookOpen, GraduationCap, CreditCard, Sun, Moon } from 'lucide-react';
+import { Menu, X, Download, ArrowRight, Compass, BookOpen, GraduationCap, CreditCard, Wand2, Sun, Moon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Eyehorus from '@/components/pharaonic/Eyehorus';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 
 // ── Nav links ──
 
 const NAV_LINKS = [
   { href: '#how-it-works', label: 'How It Works', icon: Compass },
-  { href: '/templates', label: 'Discover', icon: BookOpen },
+  { href: '/discover', label: 'Discover', icon: BookOpen, tooltip: 'Explore community prompts & templates' },
+  { href: '/skills', label: 'Skills', icon: Wand2, tooltip: 'AI skills & MCP tools' },
   { href: '/pricing', label: 'Pricing', icon: CreditCard },
   { href: '/academy', label: 'Academy', icon: GraduationCap },
 ];
@@ -223,17 +225,36 @@ export function LandingNavbar() {
             </Link>
 
             {/* ── Desktop Nav Links ── */}
-            <div className="hidden items-center gap-0.5 md:flex">
-              {NAV_LINKS.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="rounded-full px-3.5 py-2 text-[13px] font-medium text-stone-600 transition-all duration-200 hover:bg-stone-100/80 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800/60 dark:hover:text-stone-100"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
+            <TooltipProvider delayDuration={300}>
+              <div className="hidden items-center gap-0.5 md:flex">
+                {NAV_LINKS.map((link) => {
+                  const Icon = link.icon;
+                  const linkEl = (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className="flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-medium text-stone-600 transition-all duration-200 hover:bg-stone-100/80 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800/60 dark:hover:text-stone-100"
+                    >
+                      <Icon className="h-3.5 w-3.5" />
+                      {link.label}
+                    </Link>
+                  );
+
+                  if (link.tooltip) {
+                    return (
+                      <Tooltip key={link.href}>
+                        <TooltipTrigger asChild>{linkEl}</TooltipTrigger>
+                        <TooltipContent side="bottom" className="text-xs">
+                          {link.tooltip}
+                        </TooltipContent>
+                      </Tooltip>
+                    );
+                  }
+
+                  return linkEl;
+                })}
+              </div>
+            </TooltipProvider>
 
             {/* ── Right Actions ── */}
             <div className="flex items-center gap-1.5 md:gap-2.5">

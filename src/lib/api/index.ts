@@ -18,6 +18,8 @@ let aiService: BaseApiClient = sharedFallback;
 let orchestratorService: BaseApiClient = sharedFallback;
 let billingService: BaseApiClient = sharedFallback;
 let coreService: BaseApiClient = sharedFallback;
+let skillsService: BaseApiClient = sharedFallback;
+let mcpKnowledgeService: BaseApiClient = sharedFallback;
 
 try {
   const { TemplatesService } = require('./templates');
@@ -75,6 +77,20 @@ try {
 } catch {
   coreService = sharedFallback;
 }
+try {
+  const { SkillsService } = require('./skills');
+  skillsService = new SkillsService();
+  exports.SkillsService = SkillsService;
+} catch {
+  skillsService = sharedFallback;
+}
+try {
+  const { MCPKnowledgeService } = require('./mcp-knowledge');
+  mcpKnowledgeService = new MCPKnowledgeService();
+  exports.MCPKnowledgeService = MCPKnowledgeService;
+} catch {
+  mcpKnowledgeService = sharedFallback;
+}
 // Convenience object with all services
 export const api = {
   auth: authService,
@@ -86,6 +102,8 @@ export const api = {
   orchestrator: orchestratorService,
   billing: billingService,
   core: coreService,
+  skills: skillsService,
+  mcpKnowledge: mcpKnowledgeService,
 };
 
 // Re-export types from the generated API types

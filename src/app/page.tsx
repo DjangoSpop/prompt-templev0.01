@@ -34,6 +34,7 @@ import { useAcademyStore } from '@/lib/stores/academyStore';
 // Landing page V3 — clarity-first redesign
 import dynamic from 'next/dynamic';
 import { HeroSection as HeroSectionV3 } from '@/components/landing/v3/HeroSection';
+import { TempleNavbarEnhanced } from '@/components/TempleNavbarEnhanced';
 
 // Lazy-load below-fold sections
 const TrustStrip = dynamic(() => import('@/components/landing/v3/TrustStrip'), { ssr: false });
@@ -75,8 +76,8 @@ export default function DashboardPage() {
   if (!isAuthenticated) {
     return (
       <main className="min-h-screen bg-white dark:bg-stone-950">
-        <LandingNavbar />
-
+        {/* <TempleNavbarEnhanced /> */}
+         <LandingNavbar />
         {/* 1. HERO — Clear value proposition + before/after demo */}
         <HeroSectionV3 />
 

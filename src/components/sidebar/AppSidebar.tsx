@@ -270,7 +270,24 @@ const navigationItems: NavItem[] = [
   //   category: 'tools',
   // },
   // Resources
-
+  {
+    id: 'skills',
+    label: 'Skills & MCP',
+    href: '/skills',
+    icon: Sparkles,
+    description: 'Skills, MCP servers & tools',
+    badge: 'New',
+    category: 'resources',
+  },
+  {
+    id: 'mcp-knowledge',
+    label: 'MCP Knowledge',
+    href: '/mcp',
+    icon: Library,
+    description: 'Docs, prompts & academy',
+    badge: 'New',
+    category: 'resources',
+  },
   {
     id: 'help',
     label: 'Help',

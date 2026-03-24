@@ -52,7 +52,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
-import { CHROME_STORE_URL } from '@/lib/extension';
 
 type ViewMode = 'grid' | 'list';
 type SortOption = 'popularity' | 'rating' | 'recent' | 'trending';
@@ -666,228 +665,205 @@ export default function TemplatesPage() {
       <NefertitiBackground opacity={0.03} />
 
       <div className="relative z-10 container mx-auto px-3 py-4 md:px-6 md:py-8 max-w-full overflow-hidden">
-        {/* Enhanced Header Section */}
-        <motion.div 
-          className="text-center mb-8 md:mb-12"
-          initial={{ opacity: 0, y: -20 }}
+        {/* Hero — compact, search-first layout */}
+        <motion.div
+          className="mb-6 md:mb-8"
+          initial={{ opacity: 0, y: -16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.5 }}
         >
-          <div className="flex items-center justify-center gap-3 md:gap-4 mb-6">
-            <motion.div
-              className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-pharaoh-gold to-nile-teal rounded-full flex items-center justify-center shadow-pyramid shrink-0"
-              animate={{ rotate: [0, 5, -5, 0] }}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <BookOpen className="h-6 w-6 md:h-8 md:w-8 text-white" />
-            </motion.div>
-            <div>
-              <h1 className="text-xl sm:text-3xl md:text-5xl font-display font-bold bg-gradient-to-r from-lapis-blue via-pharaoh-gold to-nile-teal bg-clip-text text-transparent break-words">
-                The Sacred Archive
-              </h1>
-              <p className="text-sm md:text-xl text-muted-foreground mt-1 md:mt-2">
-                Ancient wisdom meets modern AI
-              </p>
+          <div className="flex items-center justify-between gap-3 mb-4 md:mb-5">
+            <div className="flex items-center gap-3 min-w-0">
+              <motion.div
+                className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-pharaoh-gold to-nile-teal rounded-xl flex items-center justify-center shadow-pyramid shrink-0"
+                animate={{ rotate: [0, 4, -4, 0] }}
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <BookOpen className="h-5 w-5 md:h-6 md:w-6 text-white" />
+              </motion.div>
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-2xl md:text-3xl font-display font-bold bg-gradient-to-r from-lapis-blue via-pharaoh-gold to-nile-teal bg-clip-text text-transparent truncate">
+                  Template Library
+                </h1>
+                <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+                  Discover and use AI prompt templates
+                </p>
+              </div>
             </div>
+            <Link href="/templates/create" className="shrink-0">
+              <Button className="pharaoh-badge flex items-center gap-1.5 sm:gap-2 pyramid-elevation text-xs sm:text-sm">
+                <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Create Template</span>
+                <span className="sm:hidden">Create</span>
+              </Button>
+            </Link>
           </div>
-          
 
+          {/* Search bar — prominent, above the fold */}
+          <AISearchBar
+            onKeywordSearch={(q) => setSearchQuery(q)}
+            placeholder="Search templates... e.g. 'marketing email', 'code review', 'blog post'"
+            className="w-full"
+          />
+        </motion.div>
 
-          {/* Download Section — hidden on mobile for cleaner UX */}
-          <div className="hidden md:grid md:grid-cols-3 gap-6 mb-8">
-            <Card className="temple-card p-6 text-center pyramid-elevation hover:pharaoh-glow transition-all duration-300">
-              <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                <Award className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-lg font-semibold text-hieroglyph mb-2">Browser Extension</h3>
-              <p className="text-muted-foreground text-sm mb-4">
-                Access templates directly in your browser
-              </p>
-              <a href={CHROME_STORE_URL} target="_blank" rel="noopener noreferrer" className="block w-full">
-                <Button variant="outline" className="w-full hover:border-primary hover:bg-primary/10">
-                  Download Extension
-                </Button>
-              </a>
-            </Card>
+        {/* Filters bar */}
+        <motion.div
+          className="flex items-center gap-2 md:gap-3 mb-5 md:mb-6 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+        >
+          <select
+            value={selectedCategory || ''}
+            onChange={(e) => setSelectedCategory(e.target.value ? Number(e.target.value) : null)}
+            className="px-3 py-1.5 border border-primary/30 rounded-lg focus:ring-2 focus:ring-primary bg-secondary/50 text-hieroglyph text-sm shrink-0"
+          >
+            <option value="">All Categories</option>
+            {categories.map(category => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
 
-            <Card className="temple-card p-6 text-center pyramid-elevation hover:pharaoh-glow transition-all duration-300">
-              <div className="w-12 h-12 bg-oasis rounded-full flex items-center justify-center mx-auto mb-4">
-                <Star className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-lg font-semibold text-hieroglyph mb-2">Desktop App</h3>
-              <p className="text-muted-foreground text-sm mb-4">
-                Full featured Prompt Temple application
-              </p>
-              <Button variant="outline" className="w-full hover:border-oasis hover:bg-oasis/10">
-                Download App
-              </Button>
-            </Card>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as SortOption)}
+            className="px-3 py-1.5 border border-primary/30 rounded-lg focus:ring-2 focus:ring-primary bg-secondary/50 text-hieroglyph text-sm shrink-0"
+          >
+            <option value="popularity">Most Popular</option>
+            <option value="rating">Top Rated</option>
+            <option value="recent">Newest</option>
+            <option value="trending">Trending</option>
+          </select>
 
-            <Card className="temple-card p-6 text-center pyramid-elevation hover:pharaoh-glow transition-all duration-300">
-              <div className="w-12 h-12 bg-destructive rounded-full flex items-center justify-center mx-auto mb-4">
-                <TrendingUp className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-lg font-semibold text-hieroglyph mb-2">Beta Access</h3>
-              <p className="text-muted-foreground text-sm mb-4">
-                Early access to new features
-              </p>
-              <Button variant="outline" className="w-full hover:border-destructive hover:bg-destructive/10">
-                Join Beta
-              </Button>
-            </Card>
+          <label className="flex items-center gap-2 text-hieroglyph text-sm shrink-0">
+            <input
+              type="checkbox"
+              checked={showFeaturedOnly}
+              onChange={(e) => setShowFeaturedOnly(e.target.checked)}
+              className="rounded border-primary/30 text-primary focus:ring-primary"
+            />
+            <span className="hidden sm:inline">Featured Only</span>
+            <span className="sm:hidden">Featured</span>
+          </label>
+
+          <div className="flex items-center gap-1 shrink-0 ml-auto">
+            <Button
+              variant={viewMode === 'grid' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('grid')}
+              className={viewMode === 'grid' ? 'pharaoh-badge' : 'border-primary/30'}
+            >
+              <Grid className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+              className={viewMode === 'list' ? 'pharaoh-badge' : 'border-primary/30'}
+            >
+              <List className="h-4 w-4" />
+            </Button>
           </div>
         </motion.div>
 
-        {/* Header Actions */}
-        <div className="flex items-center justify-between mb-6 md:mb-8 gap-3">
-          <div className="min-w-0">
-            <h2 className="text-lg md:text-3xl font-bold text-hieroglyph text-glow truncate">Temple Library</h2>
-            <p className="text-muted-foreground mt-1 text-xs md:text-base">
-              Discover and use AI prompt templates
-            </p>
-          </div>
-          <Link href="/templates/create" className="shrink-0">
-            <Button className="pharaoh-badge flex items-center gap-1.5 sm:gap-2 pyramid-elevation text-xs sm:text-sm">
-              <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">Forge New Template</span>
-              <span className="sm:hidden">Create</span>
-            </Button>
-          </Link>
-        </div>
-
-      {/* Featured & Trending Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 mb-6 md:mb-8">
-        <div className="min-w-0">
-          <h2 className="text-base md:text-xl font-semibold mb-3 md:mb-4 flex items-center text-hieroglyph text-glow">
-            <Award className="h-4 w-4 md:h-5 md:w-5 mr-2 text-pharaoh shrink-0" />
-            Featured Scrolls
-          </h2>
-          <div className="space-y-3">
-            {featuredTemplates.map(template => (
-              <Card key={template.id} className="temple-card p-3 pyramid-elevation hover:pharaoh-glow transition-all duration-300 overflow-hidden">
-                <div className="flex items-start justify-between gap-2 min-w-0">
-                  <Link
-                    href={`/templates/${template.id}`}
-                    className="font-medium text-sm text-hieroglyph hover:text-primary transition-colors text-glow truncate"
-                  >
-                    {template.title}
-                  </Link>
-                  <TemplateShareMenu template={template} />
+        {/* Featured & Trending — compact horizontal strips */}
+        {(featuredTemplates.length > 0 || trendingTemplates.length > 0) && (
+          <motion.div
+            className="mb-6 md:mb-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4, delay: 0.15 }}
+          >
+            {featuredTemplates.length > 0 && (
+              <div className="mb-4">
+                <h2 className="text-sm md:text-base font-semibold mb-2.5 flex items-center text-hieroglyph">
+                  <Award className="h-4 w-4 mr-1.5 text-pharaoh shrink-0" />
+                  Featured
+                </h2>
+                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
+                  {featuredTemplates.map(template => (
+                    <motion.div
+                      key={template.id}
+                      whileHover={{ y: -2 }}
+                      className="shrink-0 w-[260px] sm:w-[280px]"
+                    >
+                      <Card className="temple-card p-3 h-full pyramid-elevation hover:pharaoh-glow transition-all duration-200 overflow-hidden">
+                        <Link
+                          href={`/templates/${template.id}`}
+                          className="font-medium text-sm text-hieroglyph hover:text-primary transition-colors line-clamp-1 block"
+                        >
+                          {template.title}
+                        </Link>
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
+                          {template.description}
+                        </p>
+                        <div className="flex items-center justify-between mt-2">
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <span className="flex items-center gap-0.5">
+                              <Star className="h-3 w-3 text-pharaoh fill-current" />
+                              {template.average_rating.toFixed(1)}
+                            </span>
+                            <span className="flex items-center gap-0.5">
+                              <Users className="h-3 w-3" />
+                              {template.usage_count}
+                            </span>
+                          </div>
+                          <TemplateShareMenu template={template} />
+                        </div>
+                      </Card>
+                    </motion.div>
+                  ))}
                 </div>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-1">
-                  {template.description}
-                </p>
-                <div className="flex items-center space-x-2 mt-2 text-xs text-muted-foreground">
-                  <Star className="h-3 w-3 text-pharaoh fill-current shrink-0" />
-                  <span>{template.average_rating.toFixed(1)}</span>
-                  <span>•</span>
-                  <span>{template.usage_count} uses</span>
+              </div>
+            )}
+
+            {trendingTemplates.length > 0 && (
+              <div>
+                <h2 className="text-sm md:text-base font-semibold mb-2.5 flex items-center text-hieroglyph">
+                  <TrendingUp className="h-4 w-4 mr-1.5 text-oasis shrink-0" />
+                  Trending
+                </h2>
+                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
+                  {trendingTemplates.map(template => (
+                    <motion.div
+                      key={template.id}
+                      whileHover={{ y: -2 }}
+                      className="shrink-0 w-[260px] sm:w-[280px]"
+                    >
+                      <Card className="temple-card p-3 h-full pyramid-elevation hover:pharaoh-glow transition-all duration-200 overflow-hidden">
+                        <Link
+                          href={`/templates/${template.id}`}
+                          className="font-medium text-sm text-hieroglyph hover:text-primary transition-colors line-clamp-1 block"
+                        >
+                          {template.title}
+                        </Link>
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
+                          {template.description}
+                        </p>
+                        <div className="flex items-center justify-between mt-2">
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <span className="flex items-center gap-0.5">
+                              <Star className="h-3 w-3 text-pharaoh fill-current" />
+                              {template.average_rating.toFixed(1)}
+                            </span>
+                            <span className="flex items-center gap-0.5">
+                              <Users className="h-3 w-3" />
+                              {template.usage_count}
+                            </span>
+                          </div>
+                          <TemplateShareMenu template={template} />
+                        </div>
+                      </Card>
+                    </motion.div>
+                  ))}
                 </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-
-        <div className="min-w-0">
-          <h2 className="text-base md:text-xl font-semibold mb-3 md:mb-4 flex items-center text-hieroglyph text-glow">
-            <TrendingUp className="h-4 w-4 md:h-5 md:w-5 mr-2 text-oasis shrink-0" />
-            Trending Wisdom
-          </h2>
-          <div className="space-y-3">
-            {trendingTemplates.map(template => (
-              <Card key={template.id} className="temple-card p-3 pyramid-elevation hover:pharaoh-glow transition-all duration-300 overflow-hidden">
-                <div className="flex items-start justify-between gap-2 min-w-0">
-                  <Link
-                    href={`/templates/${template.id}`}
-                    className="font-medium text-sm text-hieroglyph hover:text-primary transition-colors text-glow truncate"
-                  >
-                    {template.title}
-                  </Link>
-                  <TemplateShareMenu template={template} />
-                </div>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-1">
-                  {template.description}
-                </p>
-                <div className="flex items-center space-x-2 mt-2 text-xs text-muted-foreground">
-                  <Star className="h-3 w-3 text-pharaoh fill-current shrink-0" />
-                  <span>{template.average_rating.toFixed(1)}</span>
-                  <span>•</span>
-                  <span>{template.usage_count} uses</span>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Search and Filters */}
-      <Card className="temple-card p-3 sm:p-4 md:p-6 mb-4 md:mb-6 pyramid-elevation overflow-hidden">
-        <div className="space-y-3">
-          {/* Search bar */}
-          <AISearchBar
-            onKeywordSearch={(q) => setSearchQuery(q)}
-            placeholder="Search the sacred scrolls…"
-            className="w-full"
-          />
-
-          {/* Filters row — scrollable on mobile */}
-          <div className="flex items-center gap-2 md:gap-4 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
-            <select
-              value={selectedCategory || ''}
-              onChange={(e) => setSelectedCategory(e.target.value ? Number(e.target.value) : null)}
-              className="px-3 py-2 border border-primary/30 rounded-lg focus:ring-2 focus:ring-primary bg-secondary/50 text-hieroglyph text-sm shrink-0"
-            >
-              <option value="">All Categories</option>
-              {categories.map(category => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="px-3 py-2 border border-primary/30 rounded-lg focus:ring-2 focus:ring-primary bg-secondary/50 text-hieroglyph text-sm shrink-0"
-            >
-              <option value="popularity">Most Popular</option>
-              <option value="rating">Top Rated</option>
-              <option value="recent">Newest</option>
-              <option value="trending">Trending</option>
-            </select>
-
-            <label className="flex items-center gap-2 text-hieroglyph text-sm shrink-0">
-              <input
-                type="checkbox"
-                checked={showFeaturedOnly}
-                onChange={(e) => setShowFeaturedOnly(e.target.checked)}
-                className="rounded border-primary/30 text-primary focus:ring-primary"
-              />
-              <span className="hidden sm:inline">Featured Only</span>
-              <span className="sm:hidden">Featured</span>
-            </label>
-
-            <div className="flex items-center gap-1 shrink-0 ml-auto">
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-                className={viewMode === 'grid' ? 'pharaoh-badge' : 'border-primary/30'}
-              >
-                <Grid className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                className={viewMode === 'list' ? 'pharaoh-badge' : 'border-primary/30'}
-              >
-                <List className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </Card>
+              </div>
+            )}
+          </motion.div>
+        )}
 
       {/* Templates Grid/List */}
       {isLoading ? (

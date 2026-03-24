@@ -32,10 +32,13 @@ import {
   User,
   Layers,
   ScrollText, // Added for Academy
-  Pyramid // Using a custom shape or general icon
+  Pyramid, // Using a custom shape or general icon
+  Wand2, // Skills
+  Compass // Discover
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { CreditBadge } from '@/components/credits/CreditBadge';
 
@@ -82,6 +85,20 @@ const navigationGroups: NavGroup[] = [
         label: 'Templates',
         icon: BookOpen,
         description: 'Prompt library & manager',
+        priority: 'primary'
+      },
+      {
+        href: '/skills',
+        label: 'Skills',
+        icon: Wand2,
+        description: 'AI skills & MCP tools',
+        priority: 'primary'
+      },
+      {
+        href: '/discover',
+        label: 'Discover',
+        icon: Compass,
+        description: 'Explore community prompts',
         priority: 'primary'
       },
     ]
@@ -288,54 +305,62 @@ const NavItem = ({
 
   // Standard Item
   return (
-    <Link
-      href={link.href}
-      className="relative px-3 py-2 rounded-full group"
-      onMouseEnter={() => onHover(link.href)}
-      onMouseLeave={() => onHover(null)}
-    >
-      <div className="relative z-10 flex items-center gap-2">
-        <Icon className={cn(
-          "h-4 w-4 transition-colors duration-200",
-          isActive ? "text-amber-600 dark:text-amber-400" : "text-stone-600 dark:text-stone-400 group-hover:text-stone-900 dark:group-hover:text-stone-100"
-        )} />
-        <span className={cn(
-          "text-sm font-medium transition-colors duration-200 hidden lg:inline-block",
-          isActive ? "text-stone-900 dark:text-stone-100" : "text-stone-600 dark:text-stone-400 group-hover:text-stone-900 dark:group-hover:text-stone-100"
-        )}>
-          {link.label}
-        </span>
-        {link.badge && (
-          <span className="flex h-2 w-2 relative ml-1">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-          </span>
-        )}
-      </div>
-      
-      <AnimatePresence>
-        {(hoveredPath === link.href || isActive) && (
-          <motion.div
-            layoutId={layoutId}
-            className={cn(
-              "absolute inset-0 rounded-full",
-              isActive 
-                ? "bg-amber-100/80 dark:bg-amber-900/30" 
-                : "bg-stone-100 dark:bg-stone-800"
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Link
+          href={link.href}
+          className="relative px-3 py-2 rounded-full group"
+          onMouseEnter={() => onHover(link.href)}
+          onMouseLeave={() => onHover(null)}
+        >
+          <div className="relative z-10 flex items-center gap-2">
+            <Icon className={cn(
+              "h-4 w-4 transition-colors duration-200",
+              isActive ? "text-amber-600 dark:text-amber-400" : "text-stone-600 dark:text-stone-400 group-hover:text-stone-900 dark:group-hover:text-stone-100"
+            )} />
+            <span className={cn(
+              "text-sm font-medium transition-colors duration-200 hidden lg:inline-block",
+              isActive ? "text-stone-900 dark:text-stone-100" : "text-stone-600 dark:text-stone-400 group-hover:text-stone-900 dark:group-hover:text-stone-100"
+            )}>
+              {link.label}
+            </span>
+            {link.badge && (
+              <span className="flex h-2 w-2 relative ml-1">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+              </span>
             )}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{
-              type: "spring",
-              bounce: 0.2,
-              stiffness: 130,
-              damping: 15,
-            }}
-          />
-        )}
-      </AnimatePresence>
-    </Link>
+          </div>
+
+          <AnimatePresence>
+            {(hoveredPath === link.href || isActive) && (
+              <motion.div
+                layoutId={layoutId}
+                className={cn(
+                  "absolute inset-0 rounded-full",
+                  isActive
+                    ? "bg-amber-100/80 dark:bg-amber-900/30"
+                    : "bg-stone-100 dark:bg-stone-800"
+                )}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{
+                  type: "spring",
+                  bounce: 0.2,
+                  stiffness: 130,
+                  damping: 15,
+                }}
+              />
+            )}
+          </AnimatePresence>
+        </Link>
+      </TooltipTrigger>
+      <TooltipContent side="bottom" className="text-xs">
+        <p className="font-semibold">{link.label}</p>
+        <p className="text-muted-foreground">{link.description}</p>
+      </TooltipContent>
+    </Tooltip>
   );
 };
 
@@ -699,6 +724,7 @@ export function TempleNavbarEnhanced() {
                 
                 {/* Desktop Navigation */}
                 {isAuthenticated && (
+                  <TooltipProvider delayDuration={200}>
                   <div className="hidden lg:flex items-center gap-1">
                     {primaryLinks.map((link) => (
                       <NavItem
@@ -710,7 +736,7 @@ export function TempleNavbarEnhanced() {
                         layoutId="primary-nav"
                       />
                     ))}
-                    
+
                     {/* The Academy - Highlighted */}
                     {academyLink && (
                       <NavItem
@@ -756,6 +782,7 @@ export function TempleNavbarEnhanced() {
                       </div>
                     </div>
                   </div>
+                  </TooltipProvider>
                 )}
               </div>
               
