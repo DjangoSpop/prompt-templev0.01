@@ -7,6 +7,8 @@ import { GradientButton } from '../shared/GradientButton';
 import { trackLanding, LANDING_EVENTS } from '@/lib/landing/analytics';
 import { BeforeAfterDemo } from './BeforeAfterDemo';
 import { EnhancedFloatingParticles } from '@/components/animations/EnhancedFloatingParticles';
+import DownloadHero from '@/components/DownloadHero';
+import { TryMeButton } from '@/components/try-me/TryMeButton';
 
 const { hero } = COPY_V3;
 
@@ -55,6 +57,7 @@ export function HeroSection() {
             <span className="text-xs font-medium text-stone-600 dark:text-stone-400 md:text-sm">
               {hero.pill}
             </span>
+          
           </motion.div>
 
           {/* Headline */}

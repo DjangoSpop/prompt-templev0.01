@@ -35,6 +35,8 @@ import { useAcademyStore } from '@/lib/stores/academyStore';
 import dynamic from 'next/dynamic';
 import { HeroSection as HeroSectionV3 } from '@/components/landing/v3/HeroSection';
 import { TempleNavbarEnhanced } from '@/components/TempleNavbarEnhanced';
+import { TryMeButton } from '@/components/try-me/TryMeButton';
+import DownloadHero from '@/components/DownloadHero';
 
 // Lazy-load below-fold sections
 const TrustStrip = dynamic(() => import('@/components/landing/v3/TrustStrip'), { ssr: false });
@@ -80,14 +82,15 @@ export default function DashboardPage() {
          <LandingNavbar />
         {/* 1. HERO — Clear value proposition + before/after demo */}
         <HeroSectionV3 />
-
+       
         {/* 2. TRUST — Platform logos */}
         <TrustStrip />
-
+        <DownloadHero />
         {/* 3. HOW IT WORKS — 3 simple steps */}
         <HowItWorksSection />
 
         {/* 4. FEATURES — 2x2 card grid */}
+      
         <FeatureCardsSection />
 
         {/* 5. USE CASES — Who it's for */}
