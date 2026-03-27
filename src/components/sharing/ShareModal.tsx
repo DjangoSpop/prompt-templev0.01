@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Twitter, Linkedin, Link2, Check, Gift, Sparkles } from 'lucide-react';
+import { X, Twitter, Linkedin, Link2, Check, Gift, Sparkles, Facebook, Instagram, MessageCircle, Send } from 'lucide-react';
 import { createShare } from '@/lib/api/sharing';
 import {
   generateShareCard,
@@ -10,6 +10,11 @@ import {
   openTwitterShare,
   openLinkedInShare,
   copyToClipboard,
+  openFacebookShare,
+  openWhatsAppShare,
+  openTelegramShare,
+  openRedditShare,
+  openPinterestShare,
 } from '@/lib/sharing/generateShareCard';
 
 interface ShareModalProps {
@@ -84,7 +89,6 @@ export default function ShareModal({
   };
 
   const getShareUrl = () => {
-    if (shareResult?.share_url) return shareResult.share_url;
     return generateShareUrl({
       title: title || `Prompt Optimized: ${beforeScore} → ${score}/10`,
       type: 'optimization',
@@ -92,6 +96,8 @@ export default function ShareModal({
       beforeScore,
       content: optimizedPrompt.slice(0, 300),
       improvements,
+      id: shareResult?.share_token || undefined,
+      shareToken: shareResult?.share_token || undefined,
     });
   };
 
@@ -110,6 +116,43 @@ export default function ShareModal({
     const url = getShareUrl();
     const text = `I went from a ${beforeScore}/10 prompt to a ${score}/10 masterpiece in seconds using PromptTemple.`;
     openLinkedInShare(url, text);
+  };
+
+  const handleFacebook = () => {
+    const url = getShareUrl();
+    openFacebookShare(url);
+  };
+
+  const handleWhatsApp = () => {
+    const url = getShareUrl();
+    const text = `Just transformed my prompt from ${beforeScore.toFixed(1)} → ${score.toFixed(1)}/10 with PromptTemple! Try it: ${url}`;
+    openWhatsAppShare(text);
+  };
+
+  const handleTelegram = () => {
+    const url = getShareUrl();
+    const text = `Transformed my prompt: ${beforeScore.toFixed(1)} → ${score.toFixed(1)}/10 🏛️ Check PromptTemple out: ${url}`;
+    openTelegramShare(text, url);
+  };
+
+  const handleReddit = () => {
+    const url = getShareUrl();
+    const title = `Prompt Optimized: ${beforeScore.toFixed(1)} → ${score.toFixed(1)}/10`;
+    openRedditShare(url, title);
+  };
+
+  const handlePinterest = () => {
+    const url = getShareUrl();
+    const description = `Transformed prompt from ${beforeScore.toFixed(1)} to ${score.toFixed(1)}/10 using PromptTemple`;
+    openPinterestShare(url, description);
+  };
+
+  const handleInstagram = () => {
+    const url = getShareUrl();
+    copyToClipboard(url);
+    setCopied(true);
+    toast.success('Link copied. Paste it into your Instagram bio or story sticker.');
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleCopyLink = async () => {
@@ -154,6 +197,8 @@ export default function ShareModal({
                 </div>
                 <button
                   onClick={onClose}
+                  aria-label="Close share modal"
+                  title="Close"
                   className="p-1.5 rounded-lg hover:bg-white/5 transition-colors"
                 >
                   <X size={18} className="text-[#E6D5A8]/60" />
@@ -261,6 +306,52 @@ export default function ShareModal({
                     >
                       <Linkedin size={18} className="text-blue-400" />
                       <span className="text-sm text-[#E6D5A8]">Share on LinkedIn</span>
+                    </button>
+
+                    <button
+                      onClick={handleFacebook}
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-white/10 hover:bg-white/5 transition-colors"
+                    >
+                      <Facebook size={18} className="text-blue-600" />
+                      <span className="text-sm text-[#E6D5A8]">Share on Facebook</span>
+                    </button>
+
+                    <button
+                      onClick={handleWhatsApp}
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-white/10 hover:bg-white/5 transition-colors"
+                    >
+                      <MessageCircle size={18} className="text-green-500" />
+                      <span className="text-sm text-[#E6D5A8]">Share on WhatsApp</span>
+                    </button>
+
+                    <button
+                      onClick={handleTelegram}
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-white/10 hover:bg-white/5 transition-colors"
+                    >
+                      <Send size={18} className="text-sky-400" />
+                      <span className="text-sm text-[#E6D5A8]">Share on Telegram</span>
+                    </button>
+
+                    <button
+                      onClick={handleReddit}
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-white/10 hover:bg-white/5 transition-colors"
+                    >
+                      <span className="text-sm text-[#E6D5A8]">Share on Reddit</span>
+                    </button>
+
+                    <button
+                      onClick={handlePinterest}
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-white/10 hover:bg-white/5 transition-colors"
+                    >
+                      <span className="text-sm text-[#E6D5A8]">Share on Pinterest</span>
+                    </button>
+
+                    <button
+                      onClick={handleInstagram}
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-white/10 hover:bg-white/5 transition-colors"
+                    >
+                      <Instagram size={18} className="text-pink-500" />
+                      <span className="text-sm text-[#E6D5A8]">Share on Instagram</span>
                     </button>
 
                     <button

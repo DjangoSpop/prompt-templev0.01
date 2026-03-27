@@ -126,6 +126,24 @@ const navigationItems: NavItem[] = [
     category: 'main',
   },
   {
+    id: 'skills',
+    label: 'MCP Skills',
+    href: '/skills',
+    icon: Sparkles,
+    description: 'Skills, MCP servers & tools',
+    badge: 'MCP',
+    category: 'main',
+  },
+  {
+    id: 'mcp-knowledge',
+    label: 'MCP Knowledge',
+    href: '/mcp',
+    icon: Library,
+    description: 'Docs, prompts & academy',
+    badge: 'MCP',
+    category: 'main',
+  },
+  {
     id: 'history',
     label: 'History',
     href: '/history',
@@ -270,24 +288,6 @@ const navigationItems: NavItem[] = [
   //   category: 'tools',
   // },
   // Resources
-  {
-    id: 'skills',
-    label: 'Skills & MCP',
-    href: '/skills',
-    icon: Sparkles,
-    description: 'Skills, MCP servers & tools',
-    badge: 'New',
-    category: 'resources',
-  },
-  {
-    id: 'mcp-knowledge',
-    label: 'MCP Knowledge',
-    href: '/mcp',
-    icon: Library,
-    description: 'Docs, prompts & academy',
-    badge: 'New',
-    category: 'resources',
-  },
   {
     id: 'help',
     label: 'Help',
@@ -506,6 +506,7 @@ export function AppSidebar({ className }: AppSidebarProps) {
                 {items.map((item) => {
                   const Icon = item.icon;
                   const active = isActive(item.href);
+                  const isMcpItem = item.id === 'skills' || item.id === 'mcp-knowledge';
 
                   const linkContent = (
                     <Link
@@ -516,6 +517,9 @@ export function AppSidebar({ className }: AppSidebarProps) {
                         active
                           ? 'bg-gradient-to-r from-royal-gold-500/20 to-royal-gold-500/10 text-royal-gold-300 shadow-md shadow-royal-gold-500/10'
                           : 'text-desert-sand-300 hover:bg-obsidian-800/50 hover:text-royal-gold-300',
+                        isMcpItem &&
+                          !active &&
+                          'bg-gradient-to-r from-cyan-500/10 to-teal-500/10 text-cyan-200 ring-1 ring-cyan-500/30 hover:from-cyan-500/20 hover:to-teal-500/20 hover:text-cyan-100',
                         isCollapsed && 'justify-center px-2'
                       )}
                     >
@@ -523,6 +527,7 @@ export function AppSidebar({ className }: AppSidebarProps) {
                         className={cn(
                           'h-5 w-5 flex-shrink-0 transition-transform',
                           active && 'text-royal-gold-400',
+                          isMcpItem && !active && 'text-cyan-300',
                           'group-hover:scale-110'
                         )}
                       />
@@ -536,6 +541,9 @@ export function AppSidebar({ className }: AppSidebarProps) {
                             <span
                               className={cn(
                                 'rounded-full px-2 py-0.5 text-[10px] font-bold',
+                                item.badge === 'MCP'
+                                  ? 'bg-cyan-500/20 text-cyan-300 ring-1 ring-cyan-400/40'
+                                  :
                                 item.badge === 'New'
                                   ? 'bg-emerald-500/20 text-emerald-400'
                                   : 'bg-royal-gold-500/20 text-royal-gold-400'

@@ -19,6 +19,8 @@ import {
   Search,
   Globe,
   Copy,
+  Facebook,
+  Instagram,
   Tag,
   TrendingUp,
   Clock,
@@ -38,6 +40,7 @@ import {
   Save,
   Brain,
   Zap,
+  MessageCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -250,12 +253,27 @@ function PromptShareMenu({ prompt }: { prompt: SavedPrompt }) {
   });
   const shareUrl = `${SITE_URL}/share?${shareParams.toString()}`;
   const shareText = `Check out "${prompt.title}" on Prompt Temple`;
+  const redditTitle = `${prompt.title} | Prompt Temple`;
+  const pinterestMedia = `${SITE_URL}/api/og/share/prompt?prompt=${encodeURIComponent(prompt.title)}&score=${encodeURIComponent(String(prompt.metadata?.quality_score ?? 8))}`;
 
   const handleShare = async (channel: string) => {
     if (channel === 'x') {
       window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank', 'noopener,noreferrer,width=640,height=560');
     } else if (channel === 'linkedin') {
       window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`, '_blank', 'noopener,noreferrer,width=640,height=560');
+    } else if (channel === 'facebook') {
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank', 'noopener,noreferrer,width=640,height=560');
+    } else if (channel === 'whatsapp') {
+      window.open(`https://wa.me/?text=${encodeURIComponent(`${shareText} ${shareUrl}`)}`, '_blank', 'noopener,noreferrer');
+    } else if (channel === 'telegram') {
+      window.open(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`, '_blank', 'noopener,noreferrer,width=640,height=560');
+    } else if (channel === 'reddit') {
+      window.open(`https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(redditTitle)}`, '_blank', 'noopener,noreferrer,width=900,height=720');
+    } else if (channel === 'pinterest') {
+      window.open(`https://www.pinterest.com/pin/create/button/?url=${encodeURIComponent(shareUrl)}&description=${encodeURIComponent(shareText)}&media=${encodeURIComponent(pinterestMedia)}`, '_blank', 'noopener,noreferrer,width=900,height=720');
+    } else if (channel === 'instagram') {
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success('Link copied. Paste it into Instagram bio/story sticker.');
     } else if (channel === 'copy') {
       await navigator.clipboard.writeText(shareUrl);
       toast.success('Link copied!');
@@ -285,6 +303,24 @@ function PromptShareMenu({ prompt }: { prompt: SavedPrompt }) {
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => handleShare('linkedin')}>
           LinkedIn
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => handleShare('facebook')}>
+          <Facebook className="h-3.5 w-3.5 mr-2" /> Facebook
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => handleShare('whatsapp')}>
+          <MessageCircle className="h-3.5 w-3.5 mr-2" /> WhatsApp
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => handleShare('telegram')}>
+          <Send className="h-3.5 w-3.5 mr-2" /> Telegram
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => handleShare('reddit')}>
+          Reddit
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => handleShare('pinterest')}>
+          Pinterest
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => handleShare('instagram')}>
+          <Instagram className="h-3.5 w-3.5 mr-2" /> Instagram
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => handleShare('copy')}>
           <Copy className="h-3.5 w-3.5 mr-2" /> Copy Link

@@ -28,19 +28,52 @@ interface ShareData {
 }
 
 async function fetchShare(token: string): Promise<ShareData | null> {
+  let timeout: ReturnType<typeof setTimeout> | null = null;
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3000);
+    timeout = setTimeout(() => controller.abort(), 8000);
     const res = await fetch(`${API_BASE}/api/v1/share/${token}/`, {
       signal: controller.signal,
-      next: { revalidate: 60 },
+      headers: {
+        Accept: 'application/json',
+      },
+      next: { revalidate: 300 },
     });
-    clearTimeout(timeout);
     if (!res.ok) return null;
     return res.json();
   } catch {
     return null;
+  } finally {
+    if (timeout) clearTimeout(timeout);
   }
+}
+
+function buildFallbackMetadata(token: string): Metadata {
+  const shortToken = token.slice(0, 8).toUpperCase();
+  const title = `Shared Prompt ${shortToken} — Prompt Temple`;
+  const description = 'This prompt share is loading. Open the link to view the full before/after optimization details on PromptTemple.';
+  const ogImage = `${SITE_URL}/api/og/share/prompt?prompt=${encodeURIComponent(`Shared Prompt ${shortToken}`)}&score=8`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      siteName: 'PromptTemple',
+      url: `${SITE_URL}/s/${token}`,
+      images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [ogImage],
+      creator: '@prompttemple',
+    },
+    robots: { index: true, follow: true },
+  };
 }
 
 export async function generateMetadata({
@@ -52,15 +85,7 @@ export async function generateMetadata({
   const share = await fetchShare(token);
 
   if (!share) {
-    return {
-      title: 'Shared Prompt — Prompt Temple',
-      description: 'View this shared prompt on PromptTemple — the AI prompt optimization platform.',
-      openGraph: {
-        title: 'Shared Prompt',
-        description: 'View this shared prompt on PromptTemple.',
-        images: [{ url: `${SITE_URL}/api/og/share`, width: 1200, height: 630 }],
-      },
-    };
+    return buildFallbackMetadata(token);
   }
 
   const ogTitle = share.title || `Wow Score ${share.wow_score}/10 — Prompt Temple`;

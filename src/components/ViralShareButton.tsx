@@ -2,12 +2,17 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Share2, Twitter, Linkedin, Link2, Check, X, Download, Image } from 'lucide-react';
+import { Share2, Twitter, Linkedin, Link2, Check, X, Download, Image, Facebook, Instagram, MessageCircle, Send } from 'lucide-react';
 import {
   generateShareCard,
   openTwitterShare,
   openLinkedInShare,
   copyToClipboard,
+  openFacebookShare,
+  openWhatsAppShare,
+  openTelegramShare,
+  openRedditShare,
+  openPinterestShare,
   type ShareableOptimization,
 } from '@/lib/sharing/generateShareCard';
 
@@ -78,7 +83,7 @@ export function ViralShareButton({ optimization, variant = 'button', className =
                     Score: {optimization.afterScore}/10 · Pharaoh Level
                   </p>
                 </div>
-                <button onClick={() => setOpen(false)} className="text-[#6B7280] hover:text-white">
+                <button onClick={() => setOpen(false)} className="text-[#6B7280] hover:text-white" aria-label="Close share menu">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -99,6 +104,52 @@ export function ViralShareButton({ optimization, variant = 'button', className =
                 >
                   <Linkedin className="w-4 h-4" />
                   Share on LinkedIn
+                </button>
+
+                <button
+                  onClick={() => { openFacebookShare(card.shareUrl); setOpen(false); }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors hover:bg-[rgba(59,89,152,0.1)] text-[#3B5998]"
+                >
+                  <Facebook className="w-4 h-4" />
+                  Share on Facebook
+                </button>
+
+                <button
+                  onClick={() => { openWhatsAppShare(`${card.tweetText} ${card.shareUrl}`); setOpen(false); }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors hover:bg-[rgba(37,211,102,0.1)] text-[#25D366]"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  Share on WhatsApp
+                </button>
+
+                <button
+                  onClick={() => { openTelegramShare(card.tweetText, card.shareUrl); setOpen(false); }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors hover:bg-[rgba(0,136,204,0.1)] text-[#0088CC]"
+                >
+                  <Send className="w-4 h-4" />
+                  Share on Telegram
+                </button>
+
+                <button
+                  onClick={() => { openRedditShare(card.shareUrl, `Prompt Optimized: ${optimization.beforeScore.toFixed(1)} → ${optimization.afterScore.toFixed(1)}/10`); setOpen(false); }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors hover:bg-[rgba(255,69,0,0.1)] text-[#FF4500]"
+                >
+                  Share on Reddit
+                </button>
+
+                <button
+                  onClick={() => { openPinterestShare(card.shareUrl, card.tweetText); setOpen(false); }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors hover:bg-[rgba(230,0,35,0.1)] text-[#E60023]"
+                >
+                  Share on Pinterest
+                </button>
+
+                <button
+                  onClick={() => { navigator.clipboard.writeText(card.shareUrl); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors hover:bg-[rgba(236,72,153,0.1)] text-[#EC4899]"
+                >
+                  <Instagram className="w-4 h-4" />
+                  {copied ? 'Link copied for Instagram' : 'Share on Instagram'}
                 </button>
 
                 <button

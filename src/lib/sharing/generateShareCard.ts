@@ -26,29 +26,23 @@ export interface ShareCard {
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://prompt-temple.com';
 
 export function generateShareCard(optimization: ShareableOptimization): ShareCard {
-  // Prefer backend-backed share URL when a share token is available.
-  // Fall back to stateless URL params for crawlers without backend dependency.
+  // Always publish stateless URLs for reliable OG previews across social crawlers.
+  // Preserve backend identifiers in query params for attribution/debugging.
   const title = `Prompt Optimized: ${optimization.beforeScore.toFixed(1)} → ${optimization.afterScore.toFixed(1)}/10`;
   const contentPreview = optimization.afterPrompt.slice(0, 300);
   const improvementsList = optimization.improvements.slice(0, 3).join('|');
 
-  let shareUrl: string;
-  if (optimization.shareToken) {
-    // Backend-backed: short, clean URL with proper OG metadata
-    shareUrl = `${APP_URL}/s/${optimization.shareToken}`;
-  } else {
-    // Stateless fallback
-    const shareParams = new URLSearchParams({
-      t: title,
-      type: 'optimization',
-      bs: optimization.beforeScore.toString(),
-      s: optimization.afterScore.toString(),
-      c: contentPreview,
-      ...(improvementsList ? { imp: improvementsList } : {}),
-      ...(optimization.shareId || optimization.id ? { id: optimization.shareId || optimization.id } : {}),
-    });
-    shareUrl = `${APP_URL}/share?${shareParams.toString()}`;
-  }
+  const shareParams = new URLSearchParams({
+    t: title,
+    type: 'optimization',
+    bs: optimization.beforeScore.toString(),
+    s: optimization.afterScore.toString(),
+    c: contentPreview,
+    ...(improvementsList ? { imp: improvementsList } : {}),
+    ...(optimization.shareId || optimization.id ? { id: optimization.shareId || optimization.id } : {}),
+    ...(optimization.shareToken ? { st: optimization.shareToken } : {}),
+  });
+  const shareUrl = `${APP_URL}/share?${shareParams.toString()}`;
 
   const imageUrl = `${APP_URL}/api/og/share/optimization?beforeScore=${encodeURIComponent(
     optimization.beforeScore.toString()
@@ -101,6 +95,7 @@ export function generateShareUrl(params: {
   category?: string;
   improvements?: string[];
   id?: string;
+  shareToken?: string;
 }): string {
   const searchParams = new URLSearchParams();
   searchParams.set('t', params.title.slice(0, 200));
@@ -112,6 +107,7 @@ export function generateShareUrl(params: {
   if (params.category) searchParams.set('cat', params.category);
   if (params.improvements?.length) searchParams.set('imp', params.improvements.slice(0, 5).join('|'));
   if (params.id) searchParams.set('id', params.id);
+  if (params.shareToken) searchParams.set('st', params.shareToken);
 
   return `${APP_URL}/share?${searchParams.toString()}`;
 }
@@ -124,6 +120,37 @@ export function openTwitterShare(text: string): void {
 export function openLinkedInShare(url: string, text: string): void {
   const shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
   window.open(shareUrl, '_blank', 'width=600,height=700,noopener');
+}
+
+export function openFacebookShare(url: string): void {
+  const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+  window.open(shareUrl, '_blank', 'width=640,height=560,noopener');
+}
+
+export function openWhatsAppShare(text: string): void {
+  const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+  window.open(url, '_blank', 'noopener');
+}
+
+export function openTelegramShare(text: string, url: string): void {
+  const fullText = `${text}\n${url}`;
+  const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+  window.open(shareUrl, '_blank', 'noopener');
+}
+
+export function openRedditShare(url: string, title: string): void {
+  const shareUrl = `https://reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`;
+  window.open(shareUrl, '_blank', 'width=900,height=720,noopener');
+}
+
+export function openPinterestShare(url: string, description: string, imageUrl?: string): void {
+  const params = new URLSearchParams({
+    url: url,
+    description: description,
+    ...(imageUrl ? { media: imageUrl } : {}),
+  });
+  const shareUrl = `https://www.pinterest.com/pin/create/button/?${params.toString()}`;
+  window.open(shareUrl, '_blank', 'width=900,height=720,noopener');
 }
 
 export async function copyToClipboard(text: string): Promise<boolean> {
