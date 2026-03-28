@@ -31,7 +31,7 @@ export default function MCPPromptDetailPage() {
     return (
       <div className="animate-pulse space-y-6">
         <div className="h-8 w-48 rounded bg-[var(--card)]" />
-        <div className="h-12 w-96 rounded bg-[var(--card)]" />
+        <div className="h-12 w-full max-w-lg rounded bg-[var(--card)]" />
         <div className="h-64 rounded-xl bg-[var(--card)]" />
       </div>
     );
@@ -70,10 +70,10 @@ export default function MCPPromptDetailPage() {
           <MCPModelBadges models={prompt.target_models} />
         </div>
 
-        <h1 className="text-2xl md:text-3xl font-bold text-[var(--fg)] mb-2">{prompt.title}</h1>
-        <p className="text-[var(--fg)]/60">{prompt.description}</p>
+        <h1 className="mb-2 text-2xl font-bold text-[var(--fg)] md:text-3xl">{prompt.title}</h1>
+        <p className="text-sm text-[var(--fg)]/60 sm:text-base">{prompt.description}</p>
 
-        <div className="flex items-center gap-4 mt-3 text-xs text-[var(--fg)]/50">
+        <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-[var(--fg)]/50 sm:gap-4">
           <span>{prompt.category_icon} {prompt.category_name}</span>
           <span>{prompt.usage_count} uses</span>
           {prompt.avg_rating && <span>★ {prompt.avg_rating.toFixed(1)}</span>}
@@ -94,14 +94,14 @@ export default function MCPPromptDetailPage() {
 
       {/* Variable form + Preview */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-5">
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5">
           <MCPPromptVariableForm
             variables={variables}
             values={values}
             onChange={setValues}
           />
         </div>
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-5">
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5">
           <MCPPromptPreview
             template={prompt.prompt_template}
             values={values}
@@ -111,9 +111,9 @@ export default function MCPPromptDetailPage() {
 
       {/* Example output */}
       {prompt.example_output && (
-        <div className="mt-6 rounded-xl border border-[var(--border)] bg-[var(--card)] p-5">
+        <div className="mt-6 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5">
           <h3 className="font-semibold text-[var(--fg)] mb-3">Example Output</h3>
-          <div className="rounded-lg bg-[var(--bg)] p-4 text-sm text-[var(--fg)]/70 whitespace-pre-wrap">
+          <div className="overflow-x-auto rounded-lg bg-[var(--bg)] p-4 text-sm text-[var(--fg)]/70 whitespace-pre-wrap">
             {prompt.example_output}
           </div>
         </div>

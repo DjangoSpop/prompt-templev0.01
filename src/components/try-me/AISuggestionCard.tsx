@@ -42,35 +42,31 @@ export function AISuggestionCard({
     },
   };
 
-  const handleSuggestionClick = (suggestion: string) => {
-    onSuggestionClick?.(suggestion);
-  };
-
   return (
     <motion.div
-      className={`bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4 ${className}`}
+      className={`bg-white/[0.03] border border-amber-500/10 rounded-xl p-4 ${className}`}
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
       <div className="flex items-center gap-2 mb-3">
-        <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-        <h3 className="font-medium text-purple-900 dark:text-purple-100 text-sm">
-          Suggestions
+        <Sparkles className="w-4 h-4 text-amber-400" />
+        <h3
+          className="font-semibold text-amber-200/80 text-sm"
+          style={{ fontFamily: "'Playfair Display', serif" }}
+        >
+          Next Steps
         </h3>
       </div>
 
       <div className="flex flex-wrap gap-2">
         {items.map((suggestion, index) => (
-          <motion.div
-            key={index}
-            variants={chipVariants}
-          >
+          <motion.div key={index} variants={chipVariants}>
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => handleSuggestionClick(suggestion)}
-              className="h-auto px-3 py-1.5 text-xs bg-white dark:bg-gray-800 border border-purple-200 dark:border-purple-700 hover:bg-purple-100 dark:hover:bg-purple-800/50 text-purple-700 dark:text-purple-300 rounded-full transition-all duration-200 hover:scale-105"
+              onClick={() => onSuggestionClick?.(suggestion)}
+              className="h-auto px-3 py-1.5 text-xs bg-amber-500/5 border border-amber-500/15 hover:bg-amber-500/10 hover:border-amber-400/30 text-amber-300/80 hover:text-amber-200 rounded-full transition-all duration-200 hover:scale-105"
             >
               <Plus className="w-3 h-3 mr-1.5" />
               {suggestion}

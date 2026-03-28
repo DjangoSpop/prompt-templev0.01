@@ -199,26 +199,29 @@ export function LandingNavbar() {
             )}
           >
             {/* ── Logo: Eye of Horus + Brand ── */}
-            <Link href="/" className="group flex items-center gap-2.5">
-              <div className="relative flex items-center justify-center" style={{ filter: 'drop-shadow(0 0 8px rgba(212,175,55,0.4))' }}>
+            <Link href="/" className="group flex items-center gap-2">
+              <div
+                className="relative flex shrink-0 items-center justify-center overflow-visible"
+                style={{ width: 34, height: 34, filter: 'drop-shadow(0 0 6px rgba(212,175,55,0.35))' }}
+              >
                 <Eyehorus
-                  size={38}
+                  size={32}
                   variant="hero"
                   glow
-                  glowIntensity="medium"
+                  glowIntensity="low"
                   animated
                   speedMultiplier={2}
                   showLabel={false}
                 />
               </div>
-              <div className="hidden sm:block">
+              <div className="hidden sm:block leading-none">
                 <h1
-                  className="bg-gradient-to-r from-amber-700 via-yellow-600 to-amber-700 bg-clip-text text-lg font-bold tracking-tight text-transparent dark:from-amber-400 dark:via-yellow-400 dark:to-amber-400"
+                  className="bg-gradient-to-r from-amber-700 via-yellow-600 to-amber-700 bg-clip-text text-[16px] font-bold tracking-tight text-transparent dark:from-amber-400 dark:via-yellow-400 dark:to-amber-400"
                   style={{ fontFamily: "'Playfair Display', serif" }}
                 >
                   Prompt Temple
                 </h1>
-                <p className="text-[9px] font-semibold uppercase tracking-[0.25em] text-stone-400 dark:text-stone-500">
+                <p className="mt-0.5 text-[8px] font-semibold uppercase tracking-[0.2em] text-stone-400 dark:text-stone-500">
                   AI Prompt Platform
                 </p>
               </div>

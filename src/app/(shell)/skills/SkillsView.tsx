@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Search, Server, Layers, Heart } from 'lucide-react';
+import { Search, Server, Layers, Heart, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useSkills, useMCPServers, useMyBookmarks } from '@/lib/hooks/useSkills';
 import { SkillCard } from '@/components/skills/SkillCard';
 import { MCPServerCard } from '@/components/skills/MCPServerCard';
@@ -63,16 +63,16 @@ export default function SkillsView() {
     <div className="min-h-screen">
       {/* Hero */}
       <div className="relative overflow-hidden rounded-2xl border border-[var(--border)]
-                      bg-gradient-to-br from-[var(--card)] via-[var(--card)] to-[#C9A227]/5 p-8 mb-6">
+                      bg-gradient-to-br from-[var(--card)] via-[var(--card)] to-[#C9A227]/5 p-4 sm:p-6 md:p-8 mb-6">
         <div className="max-w-2xl">
-          <h1 className="text-3xl font-bold text-[var(--fg)] mb-2">
+          <h1 className="mb-2 text-2xl font-bold text-[var(--fg)] sm:text-3xl">
             Skills & MCP Knowledge
           </h1>
-          <p className="text-[var(--fg)]/60 mb-4">
+          <p className="mb-4 text-sm text-[var(--fg)]/60 sm:text-base">
             Explore MCP servers, prompt techniques, agentic patterns, frameworks
             and more. Bookmark skills to build your personal toolkit.
           </p>
-          <form onSubmit={handleSearch} className="flex gap-2">
+          <form onSubmit={handleSearch} className="flex flex-col gap-2 sm:flex-row">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--fg)]/40" />
               <input
@@ -88,7 +88,8 @@ export default function SkillsView() {
             </div>
             <button
               type="submit"
-              className="rounded-lg bg-[#C9A227] px-5 py-2.5 text-sm font-medium
+              className="w-full rounded-lg bg-[#C9A227] px-5 py-2.5 text-sm font-medium
+                         sm:w-auto sm:whitespace-nowrap
                          text-white hover:bg-[#B8911F] transition-colors"
             >
               Search
@@ -103,26 +104,30 @@ export default function SkillsView() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 mb-6 border-b border-[var(--border)]">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setTab(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium
+      <div className="mb-6 border-b border-[var(--border)]">
+        <div className="flex min-w-max items-center gap-1 overflow-x-auto pb-1">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setTab(tab.id)}
+              className={`-mb-px shrink-0 whitespace-nowrap px-3 py-2.5 text-sm font-medium
                         border-b-2 transition-colors -mb-px ${
                           activeTab === tab.id
                             ? 'border-[#C9A227] text-[#C9A227]'
                             : 'border-transparent text-[var(--fg)]/50 hover:text-[var(--fg)]'
                         }`}
-          >
-            <tab.icon className="h-4 w-4" />
-            {tab.label}
-          </button>
-        ))}
+            >
+              <span className="flex items-center gap-2">
+                <tab.icon className="h-4 w-4" />
+                {tab.label}
+              </span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Content */}
-      <div className="flex gap-6">
+      <div className="flex flex-col gap-6 lg:flex-row">
         {/* Filters sidebar - only on All Skills tab */}
         {activeTab === 'all' && (
           <div className="hidden lg:block">
@@ -133,7 +138,7 @@ export default function SkillsView() {
         {/* Grid */}
         <div className="flex-1">
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div
                   key={i}
@@ -181,6 +186,8 @@ function SkillsGrid({ skills, total, page }: { skills: import('@/types/mcp').Ski
   }
 
   const totalPages = Math.ceil(total / 20);
+  const hasPrev = page > 1;
+  const hasNext = page < totalPages;
 
   const goToPage = (p: number) => {
     const newParams = new URLSearchParams(searchParams.toString());
@@ -190,7 +197,7 @@ function SkillsGrid({ skills, total, page }: { skills: import('@/types/mcp').Ski
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         {skills.map((skill) =>
           skill.skill_type === 'mcp_server' ? (
             <MCPServerCard key={skill.id} skill={skill} />
@@ -200,20 +207,45 @@ function SkillsGrid({ skills, total, page }: { skills: import('@/types/mcp').Ski
         )}
       </div>
       {totalPages > 1 && (
-        <div className="flex justify-center gap-2 mt-8">
-          {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => i + 1).map((p) => (
+        <div className="mt-8 space-y-3">
+          <div className="flex items-center justify-between gap-2">
             <button
-              key={p}
-              onClick={() => goToPage(p)}
-              className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                p === page
-                  ? 'bg-[#C9A227] text-white'
-                  : 'bg-[var(--card)] text-[var(--fg)]/70 hover:bg-[var(--card)]/80'
-              }`}
+              onClick={() => goToPage(page - 1)}
+              disabled={!hasPrev}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)]
+                         bg-[var(--card)] px-3 py-2 text-sm text-[var(--fg)]/70 transition-colors
+                         hover:bg-[var(--card)]/80 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {p}
+              <ChevronLeft className="h-4 w-4" /> Prev
             </button>
-          ))}
+            <p className="text-xs text-[var(--fg)]/50 sm:text-sm">
+              Page {page} of {totalPages}
+            </p>
+            <button
+              onClick={() => goToPage(page + 1)}
+              disabled={!hasNext}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)]
+                         bg-[var(--card)] px-3 py-2 text-sm text-[var(--fg)]/70 transition-colors
+                         hover:bg-[var(--card)]/80 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Next <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="flex flex-wrap justify-center gap-2">
+            {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => i + 1).map((p) => (
+              <button
+                key={p}
+                onClick={() => goToPage(p)}
+                className={`rounded-lg px-3 py-1.5 text-sm transition-colors ${
+                  p === page
+                    ? 'bg-[#C9A227] text-white'
+                    : 'bg-[var(--card)] text-[var(--fg)]/70 hover:bg-[var(--card)]/80'
+                }`}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </>
@@ -234,7 +266,7 @@ function MCPServersGrid({ skills, total }: { skills: import('@/types/mcp').Skill
   return (
     <>
       <p className="text-sm text-[var(--fg)]/50 mb-4">{total} MCP server{total !== 1 ? 's' : ''}</p>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         {skills.map((skill) => (
           <MCPServerCard key={skill.id} skill={skill} />
         ))}
@@ -255,7 +287,7 @@ function BookmarksGrid({ bookmarks }: { bookmarks: import('@/types/mcp').SkillBo
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
       {bookmarks.map((bm) =>
         bm.skill.skill_type === 'mcp_server' ? (
           <MCPServerCard key={bm.id} skill={bm.skill} />

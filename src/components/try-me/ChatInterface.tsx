@@ -186,9 +186,37 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900">
+    <div className="flex flex-col h-full" style={{ background: 'linear-gradient(180deg, #0E0F14 0%, #111219 100%)' }}>
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Empty state — welcome prompt */}
+        {messages.length === 0 && !isThinking && (
+          <div className="flex flex-col items-center justify-center h-full text-center px-4 py-12">
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-amber-500/20"
+              style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(212,175,55,0.02) 100%)' }}>
+              <Sparkles className="h-7 w-7 text-amber-400" />
+            </div>
+            <h3 className="text-lg font-bold text-amber-100/90 mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
+              The Sacred Forge Awaits
+            </h3>
+            <p className="text-sm text-stone-400 max-w-md mb-6 leading-relaxed">
+              Paste any rough prompt below and watch it transform into a professional, high-performance prompt powered by AI.
+            </p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {['Write a cold email to a client', 'Help me analyze my data', 'Create a marketing strategy'].map((example) => (
+                <button
+                  type="button"
+                  key={example}
+                  onClick={() => setCurrentPrompt(example)}
+                  className="px-3 py-1.5 text-xs rounded-full border border-amber-500/15 text-amber-300/70 hover:text-amber-200 hover:border-amber-400/30 hover:bg-amber-500/5 transition-all duration-200"
+                >
+                  {example}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {messages.map((message) => (
           <motion.div
             key={message.id}
@@ -198,12 +226,15 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
           >
             <div
               className={`
-                max-w-[80%] rounded-lg px-4 py-3 text-sm
+                max-w-[80%] rounded-xl px-4 py-3 text-sm
                 ${message.type === 'user'
-                  ? 'bg-[#6366F1] text-white'
-                  : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700'
+                  ? 'text-[#0E0F12] font-medium'
+                  : 'bg-white/5 text-stone-200 border border-amber-500/10'
                 }
               `}
+              style={message.type === 'user' ? {
+                background: 'linear-gradient(135deg, #ffe066 0%, #d4af37 50%, #CBA135 100%)',
+              } : undefined}
             >
               <div dangerouslySetInnerHTML={{ __html: renderSafeMarkdown(message.content) }} />
             </div>
@@ -217,7 +248,7 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
             animate={{ opacity: 1, y: 0 }}
             className="flex justify-start"
           >
-            <div className="max-w-[80%] rounded-lg px-4 py-3 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+            <div className="max-w-[80%] rounded-xl px-4 py-3 text-sm bg-white/5 text-stone-200 border border-amber-500/10">
               {streamBuffer ? (
                 <div aria-live="polite">
                   <div dangerouslySetInnerHTML={{ __html: renderSafeMarkdown(streamBuffer) }} />
@@ -225,7 +256,7 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
               ) : (
                 <div className="flex items-center gap-3">
                   <EgyptianLoadingLight size="sm" />
-                  <span className="text-gray-600 dark:text-gray-400">Assistant is thinking...</span>
+                  <span className="text-amber-300/70">The Sacred Forge is crafting...</span>
                 </div>
               )}
             </div>
@@ -256,14 +287,14 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
 
               {/* Before & After */}
               {optimizationResult.after && (
-                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                <div className="bg-white/5 border border-amber-500/10 rounded-xl overflow-hidden">
                   <Button
                     variant="ghost"
                     onClick={() => setShowBeforeAfter(!showBeforeAfter)}
-                    className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700"
+                    className="w-full flex items-center justify-between p-4 hover:bg-amber-500/5 text-stone-200"
                   >
                     <div className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-green-600" />
+                      <Sparkles className="w-4 h-4 text-amber-400" />
                       <span className="font-medium">Before & After Comparison</span>
                     </div>
                     {showBeforeAfter ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -277,10 +308,10 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
                         exit={{ height: 0 }}
                         className="overflow-hidden"
                       >
-                        <div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-4">
+                        <div className="p-4 border-t border-amber-500/10 space-y-4">
                           <div>
                             <div className="flex items-center justify-between mb-2">
-                              <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400">Original</h4>
+                              <h4 className="text-sm font-medium text-stone-400">Original</h4>
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -294,14 +325,14 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
                                 )}
                               </Button>
                             </div>
-                            <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded text-sm">
+                            <div className="p-3 bg-white/5 rounded-lg text-sm text-stone-300">
                               {optimizationResult.before}
                             </div>
                           </div>
 
                           <div>
                             <div className="flex items-center justify-between mb-2">
-                              <h4 className="text-sm font-medium text-green-600">Optimized</h4>
+                              <h4 className="text-sm font-medium text-amber-400">Optimized</h4>
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -315,7 +346,7 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
                                 )}
                               </Button>
                             </div>
-                            <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded text-sm">
+                            <div className="p-3 bg-amber-500/5 border border-amber-500/15 rounded-lg text-sm text-stone-200">
                               {optimizationResult.after}
                             </div>
                           </div>
@@ -337,14 +368,14 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
             >
-              <Alert className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-200 dark:border-blue-800">
-                <UserPlus className="h-4 w-4" />
-                <AlertDescription className="flex items-center justify-between">
+              <Alert className="border-amber-500/20 bg-amber-500/5">
+                <UserPlus className="h-4 w-4 text-amber-400" />
+                <AlertDescription className="flex items-center justify-between text-stone-300">
                   <span>
-                    <strong>Love what you see?</strong> Sign up to unlock 100+ advanced features, save your work, and access the full template library.
+                    <strong className="text-amber-300">Impressed?</strong> Enter the Temple to unlock the full Forge, 4,200+ templates, and the sacred extension.
                   </span>
-                  <Button size="sm" asChild className="ml-4">
-                    <a href="/auth/register">Sign Up for Free</a>
+                  <Button size="sm" asChild className="ml-4 text-[#0E0F12] font-bold" style={{ background: 'linear-gradient(135deg, #ffe066, #d4af37)' }}>
+                    <a href="/auth/register">Enter the Temple</a>
                   </Button>
                 </AlertDescription>
               </Alert>
@@ -364,7 +395,7 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
       </div>
 
       {/* Input Area */}
-      <div className="border-t border-gray-200 dark:border-gray-700 p-4">
+      <div className="border-t border-amber-500/10 p-4">
         <PromptEditorLite
           value={currentPrompt}
           onChange={setCurrentPrompt}

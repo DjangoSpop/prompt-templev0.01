@@ -105,43 +105,48 @@ export class SSEClient {
     }
   }
 
-  private handleSSEMessage(data: any, handlers: SSEEventHandlers) {
-    switch (data.type) {
+  private handleSSEMessage(message: any, handlers: SSEEventHandlers) {
+    // Server wraps payload inside a `data` property: { type, data: { ... } }
+    // Unwrap it so handlers receive the payload directly.
+    const { type, data: payload, ...rest } = message;
+    const eventData = payload || rest;
+
+    switch (type) {
       case 'stream_start':
-        handlers.onStart?.(data);
+        handlers.onStart?.(eventData);
         break;
 
       case 'token':
-        this.bufferToken(data.token, handlers.onToken);
+        this.bufferToken(eventData.token, handlers.onToken);
         break;
 
       case 'insight':
         this.flushTokens(handlers.onToken);
-        handlers.onInsight?.(data);
+        handlers.onInsight?.(eventData);
         break;
 
       case 'suggestions':
         this.flushTokens(handlers.onToken);
-        handlers.onSuggestions?.(data);
+        handlers.onSuggestions?.(eventData);
         break;
 
       case 'optimization_result':
         this.flushTokens(handlers.onToken);
-        handlers.onResult?.(data);
+        handlers.onResult?.(eventData);
         break;
 
       case 'stream_complete':
         this.flushTokens(handlers.onToken);
-        handlers.onComplete?.(data);
+        handlers.onComplete?.(eventData);
         break;
 
       case 'error':
         this.flushTokens(handlers.onToken);
-        handlers.onError?.(data);
+        handlers.onError?.(eventData);
         break;
 
       default:
-        console.warn('Unknown SSE message type:', data.type);
+        console.warn('Unknown SSE message type:', type);
     }
   }
 

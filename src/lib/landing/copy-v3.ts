@@ -7,13 +7,19 @@ export const COPY_V3 = {
   },
 
   hero: {
-    pill: 'Used by 5,000+ professionals',
-    headline: 'Get Better Results from Any AI Tool.',
+    pill: 'Trusted by 5,000+ Prompt Architects',
+    headline: 'Your Prompts, Forged in the Temple of AI.',
     subtitle:
-      'Search thousands of ready-made prompts. Or paste your idea and let AI make it 10x better. One click to use it anywhere.',
-    ctaPrimary: 'Start Free — No Credit Card',
+      'Optimize any prompt with sacred AI precision. Craft SEO-ready content that ranks. Send one prompt to 12 AI models instantly with our extension. Enter the Temple — your AI mastery begins here.',
+    ctaPrimary: 'Enter the Temple — Free',
     ctaSecondary: 'See How It Works ↓',
+    tryMe: 'Try the Sacred Forge',
     platformsLabel: 'Works with ChatGPT · Claude · Gemini · Perplexity · Copilot',
+    features: [
+      { icon: 'optimize', label: 'Prompt Optimizer', desc: 'Turn rough ideas into powerful prompts' },
+      { icon: 'seo', label: 'SEO Scribe', desc: 'Content that ranks like a pharaoh\'s decree' },
+      { icon: 'extension', label: '1 Prompt → 12 Models', desc: 'Send to every AI tool at once' },
+    ],
   },
 
   trustStrip: {

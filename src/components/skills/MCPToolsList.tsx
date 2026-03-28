@@ -35,14 +35,16 @@ export function MCPToolsList({ tools }: Props) {
               ) : (
                 <ChevronRight className="h-3.5 w-3.5 text-[var(--fg)]/50" />
               )}
-              <code className="font-mono text-[#C9A227] text-xs">{tool.name}</code>
-              <span className="text-[var(--fg)]/50 text-xs truncate ml-1">
+              <code className="min-w-0 max-w-[45%] truncate font-mono text-xs text-[#C9A227]">
+                {tool.name}
+              </code>
+              <span className="ml-1 min-w-0 truncate text-xs text-[var(--fg)]/50">
                 {tool.description}
               </span>
             </button>
             {expanded === tool.name && (
               <div className="px-3 pb-3 pt-1">
-                <p className="text-xs text-[var(--fg)]/60 mb-2">{tool.description}</p>
+                <p className="mb-2 break-words text-xs text-[var(--fg)]/60">{tool.description}</p>
                 {tool.input_schema && (
                   <pre className="rounded-md bg-[var(--card)] p-2 text-xs font-mono
                                   text-[var(--fg)]/70 overflow-x-auto">

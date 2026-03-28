@@ -1,11 +1,59 @@
 import { NextRequest } from 'next/server';
 import { rateLimit } from '@/lib/utils/rate-limit';
 
+// ── Config ──────────────────────────────────────────────────────
+const ZAI_AUTH_TOKEN = process.env.ZAI_AUTH_TOKEN ?? '';
+const ZAI_BASE_URL = (process.env.ZAI_BASE_URL ?? 'https://api.z.ai/api/anthropic').replace(/\/$/, '');
+const ZAI_MODEL = process.env.ZAI_MODEL ?? 'glm-4.7';
+const ZAI_TIMEOUT = Number(process.env.ZAI_TIMEOUT_MS ?? 300000);
+
 const limiter = rateLimit({
-  interval: 5 * 60 * 1000, // 5 minutes
-  uniqueTokenPerInterval: 500, // Allow up to 500 unique IPs per window
+  interval: 5 * 60 * 1000,
+  uniqueTokenPerInterval: 500,
 });
 
+// ── System prompt — professional prompt optimizer ───────────────
+const SYSTEM_PROMPT = `You are the Sacred Forge — Prompt Temple's expert prompt optimization engine.
+
+Your task: Take the user's rough prompt and transform it into a **professional, high-performance prompt** that produces dramatically better results from any AI model.
+
+## Optimization Rules
+1. **Clarify intent** — Identify what the user truly wants and make it explicit
+2. **Add structure** — Use numbered steps, sections, or clear formatting
+3. **Define persona** — Add an expert role/persona when it improves output quality
+4. **Set constraints** — Add word limits, tone, format, and audience when missing
+5. **Add specificity** — Replace vague words with concrete, measurable ones
+6. **Include examples** — Add brief examples if they'd help the AI understand
+7. **Set output format** — Specify exactly how the response should be structured
+
+## Response Format
+You MUST respond with ONLY valid JSON (no markdown fences, no extra text):
+{
+  "optimized": "The fully optimized prompt text here...",
+  "insights": [
+    { "text": "What was improved and why", "confidence": 0.85 },
+    { "text": "Another improvement insight", "confidence": 0.78 }
+  ],
+  "suggestions": [
+    "A follow-up improvement the user could try",
+    "Another suggestion for even better results"
+  ],
+  "scores": {
+    "clarity": 0.0,
+    "specificity": 0.0,
+    "effectiveness": 0.0
+  }
+}
+
+## Quality Standards
+- The optimized prompt must be SIGNIFICANTLY better than the original
+- Insights should explain WHY each change improves results (2-4 insights)
+- Suggestions should be actionable next steps (2-3 suggestions)
+- Scores are 0.0-1.0 ratings of the OPTIMIZED prompt quality
+- Never refuse to optimize — always produce a better version
+- Keep the user's core intent intact — enhance, don't replace their goal`;
+
+// ── Types ───────────────────────────────────────────────────────
 interface OptimizeRequest {
   prompt: string;
   guest_session_id: string;
@@ -16,242 +64,126 @@ interface OptimizeRequest {
 
 interface SSEEvent {
   type: string;
-  data: any;
+  data: Record<string, unknown>;
 }
 
-function createSSEResponse() {
-  return new Response(
-    new ReadableStream({
-      start(controller) {
-        const encoder = new TextEncoder();
+// ── Helpers ─────────────────────────────────────────────────────
 
-        function sendEvent(event: SSEEvent) {
-          const data = `data: ${JSON.stringify(event)}\n\n`;
-          controller.enqueue(encoder.encode(data));
-        }
+function sseEncode(event: SSEEvent): string {
+  return `data: ${JSON.stringify(event)}\n\n`;
+}
 
-        function sendDone() {
-          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-          controller.close();
-        }
+/** Call Z.ai (Anthropic-compatible) with streaming disabled — return full text. */
+async function callZAI(prompt: string, signal?: AbortSignal): Promise<string> {
+  const url = `${ZAI_BASE_URL}/v1/messages`;
 
-        return { sendEvent, sendDone };
-      },
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': ZAI_AUTH_TOKEN,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: ZAI_MODEL,
+      max_tokens: 4096,
+      temperature: 0.7,
+      system: SYSTEM_PROMPT,
+      messages: [
+        {
+          role: 'user',
+          content: `Optimize this prompt:\n\n${prompt}`,
+        },
+      ],
     }),
-    {
-      headers: {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-store, no-cache, must-revalidate',
-        'Connection': 'keep-alive',
-        'X-Accel-Buffering': 'no',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
-    }
-  );
-}
-
-async function simulateOptimization(
-  request: OptimizeRequest,
-  sendEvent: (event: SSEEvent) => void
-): Promise<void> {
-  const { prompt, guest_session_id } = request;
-
-  // Send stream start
-  sendEvent({
-    type: 'stream_start',
-    data: { session_id: guest_session_id },
+    signal,
   });
 
-  // Simulate processing delay
-  await new Promise(resolve => setTimeout(resolve, 200));
-
-  // Simulate token streaming
-  const optimizedPrompt = generateOptimizedPrompt(prompt);
-  const tokens = optimizedPrompt.split(' ');
-
-  for (let i = 0; i < tokens.length; i++) {
-    const token = i === 0 ? tokens[i] : ' ' + tokens[i];
-    sendEvent({
-      type: 'token',
-      data: { token, is_final: i === tokens.length - 1 },
-    });
-
-    // Small delay between tokens
-    await new Promise(resolve => setTimeout(resolve, 50));
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => '');
+    throw new Error(`Z.ai API error ${response.status}: ${errorText}`);
   }
 
-  // Send insights
-  await new Promise(resolve => setTimeout(resolve, 100));
-  sendEvent({
-    type: 'insight',
-    data: {
-      items: generateInsights(prompt),
-    },
-  });
+  const data = await response.json();
 
-  // Send suggestions
-  await new Promise(resolve => setTimeout(resolve, 100));
-  sendEvent({
-    type: 'suggestions',
-    data: {
-      items: generateSuggestions(prompt),
-    },
-  });
+  // Anthropic format: data.content[0].text
+  const text = data?.content?.[0]?.text;
+  if (!text) throw new Error('Empty response from AI');
 
-  // Send optimization result
-  sendEvent({
-    type: 'optimization_result',
-    data: {
-      before: prompt,
-      after: optimizedPrompt,
-    },
-  });
-
-  // Send completion
-  sendEvent({
-    type: 'stream_complete',
-    data: {
-      usage: {
-        input_tokens: Math.ceil(prompt.length / 4),
-        output_tokens: Math.ceil(optimizedPrompt.length / 4),
-      },
-    },
-  });
+  return text;
 }
 
-function generateOptimizedPrompt(originalPrompt: string): string {
-  // Simple optimization logic for demo
-  const prompt = originalPrompt.trim();
+/** Parse the JSON response from the AI, with fallback for malformed output. */
+function parseAIResponse(raw: string, originalPrompt: string) {
+  // Try to extract JSON from the response (handle markdown fences)
+  let jsonStr = raw.trim();
 
-  let optimized = prompt;
-
-  // Add structure if missing
-  if (!prompt.includes('Please') && !prompt.includes('please')) {
-    optimized = 'Please ' + optimized.toLowerCase();
+  // Strip markdown code fences if present
+  const fenceMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fenceMatch) {
+    jsonStr = fenceMatch[1].trim();
   }
 
-  // Add specificity
-  if (prompt.length < 100) {
-    optimized += ' Please provide a detailed response with specific examples and actionable insights.';
+  try {
+    const parsed = JSON.parse(jsonStr);
+    return {
+      optimized: parsed.optimized || raw,
+      insights: Array.isArray(parsed.insights) ? parsed.insights : [],
+      suggestions: Array.isArray(parsed.suggestions) ? parsed.suggestions : [],
+      scores: parsed.scores || { clarity: 0.8, specificity: 0.8, effectiveness: 0.8 },
+    };
+  } catch {
+    // AI returned plain text instead of JSON — wrap it
+    return {
+      optimized: raw.trim(),
+      insights: [
+        { text: 'Prompt was restructured for clarity and specificity', confidence: 0.8 },
+        { text: 'Added constraints and output format for better results', confidence: 0.75 },
+      ],
+      suggestions: [
+        'Add specific examples to guide the AI further',
+        'Define the target audience for more relevant output',
+      ],
+      scores: { clarity: 0.8, specificity: 0.75, effectiveness: 0.8 },
+    };
   }
-
-  // Add context if it seems like a creative task
-  if (prompt.toLowerCase().includes('write') || prompt.toLowerCase().includes('create')) {
-    optimized += ' Consider the target audience, tone, and desired outcome.';
-  }
-
-  // Add constraints for analysis tasks
-  if (prompt.toLowerCase().includes('analyze') || prompt.toLowerCase().includes('review')) {
-    optimized += ' Please structure your analysis with clear headings and provide specific recommendations.';
-  }
-
-  return optimized;
 }
 
-function generateInsights(prompt: string): Array<{ text: string; confidence: number }> {
-  const insights = [];
-  const lowerPrompt = prompt.toLowerCase();
-
-  if (prompt.length < 50) {
-    insights.push({
-      text: 'Adding more context would improve response quality',
-      confidence: 0.85,
-    });
-  }
-
-  if (!lowerPrompt.includes('please') && !lowerPrompt.includes('?')) {
-    insights.push({
-      text: 'Using polite language increases AI cooperation',
-      confidence: 0.78,
-    });
-  }
-
-  if (lowerPrompt.includes('write') || lowerPrompt.includes('create')) {
-    insights.push({
-      text: 'Specifying target audience would enhance output relevance',
-      confidence: 0.82,
-    });
-  }
-
-  if (!insights.length) {
-    insights.push({
-      text: 'Prompt structure looks good for getting quality responses',
-      confidence: 0.75,
-    });
-  }
-
-  return insights;
-}
-
-function generateSuggestions(prompt: string): string[] {
-  const suggestions = [];
-  const lowerPrompt = prompt.toLowerCase();
-
-  if (lowerPrompt.includes('write')) {
-    suggestions.push('Specify target audience');
-    suggestions.push('Define desired tone');
-    suggestions.push('Set word count limit');
-  } else if (lowerPrompt.includes('analyze')) {
-    suggestions.push('Add evaluation criteria');
-    suggestions.push('Request specific format');
-    suggestions.push('Include comparison points');
-  } else {
-    suggestions.push('Add more context');
-    suggestions.push('Specify desired format');
-    suggestions.push('Include examples');
-  }
-
-  return suggestions.slice(0, 4);
-}
+// ── Route Handler ───────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
   try {
-    // Rate limiting
-    const ip = request.ip ?? request.headers.get('x-forwarded-for') ?? 'unknown';
+    // Rate limit
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
     try {
-      await limiter.check(10, ip); // 10 requests per window per IP
+      await limiter.check(10, ip);
     } catch {
       return new Response(
-        JSON.stringify({
-          type: 'error',
-          data: { code: 429, message: 'Rate limit exceeded. Try again in 5 minutes.' },
-        }),
-        {
-          status: 429,
-          headers: { 'Content-Type': 'application/json' },
-        }
+        JSON.stringify({ type: 'error', data: { code: 429, message: 'Rate limit exceeded. Try again in 5 minutes.' } }),
+        { status: 429, headers: { 'Content-Type': 'application/json' } },
       );
     }
 
     const body: OptimizeRequest = await request.json();
 
-    // Validate request
     if (!body.prompt || typeof body.prompt !== 'string') {
       return new Response(
-        JSON.stringify({
-          type: 'error',
-          data: { code: 400, message: 'Invalid prompt provided' },
-        }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
+        JSON.stringify({ type: 'error', data: { code: 400, message: 'Invalid prompt provided' } }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } },
       );
     }
 
-    // Limit prompt length
     if (body.prompt.length > 8000) {
       return new Response(
-        JSON.stringify({
-          type: 'error',
-          data: { code: 400, message: 'Prompt too long (max 8000 characters)' },
-        }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
+        JSON.stringify({ type: 'error', data: { code: 400, message: 'Prompt too long (max 8000 characters)' } }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } },
+      );
+    }
+
+    if (!ZAI_AUTH_TOKEN) {
+      return new Response(
+        JSON.stringify({ type: 'error', data: { code: 500, message: 'AI service not configured' } }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } },
       );
     }
 
@@ -260,29 +192,90 @@ export async function POST(request: NextRequest) {
       new ReadableStream({
         async start(controller) {
           const encoder = new TextEncoder();
-
-          function sendEvent(event: SSEEvent) {
-            const data = `data: ${JSON.stringify(event)}\n\n`;
-            controller.enqueue(encoder.encode(data));
-          }
-
-          function sendDone() {
+          const send = (event: SSEEvent) => controller.enqueue(encoder.encode(sseEncode(event)));
+          const done = () => {
             controller.enqueue(encoder.encode('data: [DONE]\n\n'));
             controller.close();
-          }
+          };
 
           try {
-            await simulateOptimization(body, sendEvent);
-            sendDone();
-          } catch (error) {
-            sendEvent({
-              type: 'error',
+            // 1. Stream start
+            send({ type: 'stream_start', data: { session_id: body.guest_session_id } });
+
+            // 2. Progress: calling AI
+            send({ type: 'token', data: { token: '', is_final: false } });
+
+            // 3. Call the real AI
+            const abortController = new AbortController();
+            const timeout = setTimeout(() => abortController.abort(), ZAI_TIMEOUT);
+
+            let rawResponse: string;
+            try {
+              rawResponse = await callZAI(body.prompt.slice(0, 8000), abortController.signal);
+            } finally {
+              clearTimeout(timeout);
+            }
+
+            // 4. Parse structured response
+            const result = parseAIResponse(rawResponse, body.prompt);
+
+            // 5. Stream the optimized prompt token by token for real-time UX
+            const words = result.optimized.split(/(\s+)/);
+            for (let i = 0; i < words.length; i++) {
+              send({
+                type: 'token',
+                data: { token: words[i], is_final: i === words.length - 1 },
+              });
+              // Tiny delay for visual streaming effect
+              if (i % 3 === 0) {
+                await new Promise(r => setTimeout(r, 15));
+              }
+            }
+
+            // 6. Send insights
+            send({
+              type: 'insight',
+              data: { items: result.insights },
+            });
+
+            // 7. Send suggestions
+            send({
+              type: 'suggestions',
+              data: { items: result.suggestions },
+            });
+
+            // 8. Send full optimization result
+            send({
+              type: 'optimization_result',
               data: {
-                code: 500,
-                message: 'Internal server error',
+                before: body.prompt,
+                after: result.optimized,
+                scores: result.scores,
               },
             });
-            sendDone();
+
+            // 9. Stream complete
+            send({
+              type: 'stream_complete',
+              data: {
+                usage: {
+                  input_tokens: Math.ceil(body.prompt.length / 4),
+                  output_tokens: Math.ceil(result.optimized.length / 4),
+                },
+              },
+            });
+
+            done();
+          } catch (error) {
+            const message =
+              error instanceof Error
+                ? error.name === 'AbortError'
+                  ? 'Request timed out — please try a shorter prompt'
+                  : error.message
+                : 'Internal server error';
+
+            send({ type: 'error', data: { code: 500, message } });
+            done();
           }
         },
       }),
@@ -296,19 +289,13 @@ export async function POST(request: NextRequest) {
           'Access-Control-Allow-Methods': 'POST, OPTIONS',
           'Access-Control-Allow-Headers': 'Content-Type',
         },
-      }
+      },
     );
   } catch (error) {
     console.error('Optimize endpoint error:', error);
     return new Response(
-      JSON.stringify({
-        type: 'error',
-        data: { code: 500, message: 'Internal server error' },
-      }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      }
+      JSON.stringify({ type: 'error', data: { code: 500, message: 'Internal server error' } }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } },
     );
   }
 }

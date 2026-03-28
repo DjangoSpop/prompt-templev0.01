@@ -14,7 +14,7 @@ export default function MCPDocDetailPage() {
     return (
       <div className="animate-pulse space-y-6 max-w-4xl mx-auto">
         <div className="h-8 w-48 rounded bg-[var(--card)]" />
-        <div className="h-12 w-96 rounded bg-[var(--card)]" />
+        <div className="h-12 w-full max-w-lg rounded bg-[var(--card)]" />
         <div className="h-96 rounded-xl bg-[var(--card)]" />
       </div>
     );
@@ -43,7 +43,7 @@ export default function MCPDocDetailPage() {
 
       {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center gap-3 text-xs text-[var(--fg)]/50 mb-2">
+        <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-[var(--fg)]/50 sm:gap-3">
           <span>{doc.category_icon} {doc.category_name}</span>
           {doc.mcp_version && <span>MCP {doc.mcp_version}</span>}
           <span className="flex items-center gap-1"><Eye className="h-3 w-3" /> {doc.view_count}</span>
@@ -55,10 +55,10 @@ export default function MCPDocDetailPage() {
           )}
         </div>
 
-        <h1 className="text-2xl md:text-3xl font-bold text-[var(--fg)] mb-2">{doc.title}</h1>
+        <h1 className="mb-2 text-2xl font-bold text-[var(--fg)] md:text-3xl">{doc.title}</h1>
 
         {doc.summary && (
-          <p className="text-[var(--fg)]/60">{doc.summary}</p>
+          <p className="text-sm text-[var(--fg)]/60 sm:text-base">{doc.summary}</p>
         )}
 
         {doc.tags.length > 0 && (
@@ -73,11 +73,11 @@ export default function MCPDocDetailPage() {
       </div>
 
       {/* Content */}
-      <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-6 md:p-8">
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-6 md:p-8">
         <div className="prose prose-sm dark:prose-invert max-w-none
                         prose-headings:text-[var(--fg)] prose-p:text-[var(--fg)]/80
                         prose-a:text-[#C9A227] prose-code:text-[#C9A227]
-                        prose-pre:bg-[var(--bg)] prose-pre:border prose-pre:border-[var(--border)]">
+                        prose-pre:overflow-x-auto prose-pre:bg-[var(--bg)] prose-pre:border prose-pre:border-[var(--border)]">
           <ReactMarkdown>{doc.content_md}</ReactMarkdown>
         </div>
       </div>

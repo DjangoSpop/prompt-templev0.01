@@ -56,7 +56,7 @@ export function PromptEditorLite({
   };
 
   return (
-    <div className={`bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg ${className}`}>
+    <div className={`rounded-xl border border-amber-500/15 ${className}`} style={{ background: 'rgba(255,255,255,0.03)' }}>
       {/* Textarea */}
       <div className="relative">
         <textarea
@@ -71,7 +71,7 @@ export function PromptEditorLite({
           rows={3}
           className={`
             w-full px-4 py-3 bg-transparent resize-none border-0 outline-none
-            text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400
+            text-stone-100 placeholder-stone-500
             min-h-[80px] max-h-[200px] text-sm leading-relaxed
             ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
           `}
@@ -84,7 +84,8 @@ export function PromptEditorLite({
             onClick={handleSubmit}
             disabled={!value.trim() || isLoading || disabled}
             size="sm"
-            className="h-8 w-8 p-0 bg-[#6366F1] hover:bg-[#5855eb] text-white rounded-md"
+            className="h-8 w-8 p-0 rounded-lg text-[#0E0F12] font-bold disabled:opacity-30"
+            style={{ background: 'linear-gradient(135deg, #ffe066 0%, #d4af37 100%)' }}
           >
             <Send className="h-3.5 w-3.5" />
           </Button>
@@ -93,10 +94,10 @@ export function PromptEditorLite({
 
       {/* Meta Line */}
       <div className={`
-        flex items-center justify-between px-4 py-2 border-t border-gray-200 dark:border-gray-700
-        text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50
+        flex items-center justify-between px-4 py-2 border-t border-amber-500/10
+        text-xs text-stone-500
         transition-colors duration-200
-        ${isFocused ? 'bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800' : ''}
+        ${isFocused ? 'border-amber-500/20' : ''}
       `}>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1">
@@ -117,11 +118,11 @@ export function PromptEditorLite({
           )}
         </div>
 
-        <div className="text-xs text-gray-400 dark:text-gray-500">
+        <div className="text-xs text-stone-500">
           {isLoading ? (
             <span className="flex items-center gap-1">
               <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
-              Optimizing...
+              <span className="text-amber-400/70">Forging...</span>
             </span>
           ) : (
             <span>Enter to send • Shift+Enter for new line</span>

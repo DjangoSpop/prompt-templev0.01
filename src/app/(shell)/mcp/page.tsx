@@ -28,19 +28,19 @@ export default function MCPLandingPage() {
   ];
 
   return (
-    <div className="min-h-screen space-y-8">
+    <div className="min-h-screen space-y-6 md:space-y-8">
       {/* Hero */}
       <div className="relative overflow-hidden rounded-2xl border border-[var(--border)]
-                      bg-gradient-to-br from-[var(--card)] via-[var(--card)] to-[#C9A227]/5 p-8">
+                      bg-gradient-to-br from-[var(--card)] via-[var(--card)] to-[#C9A227]/5 p-4 sm:p-6 md:p-8">
         <div className="max-w-2xl">
-          <h1 className="text-3xl font-bold text-[var(--fg)] mb-2">
+          <h1 className="mb-2 text-2xl font-bold text-[var(--fg)] sm:text-3xl">
             MCP Knowledge Base
           </h1>
-          <p className="text-[var(--fg)]/60 mb-5">
+          <p className="mb-5 text-sm text-[var(--fg)]/60 sm:text-base">
             Explore the Model Context Protocol ecosystem — prompts, documentation,
             and structured courses to level up your MCP skills.
           </p>
-          <form onSubmit={handleSearch} className="flex gap-2">
+          <form onSubmit={handleSearch} className="flex flex-col gap-2 sm:flex-row">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--fg)]/40" />
               <input
@@ -56,7 +56,8 @@ export default function MCPLandingPage() {
             </div>
             <button
               type="submit"
-              className="rounded-lg bg-[#C9A227] px-5 py-2.5 text-sm font-medium
+              className="w-full rounded-lg bg-[#C9A227] px-5 py-2.5 text-sm font-medium
+                         sm:w-auto sm:whitespace-nowrap
                          text-white hover:bg-[#B8911F] transition-colors"
             >
               Search
@@ -72,16 +73,16 @@ export default function MCPLandingPage() {
             key={link.href}
             href={link.href}
             className="group flex items-center gap-4 rounded-xl border border-[var(--border)]
-                       bg-[var(--card)] p-5 hover:border-[#C9A227]/40 transition-all"
+                       bg-[var(--card)] p-4 sm:p-5 hover:border-[#C9A227]/40 transition-all"
           >
-            <div className="rounded-lg bg-[#C9A227]/10 p-3">
-              <link.icon className="h-6 w-6 text-[#C9A227]" />
+            <div className="rounded-lg bg-[#C9A227]/10 p-2.5 sm:p-3">
+              <link.icon className="h-5 w-5 text-[#C9A227] sm:h-6 sm:w-6" />
             </div>
             <div>
               <h3 className="font-semibold text-[var(--fg)] group-hover:text-[#C9A227] transition-colors">
                 {link.label}
               </h3>
-              <p className="text-sm text-[var(--fg)]/50">{link.desc}</p>
+              <p className="text-xs text-[var(--fg)]/50 sm:text-sm">{link.desc}</p>
             </div>
           </Link>
         ))}
@@ -90,7 +91,7 @@ export default function MCPLandingPage() {
       {/* Categories */}
       {catData?.results && catData.results.length > 0 && (
         <section>
-          <h2 className="text-xl font-bold text-[var(--fg)] mb-4">Categories</h2>
+          <h2 className="mb-4 text-lg font-bold text-[var(--fg)] sm:text-xl">Categories</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {catData.results.map((cat) => (
               <MCPCategoryCard key={cat.id} category={cat} />
@@ -102,8 +103,8 @@ export default function MCPLandingPage() {
       {/* Featured Prompts */}
       {featured?.results && featured.results.length > 0 && (
         <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-[var(--fg)]">Featured Prompts</h2>
+          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="text-lg font-bold text-[var(--fg)] sm:text-xl">Featured Prompts</h2>
             <Link
               href="/mcp/prompts"
               className="text-sm text-[#C9A227] hover:underline"

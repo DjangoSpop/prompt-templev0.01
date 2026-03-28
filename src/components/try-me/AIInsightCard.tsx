@@ -34,9 +34,9 @@ export function AIInsightCard({ items, className = '' }: AIInsightCardProps) {
   };
 
   const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 0.8) return 'text-green-600 bg-green-50 dark:bg-green-900/20';
-    if (confidence >= 0.6) return 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20';
-    return 'text-red-600 bg-red-50 dark:bg-red-900/20';
+    if (confidence >= 0.8) return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
+    if (confidence >= 0.6) return 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+    return 'text-rose-400 bg-rose-500/10 border-rose-500/20';
   };
 
   const getConfidenceIcon = (confidence: number) => {
@@ -46,28 +46,31 @@ export function AIInsightCard({ items, className = '' }: AIInsightCardProps) {
 
   return (
     <motion.div
-      className={`bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 ${className}`}
+      className={`bg-amber-500/5 border border-amber-500/15 rounded-xl p-4 ${className}`}
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
       <div className="flex items-center gap-2 mb-3">
-        <Lightbulb className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-        <h3 className="font-medium text-blue-900 dark:text-blue-100 text-sm">
-          AI Insights
+        <Lightbulb className="w-4 h-4 text-amber-400" />
+        <h3
+          className="font-semibold text-amber-200 text-sm"
+          style={{ fontFamily: "'Playfair Display', serif" }}
+        >
+          Sacred Insights
         </h3>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2.5">
         {items.map((item, index) => (
           <motion.div
             key={index}
             className="flex items-start gap-3"
             variants={itemVariants}
           >
-            <div className="flex-shrink-0 mt-1">
+            <div className="flex-shrink-0 mt-0.5">
               <div
-                className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${getConfidenceColor(
+                className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${getConfidenceColor(
                   item.confidence
                 )}`}
               >
@@ -77,7 +80,7 @@ export function AIInsightCard({ items, className = '' }: AIInsightCardProps) {
             </div>
 
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+              <p className="text-sm text-stone-300 leading-relaxed">
                 {item.text}
               </p>
             </div>

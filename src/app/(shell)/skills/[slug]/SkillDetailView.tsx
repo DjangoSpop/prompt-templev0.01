@@ -22,7 +22,7 @@ export default function SkillDetailView() {
     return (
       <div className="min-h-screen animate-pulse space-y-6">
         <div className="h-8 w-48 rounded bg-[var(--card)]" />
-        <div className="h-12 w-96 rounded bg-[var(--card)]" />
+        <div className="h-12 w-full max-w-lg rounded bg-[var(--card)]" />
         <div className="h-64 rounded-xl bg-[var(--card)]" />
       </div>
     );
@@ -43,7 +43,7 @@ export default function SkillDetailView() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="mx-auto max-w-5xl">
       {/* Back link */}
       <button
         onClick={() => router.back()}
@@ -53,7 +53,7 @@ export default function SkillDetailView() {
         <ArrowLeft className="h-4 w-4" /> Back to Skills
       </button>
 
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
         {/* Main content */}
         <div className="flex-1 min-w-0">
           {/* Header */}
@@ -77,26 +77,26 @@ export default function SkillDetailView() {
               )}
             </div>
 
-            <h1 className="text-2xl md:text-3xl font-bold text-[var(--fg)] mb-2">
+            <h1 className="mb-2 text-2xl font-bold text-[var(--fg)] md:text-3xl">
               {skill.title}
             </h1>
 
             {skill.mcp_server_name && (
-              <code className="text-sm font-mono text-[#C9A227]/80 block mb-2">
+              <code className="mb-2 block break-all text-sm font-mono text-[#C9A227]/80">
                 {skill.mcp_server_name}
               </code>
             )}
 
-            <p className="text-[var(--fg)]/60">{skill.description}</p>
+            <p className="text-sm text-[var(--fg)]/60 sm:text-base">{skill.description}</p>
           </div>
 
           {/* MCP Server Info */}
           {skill.skill_type === 'mcp_server' && (
-            <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-5 mb-6 space-y-4">
+            <div className="mb-6 space-y-4 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5">
               <h3 className="font-semibold text-[var(--fg)]">Server Details</h3>
 
               {skill.mcp_transport && (
-                <div className="flex items-center gap-2 text-sm">
+                <div className="flex flex-wrap items-center gap-2 text-sm">
                   <span className="text-[var(--fg)]/50">Transport:</span>
                   <span className="text-[var(--fg)]">
                     {MCP_TRANSPORT_LABELS[skill.mcp_transport]}
@@ -105,7 +105,7 @@ export default function SkillDetailView() {
               )}
 
               {skill.mcp_version && (
-                <div className="flex items-center gap-2 text-sm">
+                <div className="flex flex-wrap items-center gap-2 text-sm">
                   <span className="text-[var(--fg)]/50">MCP Version:</span>
                   <code className="font-mono text-xs bg-[var(--bg)] px-2 py-0.5 rounded">
                     {skill.mcp_version}
@@ -122,13 +122,13 @@ export default function SkillDetailView() {
                   <div className="space-y-2">
                     {skill.mcp_packages.map((pkg) => (
                       <div key={pkg.name} className="rounded-lg bg-[var(--bg)] p-3">
-                        <code className="text-xs font-mono text-[#C9A227]">{pkg.name}</code>
-                        <div className="flex items-center gap-3 mt-1 text-xs text-[var(--fg)]/50">
+                        <code className="break-all text-xs font-mono text-[#C9A227]">{pkg.name}</code>
+                        <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-[var(--fg)]/50">
                           <span>{pkg.registry}</span>
                           <span>v{pkg.version}</span>
                         </div>
                         <div className="mt-2">
-                          <code className="text-xs font-mono bg-[var(--card)] px-2 py-1 rounded block">
+                          <code className="block overflow-x-auto rounded bg-[var(--card)] px-2 py-1 text-xs font-mono">
                             {pkg.registry === 'npm'
                               ? `npx ${pkg.name}`
                               : pkg.registry === 'pip'
@@ -151,11 +151,13 @@ export default function SkillDetailView() {
 
           {/* Markdown content */}
           {skill.content && (
-            <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-6">
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-6">
               <div className="prose prose-sm dark:prose-invert max-w-none
+                            break-words [&_*]:break-words
                             prose-headings:text-[var(--fg)] prose-p:text-[var(--fg)]/80
                             prose-a:text-[#C9A227] prose-code:text-[#C9A227]
-                            prose-pre:bg-[var(--bg)] prose-pre:border prose-pre:border-[var(--border)]">
+                            prose-code:break-all
+                            prose-pre:overflow-x-auto prose-pre:bg-[var(--bg)] prose-pre:border prose-pre:border-[var(--border)]">
                 <ReactMarkdown>{skill.content}</ReactMarkdown>
               </div>
             </div>
