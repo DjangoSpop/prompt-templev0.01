@@ -19,6 +19,7 @@ import {
   Crown,
   ShieldAlert,
 } from 'lucide-react';
+import { TempleCard } from '@/components/ui/TempleCard';
 
 const PROVIDER_ICON_BG_CLASS: Record<ProviderId, string> = {
   deepseek: 'bg-[#FF6B35]',
@@ -95,12 +96,12 @@ export const BroadcastComposer: React.FC<BroadcastComposerProps> = ({
   const isPremium = planCode === 'PRO' || planCode === 'POWER';
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg ${className}`}>
+    <TempleCard variant="pharaoh" elevation="lg" className={className}>
       {/* Header */}
-      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+      <div className="p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
               Multi-AI Broadcast Racing
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -112,9 +113,9 @@ export const BroadcastComposer: React.FC<BroadcastComposerProps> = ({
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#EBD5A7] to-[#F5C518] dark:from-[#1E3A8A]/50 dark:to-[#0E7490]/40 rounded-lg"
+            className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-gradient-to-r from-[#EBD5A7] to-[#F5C518] dark:from-[#1E3A8A]/50 dark:to-[#0E7490]/40 rounded-lg flex-shrink-0"
           >
-            <Zap className="w-4 h-4 text-[#1E3A8A]" />
+            <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#1E3A8A]" />
             <span className="text-sm font-semibold text-[#1E3A8A] dark:text-[#EBD5A7]">
               {totalCredits} credits
             </span>
@@ -146,7 +147,7 @@ export const BroadcastComposer: React.FC<BroadcastComposerProps> = ({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50"
+            className="px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50"
           >
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -225,7 +226,7 @@ export const BroadcastComposer: React.FC<BroadcastComposerProps> = ({
       )}
 
       {/* Prompt Input */}
-      <form onSubmit={handleSubmit} className="p-6">
+      <form onSubmit={handleSubmit} className="p-4 sm:p-6">
         <div className="space-y-4">
           <div className="relative">
             <textarea
@@ -235,8 +236,8 @@ export const BroadcastComposer: React.FC<BroadcastComposerProps> = ({
               onKeyDown={handleKeyDown}
               placeholder="Enter your prompt here... Try: 'Write a product description for a smartwatch' or 'Explain quantum computing in simple terms'"
               disabled={disabled || isLoading}
-              rows={6}
-              className="w-full px-4 py-3 pr-12 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl resize-none focus:border-[#1E3A8A] focus:ring-4 focus:ring-[#1E3A8A]/20 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+              rows={4}
+              className="w-full px-4 py-3 pr-12 bg-gray-50 dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl resize-none sm:resize-y min-h-[100px] sm:min-h-[130px] lg:min-h-[160px] focus:border-[#1E3A8A] focus:ring-4 focus:ring-[#1E3A8A]/20 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
             />
             <div className="absolute bottom-3 right-3">
               <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -302,8 +303,8 @@ export const BroadcastComposer: React.FC<BroadcastComposerProps> = ({
           </div>
 
           {/* Submit Button */}
-          <div className="flex items-center justify-between pt-2">
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+          <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-2 pt-2">
+            <p className="hidden sm:block text-xs text-gray-500 dark:text-gray-400">
               Press ⌘/Ctrl + Enter to submit
             </p>
 
@@ -316,7 +317,7 @@ export const BroadcastComposer: React.FC<BroadcastComposerProps> = ({
                 disabled ||
                 !canBroadcast
               }
-              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#1E3A8A] to-[#C9A227] hover:from-[#1B2B6B] hover:to-[#CBA135] text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:from-gray-400 disabled:to-gray-400"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 sm:px-6 sm:py-3 bg-gradient-to-r from-[#1E3A8A] to-[#C9A227] hover:from-[#1B2B6B] hover:to-[#CBA135] text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:from-gray-400 disabled:to-gray-400"
             >
               {isLoading ? (
                 <>
@@ -337,6 +338,6 @@ export const BroadcastComposer: React.FC<BroadcastComposerProps> = ({
           </div>
         </div>
       </form>
-    </div>
+    </TempleCard>
   );
 };

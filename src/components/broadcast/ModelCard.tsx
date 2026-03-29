@@ -38,7 +38,7 @@ const ScoreBadge: React.FC<{ label: string; value: number; color: string }> = ({
   <div className="flex flex-col items-center">
     <span className="text-xs text-gray-500 dark:text-gray-400">{label}</span>
     <span
-      className="text-lg font-bold"
+      className="text-sm sm:text-base lg:text-lg font-bold"
       style={{ color }}
     >
       {value}
@@ -159,11 +159,11 @@ export const ModelCard: React.FC<ModelCardProps> = ({
       )}
 
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shadow-lg"
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-lg sm:text-xl shadow-lg"
               style={{
                 backgroundColor: provider?.color || '#666',
                 color: 'white',
@@ -189,10 +189,10 @@ export const ModelCard: React.FC<ModelCardProps> = ({
               className="text-center"
             >
               <div
-                className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg"
+                className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full flex items-center justify-center shadow-lg"
                 style={{ backgroundColor: scoreColor }}
               >
-                <span className="text-xl font-bold text-white">
+                <span className="text-base sm:text-lg lg:text-xl font-bold text-white">
                   {scores.overall.toFixed(1)}
                 </span>
               </div>
@@ -206,7 +206,7 @@ export const ModelCard: React.FC<ModelCardProps> = ({
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
-            className="mt-4 grid grid-cols-4 gap-2"
+            className="mt-3 sm:mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2"
           >
             <ScoreBadge
               label="Complete"
@@ -233,7 +233,7 @@ export const ModelCard: React.FC<ModelCardProps> = ({
       </div>
 
       {/* Content */}
-      <div className="p-4">
+      <div className="p-3 sm:p-4">
         <div className="flex items-start gap-3">
           <MessageSquare className="w-5 h-5 text-gray-400 mt-1 flex-shrink-0" />
           <div className="flex-1 min-w-0">
@@ -288,7 +288,7 @@ export const ModelCard: React.FC<ModelCardProps> = ({
       </div>
 
       {/* Footer - Metrics */}
-      <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+      <div className="px-3 py-2 sm:px-4 sm:py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1">
             <Clock className="w-3.5 h-3.5" />

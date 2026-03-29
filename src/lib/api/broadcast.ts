@@ -14,16 +14,10 @@ import type {
 import { apiConfig } from '@/lib/config/env';
 import { useCreditsStore } from '@/store/credits';
 
-const API_BASE = apiConfig.baseUrl.replace(/\/$/, '');
-const hasV2Prefix = /\/api\/v2$/i.test(API_BASE);
-
-const BROADCAST_ENDPOINT = hasV2Prefix
-  ? `${API_BASE}/ai/broadcast/`
-  : `${API_BASE}/api/v2/ai/broadcast/`;
-
-const BROADCAST_STREAM_ENDPOINT = hasV2Prefix
-  ? `${API_BASE}/ai/broadcast/stream/`
-  : `${API_BASE}/api/v2/ai/broadcast/stream/`;
+// Broadcast uses the local Next.js API route (not the Django backend)
+// so that we can call AI providers directly from the Next.js server.
+const BROADCAST_ENDPOINT = '/api/v2/ai/broadcast/stream/';
+const BROADCAST_STREAM_ENDPOINT = '/api/v2/ai/broadcast/stream/';
 
 function getAuthHeaders(): HeadersInit {
   const headers: HeadersInit = {

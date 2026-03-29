@@ -11,7 +11,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Lock, CheckCircle, Clock, Award } from 'lucide-react';
+import { Lock, CheckCircle, Clock, Award, Share2 } from 'lucide-react';
 import Link from 'next/link';
 import { useAcademyStore, selectIsModuleUnlocked, selectIsModuleCompleted, selectModuleProgress } from '@/lib/stores/academyStore';
 import { useState } from 'react';
@@ -23,10 +23,39 @@ interface ModuleCardProps {
 
 export function ModuleCard({ module }: ModuleCardProps) {
   const [showUnlockModal, setShowUnlockModal] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const isUnlocked = useAcademyStore(selectIsModuleUnlocked(module.id));
   const isCompleted = useAcademyStore(selectIsModuleCompleted(module.id));
   const moduleProgress = useAcademyStore(selectModuleProgress(module.id));
+
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/academy/${module.id}`;
+    const shareText = `🎓 Check out this module from Prompt Temple Academy: "${module.title}"\n\nLearn prompt engineering with interactive lessons and quizzes!\n\n${shareUrl}`;
+
+    // Try native share first
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${module.title} - Prompt Temple Academy`,
+          text: shareText,
+          url: shareUrl
+        });
+        return;
+      } catch (err) {
+        console.log('Native share failed, falling back to clipboard');
+      }
+    }
+
+    // Fallback: copy to clipboard
+    try {
+      await navigator.clipboard.writeText(shareText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
 
   // Calculate progress percentage
   const totalLessons = module.lessons.length;
@@ -44,17 +73,17 @@ export function ModuleCard({ module }: ModuleCardProps) {
 
   const status = getStatus();
 
-  // Status-based styling
+  // Status-based styling with softer colors
   const getBorderColor = () => {
     switch (status) {
       case 'completed':
-        return 'border-nile-teal-500/50 hover:border-nile-teal-500';
+        return 'border-teal-200/40 hover:border-teal-200/60';
       case 'in-progress':
-        return 'border-royal-gold-500/50 hover:border-royal-gold-500';
+        return 'border-amber-200/40 hover:border-amber-200/60';
       case 'locked':
-        return 'border-desert-sand-700/30';
+        return 'border-desert-sand-700/20';
       default:
-        return 'border-royal-gold-500/20 hover:border-royal-gold-500/50';
+        return 'border-amber-200/25 hover:border-amber-200/40';
     }
   };
 
@@ -68,12 +97,12 @@ export function ModuleCard({ module }: ModuleCardProps) {
     <>
       <Card
         className={`p-6 transition-all duration-300 hover:shadow-lg ${getBorderColor()} ${
-          !isUnlocked ? 'opacity-75' : ''
-        } relative overflow-hidden group bg-obsidian-900 text-white`}
+          !isUnlocked ? 'opacity-60' : ''
+        } relative overflow-hidden group bg-obsidian-800/40 backdrop-blur-sm text-white`}
       >
         {/* Background glow effect */}
         {isUnlocked && !isCompleted && (
-          <div className="absolute inset-0 bg-gradient-to-br from-royal-gold-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         )}
 
         {/* Header with Badge and Status */}
@@ -82,13 +111,13 @@ export function ModuleCard({ module }: ModuleCardProps) {
 
           <div className="flex flex-col items-end gap-2">
             {!isUnlocked && (
-              <Lock className="w-5 h-5 text-royal-gold-400" />
+              <Lock className="w-5 h-5 text-amber-300" />
             )}
             {isCompleted && (
-              <CheckCircle className="w-5 h-5 text-emerald-400" />
+              <CheckCircle className="w-5 h-5 text-teal-300" />
             )}
             {status === 'in-progress' && (
-              <Badge variant="warning" className="text-xs">
+              <Badge variant="warning" className="text-xs bg-amber-200/15 text-amber-200 border-amber-200/30">
                 In Progress
               </Badge>
             )}
@@ -97,7 +126,7 @@ export function ModuleCard({ module }: ModuleCardProps) {
 
         {/* Module Info */}
         <div className="relative z-10">
-          <h3 className="text-xl font-bold text-royal-gold-300 mb-2 group-hover:text-royal-gold-200 transition-colors">
+          <h3 className="text-xl font-bold text-amber-100 mb-2 group-hover:text-amber-50 transition-colors">
             {module.title}
           </h3>
 
@@ -112,7 +141,7 @@ export function ModuleCard({ module }: ModuleCardProps) {
               {module.duration} min
             </span>
             <span className="text-gray-500">•</span>
-            <span className="flex items-center gap-1 text-emerald-400 font-semibold">
+            <span className="flex items-center gap-1 text-teal-300 font-semibold">
               <Award className="w-3 h-3" />
               {module.xpReward} XP
             </span>
@@ -125,7 +154,7 @@ export function ModuleCard({ module }: ModuleCardProps) {
             <div className="mb-4">
               <div className="flex items-center justify-between text-xs text-gray-300 mb-1">
                 <span>Progress</span>
-                <span className="font-semibold text-royal-gold-300">{progressPercentage}%</span>
+                <span className="font-semibold text-amber-200">{progressPercentage}%</span>
               </div>
               <Progress value={progressPercentage} className="h-2" />
             </div>
@@ -133,10 +162,10 @@ export function ModuleCard({ module }: ModuleCardProps) {
 
           {/* Quiz Score (if completed) */}
           {isCompleted && moduleProgress?.quizScore !== null && (
-            <div className="mb-4 p-3 bg-emerald-900/30 border border-emerald-500/40 rounded-lg">
+            <div className="mb-4 p-3 bg-teal-400/10 border border-teal-200/30 rounded-lg">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-200 font-medium">Quiz Score:</span>
-                <span className="text-emerald-300 font-bold">
+                <span className="text-teal-300 font-bold">
                   {moduleProgress.quizScore}%
                 </span>
               </div>
@@ -146,20 +175,39 @@ export function ModuleCard({ module }: ModuleCardProps) {
           {/* CTA Button */}
           {isUnlocked ? (
             <Link href={`/academy/${module.id}`} className="block">
-              <Button className="w-full" variant={isCompleted ? 'outline' : 'default'}>
+              <Button className="w-full bg-amber-200/20 text-amber-100 border-amber-200/30 hover:bg-amber-200/30 hover:border-amber-200/40" variant={isCompleted ? 'outline' : 'default'}>
                 {isCompleted ? 'Review Module' : hasStarted ? 'Continue Learning' : 'Start Module'}
               </Button>
             </Link>
           ) : (
             <Button
               variant="outline"
-              className="w-full border-royal-gold-500/50 text-royal-gold-300 hover:border-royal-gold-400 hover:bg-royal-gold-500/10"
+              className="w-full border-amber-200/30 text-amber-200 hover:border-amber-200/40 hover:bg-amber-200/10"
               onClick={handleClick}
             >
               <Lock className="w-4 h-4 mr-2" />
               Unlock Module
             </Button>
           )}
+
+          {/* Share Button */}
+          <button
+            onClick={handleShare}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-amber-200/20 text-amber-200 hover:border-amber-200/40 hover:bg-amber-200/10 rounded-lg transition-all text-sm"
+            title="Share this module"
+          >
+            {copied ? (
+              <>
+                <CheckCircle className="w-4 h-4" />
+                <span>Copied!</span>
+              </>
+            ) : (
+              <>
+                <Share2 className="w-4 h-4" />
+                <span>Share Module</span>
+              </>
+            )}
+          </button>
 
           {/* Prerequisites (if any and locked) */}
           {!isUnlocked && module.prerequisites.length > 0 && (

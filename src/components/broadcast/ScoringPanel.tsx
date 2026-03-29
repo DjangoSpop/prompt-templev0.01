@@ -14,6 +14,7 @@ import {
   Legend,
 } from 'recharts';
 import type { BroadcastModelState } from '@/types/broadcast';
+import { TempleCard } from '@/components/ui/TempleCard';
 
 interface ScoringPanelProps {
   models: BroadcastModelState[];
@@ -49,7 +50,7 @@ export const ScoringPanel: React.FC<ScoringPanelProps> = ({
   });
 
   return (
-    <section className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5 sm:p-6">
+    <TempleCard variant="papyrus" elevation="md" className="p-5 sm:p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
@@ -74,7 +75,7 @@ export const ScoringPanel: React.FC<ScoringPanelProps> = ({
         )}
       </div>
 
-      <div className="h-[340px] mt-4">
+      <div className="h-[220px] sm:h-[280px] lg:h-[340px] mt-4">
         <ResponsiveContainer width="100%" height="100%">
           <RadarChart data={chartData}>
             <PolarGrid />
@@ -117,6 +118,6 @@ export const ScoringPanel: React.FC<ScoringPanelProps> = ({
           Best of All
         </button>
       </div>
-    </section>
+    </TempleCard>
   );
 };

@@ -33,11 +33,11 @@ export function TempleCard({
       "relative overflow-hidden",
       variantStyles[variant],
       elevationStyles[elevation],
-      "before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-gold-accent/5 before:to-transparent before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300",
+      "before:absolute before:inset-0 before:pointer-events-none before:bg-gradient-to-r before:from-transparent before:via-gold-accent/5 before:to-transparent before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300",
       className
     )}>
       {/* Pyramid corner accent */}
-      <div className="absolute top-2 right-2 opacity-20">
+      <div className="absolute top-2 right-2 opacity-20 pointer-events-none">
         <svg className="h-3 w-3 text-gold-accent" viewBox="0 0 12 12" fill="currentColor">
           <polygon points="6,1 11,9 1,9" />
         </svg>

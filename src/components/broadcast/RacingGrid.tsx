@@ -52,7 +52,7 @@ function EgyptianLoading() {
 export const RacingGrid: React.FC<RacingGridProps> = ({ models, isStreaming = false }) => {
   if (models.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 p-10 text-center bg-white/70 dark:bg-gray-900/30">
+      <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 p-6 sm:p-8 lg:p-10 text-center bg-white/70 dark:bg-gray-900/30">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Ready to race</h3>
         <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
           Submit a prompt to stream responses from multiple models in parallel.
@@ -70,7 +70,7 @@ export const RacingGrid: React.FC<RacingGridProps> = ({ models, isStreaming = fa
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {models.map((model, index) => {
           const speedWidth = getRelativeSpeedWidth(model, fastest, slowest);
 
@@ -91,11 +91,11 @@ export const RacingGrid: React.FC<RacingGridProps> = ({ models, isStreaming = fa
                 />
               </div>
 
-              <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 sm:gap-3">
                     <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center text-base text-white ${PROVIDER_ICON_BG_CLASS[model.provider] ?? 'bg-[#1E3A8A]'}`}
+                      className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-sm sm:text-base text-white ${PROVIDER_ICON_BG_CLASS[model.provider] ?? 'bg-[#1E3A8A]'}`}
                     >
                       {model.icon}
                     </div>
@@ -117,7 +117,7 @@ export const RacingGrid: React.FC<RacingGridProps> = ({ models, isStreaming = fa
                   )}
                 </div>
 
-                <div className="mt-3 flex items-center gap-2 text-xs">
+                <div className="mt-2 sm:mt-3 flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs">
                   <span className="px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 flex items-center gap-1">
                     <Clock3 className="w-3 h-3" />
                     {typeof model.latency_ms === 'number' ? `${model.latency_ms} ms` : 'waiting'}
@@ -134,7 +134,7 @@ export const RacingGrid: React.FC<RacingGridProps> = ({ models, isStreaming = fa
                 </div>
               </div>
 
-              <div className="p-4 min-h-[260px]">
+              <div className="p-3 sm:p-4 min-h-[120px] sm:min-h-[180px] lg:min-h-[220px]">
                 {model.status === 'waiting' && (
                   <div className="h-full flex flex-col items-center justify-center gap-4 text-center">
                     <EgyptianLoading />

@@ -50,7 +50,7 @@ export function AcademyHero() {
             transition={{ duration: 0.6 }}
             className="flex justify-center mb-6"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-royal-gold-900/30 border border-royal-gold-500/50 rounded-full text-sm text-royal-gold-300">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-200/15 border border-amber-200/30 rounded-full text-sm text-amber-100">
               <Sparkles className="w-4 h-4" />
               <span>Free Interactive Course</span>
             </div>
@@ -61,7 +61,7 @@ export function AcademyHero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-4xl lg:text-6xl font-bold text-center mb-6 bg-gradient-to-r from-royal-gold-400 via-royal-gold-300 to-nile-teal-400 bg-clip-text text-transparent"
+            className="text-4xl lg:text-6xl font-bold text-center mb-6 bg-gradient-to-r from-amber-200 via-amber-100 to-teal-200 bg-clip-text text-transparent"
           >
             Master Prompt Engineering
             <br />
@@ -86,31 +86,31 @@ export function AcademyHero() {
             className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12"
           >
             {/* Stat 1 */}
-            <div className="bg-obsidian-800/50 backdrop-blur-sm border border-royal-gold-500/20 rounded-lg p-6 text-center">
-              <div className="text-3xl lg:text-4xl font-bold text-royal-gold-400 mb-2">
+            <div className="bg-obsidian-800/40 backdrop-blur-sm border border-amber-200/20 rounded-lg p-6 text-center">
+              <div className="text-3xl lg:text-4xl font-bold text-amber-200 mb-2">
                 87%
               </div>
-              <p className="text-sm text-desert-sand-300">
+              <p className="text-sm text-desert-sand-200">
                 of AI users waste 3+ hours weekly on bad prompts
               </p>
             </div>
 
             {/* Stat 2 */}
-            <div className="bg-obsidian-800/50 backdrop-blur-sm border border-nile-teal-500/20 rounded-lg p-6 text-center">
-              <div className="text-3xl lg:text-4xl font-bold text-nile-teal-400 mb-2">
+            <div className="bg-obsidian-800/40 backdrop-blur-sm border border-teal-200/20 rounded-lg p-6 text-center">
+              <div className="text-3xl lg:text-4xl font-bold text-teal-200 mb-2">
                 300-500%
               </div>
-              <p className="text-sm text-desert-sand-300">
+              <p className="text-sm text-desert-sand-200">
                 productivity gains with systematic prompting
               </p>
             </div>
 
             {/* Stat 3 - Animated */}
-            <div className="bg-obsidian-800/50 backdrop-blur-sm border border-lapis-blue-500/20 rounded-lg p-6 text-center">
-              <div className="text-3xl lg:text-4xl font-bold text-lapis-blue-400 mb-2">
+            <div className="bg-obsidian-800/40 backdrop-blur-sm border border-blue-200/20 rounded-lg p-6 text-center">
+              <div className="text-3xl lg:text-4xl font-bold text-blue-200 mb-2">
                 {animatedCount.toLocaleString()}+
               </div>
-              <p className="text-sm text-desert-sand-300">
+              <p className="text-sm text-desert-sand-200">
                 learners leveled up this month
               </p>
             </div>
@@ -125,7 +125,7 @@ export function AcademyHero() {
           >
             <Button
               size="lg"
-              className="bg-gradient-to-r from-royal-gold-500 to-royal-gold-600 hover:from-royal-gold-600 hover:to-royal-gold-700 text-obsidian-950 font-semibold px-8 py-6 text-lg shadow-lg hover:shadow-royal-gold-500/50 transition-all"
+              className="bg-gradient-to-r from-amber-200/25 to-amber-300/15 hover:from-amber-200/35 hover:to-amber-300/20 text-amber-100 border-amber-200/30 hover:border-amber-200/40 font-semibold px-8 py-6 text-lg shadow-lg hover:shadow-amber-200/20 transition-all"
               onClick={() => {
                 document.getElementById('modules')?.scrollIntoView({ behavior: 'smooth' });
               }}
@@ -137,7 +137,7 @@ export function AcademyHero() {
             <Button
               size="lg"
               variant="outline"
-              className="border-royal-gold-500/50 hover:border-royal-gold-500 px-8 py-6 text-lg"
+              className="border-amber-200/30 hover:border-amber-200/50 px-8 py-6 text-lg text-amber-100"
               onClick={() => setIqTestOpen(true)}
             >
               <TrendingUp className="w-5 h-5 mr-2" />
@@ -152,10 +152,10 @@ export function AcademyHero() {
             transition={{ duration: 0.6, delay: 0.5 }}
             className="text-center"
           >
-            <div className="inline-flex items-center gap-2 text-sm text-desert-sand-400">
-              <Users className="w-4 h-4 text-nile-teal-400" />
+            <div className="inline-flex items-center gap-2 text-sm text-desert-sand-300">
+              <Users className="w-4 h-4 text-teal-200" />
               <span>
-                Join <span className="text-nile-teal-400 font-semibold">10,000+</span> prompt engineers worldwide
+                Join <span className="text-teal-200 font-semibold">10,000+</span> prompt engineers worldwide
               </span>
             </div>
           </motion.div>
@@ -165,20 +165,20 @@ export function AcademyHero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}
-            className="mt-16 p-8 bg-obsidian-800/30 backdrop-blur-sm border border-royal-gold-500/20 rounded-lg"
+            className="mt-16 p-8 bg-obsidian-800/30 backdrop-blur-sm border border-amber-200/15 rounded-lg"
           >
-            <h3 className="text-center text-xl font-semibold text-royal-gold-400 mb-6">
+            <h3 className="text-center text-xl font-semibold text-amber-200 mb-6">
               See the Difference
             </h3>
 
             <div className="grid md:grid-cols-2 gap-6">
               {/* Bad Prompt */}
-              <div className="p-6 bg-red-900/10 border border-red-500/30 rounded-lg">
-                <div className="text-sm font-semibold text-red-400 mb-3">❌ Bad Prompt</div>
-                <p className="text-desert-sand-300 italic mb-4">
+              <div className="p-6 bg-red-400/10 border border-red-200/30 rounded-lg">
+                <div className="text-sm font-semibold text-red-200 mb-3">❌ Bad Prompt</div>
+                <p className="text-desert-sand-200 italic mb-4">
                   "Write something about marketing"
                 </p>
-                <div className="text-xs text-desert-sand-400 space-y-1">
+                <div className="text-xs text-desert-sand-300 space-y-1">
                   <div>→ Vague and unclear</div>
                   <div>→ No context or constraints</div>
                   <div>→ Wastes 10+ minutes iterating</div>
@@ -186,12 +186,12 @@ export function AcademyHero() {
               </div>
 
               {/* Good Prompt */}
-              <div className="p-6 bg-nile-teal-900/10 border border-nile-teal-500/30 rounded-lg">
-                <div className="text-sm font-semibold text-nile-teal-400 mb-3">✅ Good Prompt</div>
-                <p className="text-desert-sand-300 italic mb-4">
+              <div className="p-6 bg-teal-400/10 border border-teal-200/30 rounded-lg">
+                <div className="text-sm font-semibold text-teal-200 mb-3">✅ Good Prompt</div>
+                <p className="text-desert-sand-200 italic mb-4">
                   "Write a 200-word email marketing campaign for B2B SaaS companies, focusing on conversion optimization. Use a professional but friendly tone."
                 </p>
-                <div className="text-xs text-desert-sand-400 space-y-1">
+                <div className="text-xs text-desert-sand-300 space-y-1">
                   <div>→ Specific and clear</div>
                   <div>→ Includes context and format</div>
                   <div>→ Gets perfect result first try</div>
@@ -199,9 +199,9 @@ export function AcademyHero() {
               </div>
             </div>
 
-            <p className="text-center mt-6 text-sm text-desert-sand-300">
+            <p className="text-center mt-6 text-sm text-desert-sand-200">
               You'll learn exactly how to transform prompts like this in{' '}
-              <span className="text-royal-gold-400 font-semibold">Module 1</span>
+              <span className="text-amber-200 font-semibold">Module 1</span>
             </p>
           </motion.div>
         </div>
@@ -212,9 +212,9 @@ export function AcademyHero() {
         <motion.div
           animate={{ y: [0, 10, 0] }}
           transition={{ repeat: Infinity, duration: 2 }}
-          className="w-6 h-10 border-2 border-royal-gold-500/30 rounded-full flex items-start justify-center p-2"
+          className="w-6 h-10 border-2 border-amber-200/30 rounded-full flex items-start justify-center p-2"
         >
-          <div className="w-1.5 h-1.5 bg-royal-gold-400 rounded-full" />
+          <div className="w-1.5 h-1.5 bg-amber-200 rounded-full" />
         </motion.div>
       </div>
 

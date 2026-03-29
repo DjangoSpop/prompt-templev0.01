@@ -109,10 +109,12 @@ function applyFinalResult(
   result: BroadcastResult,
   currentState: BroadcastStreamState | null
 ): BroadcastStreamState {
+  const resultResponses = Array.isArray(result.responses) ? result.responses : [];
+
   const providerOrder =
     currentState?.providerOrder.length
       ? currentState.providerOrder
-      : result.responses.map((response) => response.provider);
+      : resultResponses.map((response) => response.provider);
 
   const responses = new Map<string, BroadcastModelState>();
 
@@ -120,7 +122,7 @@ function applyFinalResult(
     responses.set(providerId, createModelState(providerId));
   }
 
-  for (const response of result.responses) {
+  for (const response of resultResponses) {
     const existing = responses.get(response.provider) ?? createModelState(response.provider);
     responses.set(response.provider, {
       ...existing,

@@ -61,16 +61,16 @@ export default function BroadcastPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#EBD5A7] via-[#F5C518] to-[#EBD5A7] dark:from-gray-900 dark:via-[#1E3A8A]/20 dark:to-[#1B2B6B]/20">
       {/* Header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8 pb-4 sm:pb-6">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8"
+          className="text-center mb-4 sm:mb-6 lg:mb-8"
         >
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-3">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-3">
             Multi-AI Broadcast
           </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          <p className="text-sm sm:text-base lg:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
             Send one prompt to multiple AI models simultaneously and compare their
             responses side-by-side to find the best result.
           </p>
@@ -79,10 +79,10 @@ export default function BroadcastPage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6 lg:gap-8">
           {/* Left Column - Input */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-6">
+          <div className="lg:col-span-2">
+            <div className="lg:sticky lg:top-4">
               <BroadcastComposer
                 onSubmit={handleSubmit}
                 isLoading={isLoading}
@@ -95,7 +95,7 @@ export default function BroadcastPage() {
           </div>
 
           {/* Right Column - Results */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-3">
             {/* Error State */}
             <AnimatePresence>
               {error && (
@@ -103,7 +103,7 @@ export default function BroadcastPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
-                  className="mb-6 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-6"
+                  className="mb-4 sm:mb-6 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-4 sm:p-6"
                 >
                   <h3 className="font-semibold text-red-900 dark:text-red-100 mb-2">
                     Broadcast Failed
@@ -113,7 +113,7 @@ export default function BroadcastPage() {
               )}
             </AnimatePresence>
 
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <RacingGrid models={modelStates} isStreaming={isLoading} />
 
               <ScoringPanel

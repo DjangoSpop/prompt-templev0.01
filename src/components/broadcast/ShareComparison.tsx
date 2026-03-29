@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import { Share2, Copy, Check } from 'lucide-react';
 import type { BroadcastModelState } from '@/types/broadcast';
+import { TempleCard } from '@/components/ui/TempleCard';
 
 interface ShareComparisonProps {
   prompt: string;
@@ -76,7 +77,7 @@ export const ShareComparison: React.FC<ShareComparisonProps> = ({
   }
 
   return (
-    <section className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5 sm:p-6">
+    <TempleCard variant="default" elevation="md" className="p-5 sm:p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Share this comparison</h3>
@@ -110,7 +111,7 @@ export const ShareComparison: React.FC<ShareComparisonProps> = ({
       </div>
 
       {shareUrl && (
-        <div className="mt-4 flex items-center justify-between gap-2 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 px-3 py-2">
+        <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 px-3 py-2">
           <span className="text-xs text-gray-600 dark:text-gray-400 truncate">{shareUrl}</span>
           <button
             type="button"
@@ -126,6 +127,6 @@ export const ShareComparison: React.FC<ShareComparisonProps> = ({
           </button>
         </div>
       )}
-    </section>
+    </TempleCard>
   );
 };

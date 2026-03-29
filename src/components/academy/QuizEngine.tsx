@@ -145,10 +145,10 @@ export function QuizEngine({ quiz, moduleId }: QuizEngineProps) {
       {/* Progress Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-3">
-          <span className="text-sm font-medium text-desert-sand-300">
+          <span className="text-sm font-medium text-desert-sand-200">
             Question {currentQuestionIndex + 1} of {totalQuestions}
           </span>
-          <span className="text-sm font-medium text-royal-gold-400">
+          <span className="text-sm font-medium text-amber-200">
             {progressPercentage}% Complete
           </span>
         </div>
@@ -164,9 +164,9 @@ export function QuizEngine({ quiz, moduleId }: QuizEngineProps) {
           exit={{ opacity: 0, x: -20 }}
           transition={{ duration: 0.3 }}
         >
-          <Card className="p-8 border-royal-gold-500/30">
+          <Card className="p-8 border-amber-200/25">
             {/* Question */}
-            <h3 className="text-xl lg:text-2xl font-semibold text-royal-gold-400 mb-6">
+            <h3 className="text-xl lg:text-2xl font-semibold text-amber-100 mb-6">
               {currentQuestion.question}
             </h3>
 
@@ -182,12 +182,12 @@ export function QuizEngine({ quiz, moduleId }: QuizEngineProps) {
 
                 if (showFeedback && isSelected) {
                   buttonClasses += isCorrect
-                    ? ' border-nile-teal-500 bg-nile-teal-900/30'
-                    : ' border-red-500 bg-red-900/30';
+                    ? ' border-teal-200 bg-teal-400/15'
+                    : ' border-red-200 bg-red-400/15';
                 } else if (showFeedback && isCorrectOption) {
-                  buttonClasses += ' border-nile-teal-500 bg-nile-teal-900/20';
+                  buttonClasses += ' border-teal-200 bg-teal-400/10';
                 } else if (!showFeedback) {
-                  buttonClasses += ' hover:border-royal-gold-500 hover:bg-royal-gold-900/10';
+                  buttonClasses += ' hover:border-amber-200 hover:bg-amber-400/5';
                 }
 
                 return (
@@ -205,9 +205,9 @@ export function QuizEngine({ quiz, moduleId }: QuizEngineProps) {
                       <span className="flex-1">{option}</span>
                       {showFeedback && isSelected && (
                         isCorrect ? (
-                          <CheckCircle className="w-5 h-5 text-nile-teal-400" />
+                          <CheckCircle className="w-5 h-5 text-teal-200" />
                         ) : (
-                          <XCircle className="w-5 h-5 text-red-400" />
+                          <XCircle className="w-5 h-5 text-red-200" />
                         )
                       )}
                     </span>
@@ -225,26 +225,26 @@ export function QuizEngine({ quiz, moduleId }: QuizEngineProps) {
                   exit={{ opacity: 0, y: -10 }}
                   className={`p-6 rounded-lg border ${
                     isCorrect
-                      ? 'bg-nile-teal-900/20 border-nile-teal-500/50'
-                      : 'bg-red-900/20 border-red-500/50'
+                      ? 'bg-teal-400/10 border-teal-200/40'
+                      : 'bg-red-400/10 border-red-200/40'
                   }`}
                 >
                   <div className="flex items-start gap-3">
                     {isCorrect ? (
-                      <CheckCircle className="w-5 h-5 text-nile-teal-400 flex-shrink-0 mt-1" />
+                      <CheckCircle className="w-5 h-5 text-teal-200 flex-shrink-0 mt-1" />
                     ) : (
-                      <XCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-1" />
+                      <XCircle className="w-5 h-5 text-red-200 flex-shrink-0 mt-1" />
                     )}
                     <div>
-                      <p className={`font-semibold mb-2 ${isCorrect ? 'text-nile-teal-300' : 'text-red-300'}`}>
+                      <p className={`font-semibold mb-2 ${isCorrect ? 'text-teal-200' : 'text-red-200'}`}>
                         {isCorrect ? 'Correct!' : 'Not quite right'}
                       </p>
-                      <p className="text-sm text-desert-sand-100 leading-relaxed">
+                      <p className="text-sm text-desert-sand-200 leading-relaxed">
                         {currentQuestion.explanation}
                       </p>
                       <div className="mt-3 flex items-center gap-2 text-sm">
-                        <Award className="w-4 h-4 text-royal-gold-400" />
-                        <span className="text-royal-gold-400 font-semibold">
+                        <Award className="w-4 h-4 text-amber-200" />
+                        <span className="text-amber-200 font-semibold">
                           +{isCorrect ? currentQuestion.points : 0} points
                         </span>
                       </div>
@@ -310,7 +310,7 @@ function QuizResults({ score, passingScore, passed, xpReward, moduleId, onRetry 
       animate={{ opacity: 1, scale: 1 }}
       className="max-w-2xl mx-auto"
     >
-      <Card className="p-8 lg:p-12 text-center border-royal-gold-500/30">
+      <Card className="p-8 lg:p-12 text-center border-amber-200/25">
         {/* Score Display */}
         <div className="mb-8">
           {passed ? (
@@ -318,7 +318,7 @@ function QuizResults({ score, passingScore, passed, xpReward, moduleId, onRetry 
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: 'spring', duration: 0.6 }}
-              className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-nile-teal-500 to-nile-teal-600 mb-4"
+              className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-teal-400 to-teal-500 mb-4"
             >
               <CheckCircle className="w-12 h-12 text-white" />
             </motion.div>
@@ -328,7 +328,7 @@ function QuizResults({ score, passingScore, passed, xpReward, moduleId, onRetry 
             </div>
           )}
 
-          <h2 className="text-3xl lg:text-4xl font-bold text-royal-gold-400 mb-2">
+          <h2 className="text-3xl lg:text-4xl font-bold text-amber-200 mb-2">
             {score}%
           </h2>
           <p className="text-lg text-desert-sand-200">
@@ -339,7 +339,7 @@ function QuizResults({ score, passingScore, passed, xpReward, moduleId, onRetry 
         {/* Pass/Fail Status */}
         <div className="mb-8">
           {passed ? (
-            <Badge className="bg-nile-teal-500 text-white text-lg px-6 py-2">
+            <Badge className="bg-teal-400/80 text-white text-lg px-6 py-2">
               Quiz Passed!
             </Badge>
           ) : (
@@ -355,13 +355,13 @@ function QuizResults({ score, passingScore, passed, xpReward, moduleId, onRetry 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="mb-8 p-6 bg-royal-gold-900/20 border border-royal-gold-500/50 rounded-lg"
+            className="mb-8 p-6 bg-amber-200/15 border border-amber-200/40 rounded-lg"
           >
             <div className="flex items-center justify-center gap-3">
-              <Award className="w-8 h-8 text-royal-gold-400" />
+              <Award className="w-8 h-8 text-amber-200" />
               <div className="text-left">
                 <p className="text-sm text-desert-sand-300">XP Earned</p>
-                <p className="text-2xl font-bold text-royal-gold-400">+{xpReward} XP</p>
+                <p className="text-2xl font-bold text-amber-200">+{xpReward} XP</p>
               </div>
             </div>
           </motion.div>
@@ -373,17 +373,17 @@ function QuizResults({ score, passingScore, passed, xpReward, moduleId, onRetry 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="mb-8 p-6 bg-gradient-to-r from-royal-gold-500/10 to-nile-teal-500/10 border border-royal-gold-500/40 rounded-xl"
+            className="mb-8 p-6 bg-gradient-to-r from-amber-200/15 to-teal-200/15 border border-amber-200/40 rounded-xl"
           >
-            <GraduationCap className="w-10 h-10 text-royal-gold-400 mx-auto mb-3" />
-            <h3 className="text-xl font-bold text-royal-gold-400 mb-2">
+            <GraduationCap className="w-10 h-10 text-amber-200 mx-auto mb-3" />
+            <h3 className="text-xl font-bold text-amber-200 mb-2">
               All Modules Complete!
             </h3>
             <p className="text-desert-sand-300 text-sm mb-4">
-              You&apos;ve mastered all 7 modules. Claim your professional certificate now!
+              You&apos;ve mastered all 27 modules. Claim your professional certificate now!
             </p>
             <Link href="/academy/completion">
-              <Button className="bg-gradient-to-r from-royal-gold-500 to-royal-gold-600 hover:from-royal-gold-600 hover:to-royal-gold-700 text-obsidian-950 font-semibold px-8">
+              <Button className="bg-gradient-to-r from-amber-200/30 to-amber-300/20 hover:from-amber-200/40 hover:to-amber-300/25 text-amber-100 border-amber-200/40 font-semibold px-8">
                 <Award className="w-4 h-4 mr-2" />
                 Claim Your Certificate
               </Button>
@@ -408,7 +408,7 @@ function QuizResults({ score, passingScore, passed, xpReward, moduleId, onRetry 
             <>
               <Button
                 variant="outline"
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 border-amber-200/30 text-amber-200 hover:border-amber-200/50"
               >
                 <Share2 className="w-4 h-4" />
                 Share Achievement
@@ -416,7 +416,7 @@ function QuizResults({ score, passingScore, passed, xpReward, moduleId, onRetry 
 
               <Link href="/academy">
                 <Button
-                  className="bg-gradient-to-r from-royal-gold-500 to-royal-gold-600 hover:from-royal-gold-600 hover:to-royal-gold-700"
+                  className="bg-gradient-to-r from-amber-200/30 to-amber-300/20 hover:from-amber-200/40 hover:to-amber-300/25 text-amber-100 border-amber-200/40"
                 >
                   Next Module →
                 </Button>
@@ -428,7 +428,7 @@ function QuizResults({ score, passingScore, passed, xpReward, moduleId, onRetry 
             <Link href="/academy">
               <Button
                 variant="outline"
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 border-amber-200/30 text-amber-200 hover:border-amber-200/50"
               >
                 Back to Academy
               </Button>
