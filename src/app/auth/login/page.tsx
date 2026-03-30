@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { 
+import {
   Mail,
   Lock,
   Eye,
@@ -16,11 +16,10 @@ import {
   AlertCircle,
   Loader2,
   Github,
-  Crown,
-  Sparkles
 } from 'lucide-react';
 import { useAuth } from '@/providers/AuthProvider';
 import { useSocialAuth } from '@/hooks/useSocialAuth';
+import Eyehorus from '@/components/pharaonic/Eyehorus';
 import { FcGoogle } from 'react-icons/fc';
 
 export default function LoginPage() {
@@ -158,49 +157,104 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-desert-sand/30 via-background to-nile-teal/20 flex items-center justify-center px-4 py-8 relative overflow-hidden">
+    <div
+      className="min-h-screen flex items-center justify-center px-4 py-8 relative overflow-hidden"
+      style={{
+        background: 'linear-gradient(180deg, #0E0F12 0%, #131620 40%, #1B2B6B 80%, #0E0F12 100%)',
+      }}
+    >
+      {/* Gold hieroglyphic dot pattern */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.06]"
+        style={{
+          backgroundImage: 'radial-gradient(circle at 1px 1px, #d4af37 1px, transparent 0)',
+          backgroundSize: '40px 40px',
+        }}
+      />
+      {/* Gold top line — temple threshold */}
+      <div
+        className="pointer-events-none absolute left-0 right-0 top-0 h-[2px]"
+        style={{
+          background: 'linear-gradient(90deg, transparent 5%, #d4af37 30%, #ffe066 50%, #d4af37 70%, transparent 95%)',
+        }}
+      />
       {/* Animated Background */}
-      <div className="absolute inset-0">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-pharaoh-gold/20 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
-        <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-nile-teal/20 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
-        <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-desert-sand/30 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-4000"></div>
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-amber-500/10 rounded-full filter blur-xl opacity-30 animate-pulse" />
+        <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-blue-900/20 rounded-full filter blur-xl opacity-30 animate-pulse animation-delay-2000" />
+        <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-amber-500/10 rounded-full filter blur-xl opacity-20 animate-pulse animation-delay-4000" />
       </div>
       
       <div className="w-full max-w-md space-y-8 relative z-10">
         {/* Header */}
         <div className="text-center">
           <div className="flex items-center justify-center space-x-3 mb-6">
-            <div className="relative">
-              <div className="w-16 h-16 bg-gradient-to-br from-pharaoh-gold to-nile-teal rounded-temple flex items-center justify-center shadow-pyramid">
-                <Crown className="h-8 w-8 text-white" />
-              </div>
-              <div className="absolute -top-2 -right-2">
-                <Sparkles className="h-6 w-6 text-pharaoh-gold animate-spin" />
-              </div>
+            <div
+              className="relative flex items-center justify-center"
+              style={{ filter: 'drop-shadow(0 0 18px rgba(212, 175, 55, 0.5))' }}
+            >
+              <div
+                className="absolute rounded-full pointer-events-none"
+                style={{
+                  width: 80,
+                  height: 80,
+                  background: 'radial-gradient(circle, rgba(212,175,55,0.15) 0%, transparent 70%)',
+                }}
+              />
+              <Eyehorus
+                size={56}
+                variant="hero"
+                glow={true}
+                glowIntensity="high"
+                animated={true}
+                speedMultiplier={1.5}
+                showLabel={false}
+              />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                <span className="bg-gradient-to-r from-pharaoh-gold via-nile-teal to-pharaoh-gold bg-clip-text text-transparent">
+              <h1
+                className="text-3xl font-bold"
+                style={{ fontFamily: "'Playfair Display', serif" }}
+              >
+                <span
+                  style={{
+                    background: 'linear-gradient(135deg, #ffe066 0%, #d4af37 40%, #CBA135 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}
+                >
                   Prompt
                 </span>
-                <span className="text-foreground ml-2">
-                  Temple
-                </span>
+                <span className="text-white ml-2">Temple</span>
               </h1>
-              <p className="text-temple-stone text-sm">Sacred AI Sanctuary</p>
+              <p className="text-stone-400 text-sm">Sacred AI Sanctuary</p>
             </div>
           </div>
-          <h2 className="text-4xl font-bold text-foreground mb-2">Return to the Temple</h2>
-          <p className="text-temple-stone text-lg">
+          <h2
+            className="text-4xl font-bold text-white mb-2"
+            style={{ fontFamily: "'Playfair Display', serif" }}
+          >
+            Return to the Temple
+          </h2>
+          <p className="text-stone-400 text-lg">
             Enter your sacred credentials to continue your journey
           </p>
         </div>
 
         {/* Login Form */}
-        <Card className="bg-gradient-to-br from-background/95 to-desert-sand/10 backdrop-blur-lg border border-pharaoh-gold/20 shadow-pyramid rounded-temple">
+        <Card
+          className="backdrop-blur-lg border border-amber-500/15 shadow-[0_0_40px_rgba(212,175,55,0.06)] rounded-temple"
+          style={{ background: 'linear-gradient(135deg, rgba(14,15,20,0.95) 0%, rgba(19,22,32,0.95) 100%)' }}
+        >
           <CardHeader>
-            <CardTitle className="text-foreground text-center text-2xl font-bold">Sacred Access Portal</CardTitle>
-            <p className="text-center text-temple-stone">Enter your credentials to access the temple</p>
+            <CardTitle
+              className="text-white text-center text-2xl font-bold"
+              style={{ fontFamily: "'Playfair Display', serif" }}
+            >
+              Sacred Access Portal
+            </CardTitle>
+            <p className="text-center text-stone-400">Enter your credentials to access the temple</p>
           </CardHeader>
           <CardContent>
             {/* Social Login Buttons */}
@@ -208,7 +262,7 @@ export default function LoginPage() {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full border-pharaoh-gold/30 hover:bg-pharaoh-gold/10 hover:border-pharaoh-gold/50 transition-all duration-300 rounded-temple"
+                className="w-full border-amber-500/20 bg-white/5 text-stone-200 hover:bg-amber-500/10 hover:border-amber-500/40 transition-all duration-300 rounded-temple"
                 onClick={() => handleSocialLogin('google')}
                 disabled={isLoading || socialLoading !== null || isAuthenticating}
               >
@@ -223,7 +277,7 @@ export default function LoginPage() {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full border-nile-teal/30 hover:bg-nile-teal/10 hover:border-nile-teal/50 transition-all duration-300 rounded-temple"
+                className="w-full border-amber-500/20 bg-white/5 text-stone-200 hover:bg-amber-500/10 hover:border-amber-500/40 transition-all duration-300 rounded-temple"
                 onClick={() => handleSocialLogin('github')}
                 disabled={isLoading || socialLoading !== null || isAuthenticating}
               >
@@ -242,30 +296,30 @@ export default function LoginPage() {
                 <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-temple-stone font-medium">Or use sacred credentials</span>
+                <span className="bg-[#0E0F14] px-2 text-stone-500 font-medium">Or use sacred credentials</span>
               </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Error Message */}
               {error && (
-                <div id="login-error" role="alert" className="flex items-center space-x-2 p-4 bg-red-50 dark:bg-red-900/20 border-2 border-red-300 dark:border-red-700/50 rounded-temple backdrop-blur-sm">
-                  <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0" />
-                  <span className="text-red-800 dark:text-red-200 text-sm font-medium">{error}</span>
+                <div id="login-error" role="alert" className="flex items-center space-x-2 p-4 bg-red-900/20 border-2 border-red-700/50 rounded-temple backdrop-blur-sm">
+                  <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0" />
+                  <span className="text-red-200 text-sm font-medium">{error}</span>
                 </div>
               )}
 
               {/* Username/Email Field */}
               <div className="space-y-2">
-                <label htmlFor="username" className="block text-sm font-semibold text-gray-900 dark:text-gray-100">
+                <label htmlFor="username" className="block text-sm font-semibold text-stone-200">
                   Sacred Identifier
                 </label>
-                <p id="username-help" className="text-xs text-gray-600 dark:text-gray-400">
+                <p id="username-help" className="text-xs text-stone-500">
                   Min. 4 characters, letters & numbers only
                 </p>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Mail className="h-4 w-4 text-temple-stone" />
+                    <Mail className="h-4 w-4 text-amber-500/60" />
                   </div>
                   <input
                     id="username"
@@ -275,7 +329,7 @@ export default function LoginPage() {
                     required
                     value={formData.username}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-3 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-temple text-slate-900 dark:text-slate-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
+                    className="w-full pl-10 pr-3 py-3 bg-white/5 border border-amber-500/15 rounded-temple text-stone-100 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/30 transition-all duration-300"
                     placeholder="Enter your username or email"
                     aria-invalid={error ? 'true' : 'false'}
                     aria-describedby={error ? 'username-error' : 'username-help'}
@@ -285,15 +339,15 @@ export default function LoginPage() {
 
               {/* Password Field */}
               <div className="space-y-2">
-                <label htmlFor="password" className="block text-sm font-semibold text-gray-900 dark:text-gray-100">
+                <label htmlFor="password" className="block text-sm font-semibold text-stone-200">
                   Sacred Passphrase
                 </label>
-                <p id="password-help" className="text-xs text-gray-600 dark:text-gray-400">
+                <p id="password-help" className="text-xs text-stone-500">
                   Min. 8 characters, 1 uppercase, 1 number
                 </p>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-4 w-4 text-temple-stone" />
+                    <Lock className="h-4 w-4 text-amber-500/60" />
                   </div>
                   <input
                     id="password"
@@ -303,7 +357,7 @@ export default function LoginPage() {
                     required
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-10 py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-temple text-slate-900 dark:text-slate-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
+                    className="w-full pl-10 pr-10 py-3 bg-white/5 border border-amber-500/15 rounded-temple text-stone-100 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/30 transition-all duration-300"
                     placeholder="Enter your password"
                     aria-invalid={error ? 'true' : 'false'}
                     aria-describedby={error ? 'password-error' : 'password-help'}
@@ -314,9 +368,9 @@ export default function LoginPage() {
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-temple-stone hover:text-pharaoh-gold transition-colors" />
+                      <EyeOff className="h-4 w-4 text-amber-500/60 hover:text-pharaoh-gold transition-colors" />
                     ) : (
-                      <Eye className="h-4 w-4 text-temple-stone hover:text-pharaoh-gold transition-colors" />
+                      <Eye className="h-4 w-4 text-amber-500/60 hover:text-pharaoh-gold transition-colors" />
                     )}
                   </button>
                 </div>
@@ -326,7 +380,8 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 disabled={isLoading || socialLoading !== null || isAuthenticating}
-                className="w-full bg-gradient-to-r from-pharaoh-gold to-nile-teal hover:from-pharaoh-gold/80 hover:to-nile-teal/80 text-white py-3 font-semibold shadow-pyramid hover:shadow-xl transition-all duration-300 transform hover:scale-105 rounded-temple"
+                className="w-full py-3 font-bold text-[#0E0F12] shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] transition-all duration-300 transform hover:scale-[1.02] rounded-temple"
+                style={{ background: 'linear-gradient(135deg, #ffe066, #d4af37, #CBA135)' }}
               >
                 {isLoading ? (
                   <>
@@ -341,32 +396,14 @@ export default function LoginPage() {
 
             {/* Footer Links */}
             <div className="mt-6 text-center space-y-3">
-              <button className="text-sm text-pharaoh-gold hover:text-pharaoh-gold/80 font-medium transition-colors">
+              <button className="text-sm text-amber-400 hover:text-amber-300 font-medium transition-colors">
                 Forgotten your sacred passphrase?
               </button>
-              <div className="text-sm text-temple-stone">
+              <div className="text-sm text-stone-400">
                 Seeking entry to the temple?{' '}
-                <Link href="/auth/register" className="text-nile-teal hover:text-nile-teal/80 font-semibold transition-colors">
+                <Link href="/auth/register" className="text-amber-400 hover:text-amber-300 font-semibold transition-colors">
                   Begin your journey
                 </Link>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Demo Information */}
-        <Card className="bg-gradient-to-br from-background/80 to-desert-sand/20 backdrop-blur-lg border border-pharaoh-gold/20 shadow-pyramid rounded-temple">
-          <CardContent className="p-6">
-            <div className="text-center space-y-3">
-              <div className="flex items-center justify-center space-x-2 mb-2">
-                <Crown className="h-4 w-4 text-pharaoh-gold" />
-                <span className="text-sm text-foreground font-semibold">Temple Guest Access</span>
-              </div>
-              <div className="text-sm text-temple-stone">
-                Sacred ID: <span className="font-mono bg-pharaoh-gold/20 text-pharaoh-gold px-2 py-1 rounded-temple">demo</span>
-              </div>
-              <div className="text-sm text-temple-stone">
-                Passphrase: <span className="font-mono bg-nile-teal/20 text-nile-teal px-2 py-1 rounded-temple">password</span>
               </div>
             </div>
           </CardContent>

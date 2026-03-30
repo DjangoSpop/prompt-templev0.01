@@ -48,6 +48,7 @@ const FinalCTASection = dynamic(() => import('@/components/landing/v3/FinalCTASe
 const FaqSectionV3 = dynamic(() => import('@/components/landing/v3/FaqSection'), { ssr: false });
 const FooterSectionV3 = dynamic(() => import('@/components/landing/v3/FooterSection'), { ssr: false });
 const MobileStickyBar = dynamic(() => import('@/components/landing/v2/MobileStickyBar'), { ssr: false });
+const BroadcasterShowcase = dynamic(() => import('@/components/landing/v3/BroadcasterShowcase'), { ssr: false });
 const LandingNavbar = dynamic(() => import('@/components/landing/v3/LandingNavbar'), { ssr: false });
 
 // Onboarding slider (authenticated dashboard only)
@@ -89,8 +90,10 @@ export default function DashboardPage() {
         {/* 3. HOW IT WORKS — 3 simple steps */}
         <HowItWorksSection />
 
+        {/* 3.5. BROADCASTER — Compare outputs across AI models */}
+        <BroadcasterShowcase />
+
         {/* 4. FEATURES — 2x2 card grid */}
-      
         <FeatureCardsSection />
 
         {/* 5. USE CASES — Who it's for */}

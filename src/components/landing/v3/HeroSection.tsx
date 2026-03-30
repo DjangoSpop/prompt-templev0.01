@@ -117,15 +117,25 @@ export function HeroSection() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              className="mb-6 inline-flex items-center gap-2 rounded-full border border-amber-500/30 px-4 py-2 dark:border-amber-400/20"
-              style={{
-                background:
-                  'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(203,161,53,0.04) 100%)',
-              }}
+              className="mb-6 flex flex-wrap items-center gap-2"
             >
-              <span className="text-sm text-[#d4af37]">&#x2625;</span>
-              <span className="text-xs font-semibold tracking-wide text-stone-600 dark:text-amber-200/80 md:text-sm">
-                {hero.pill}
+              <span
+                className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 px-4 py-2 dark:border-amber-400/20"
+                style={{
+                  background:
+                    'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(203,161,53,0.04) 100%)',
+                }}
+              >
+                <span className="text-sm text-[#d4af37]">&#x2625;</span>
+                <span className="text-xs font-semibold tracking-wide text-stone-600 dark:text-amber-200/80 md:text-sm">
+                  {hero.pill}
+                </span>
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-xs font-semibold tracking-wide text-emerald-400">
+                  {hero.freeBadge}
+                </span>
               </span>
             </motion.div>
 
@@ -183,10 +193,16 @@ export function HeroSection() {
                 {hero.ctaPrimary}
               </GradientButton>
 
-              <TryMeButton
-                className="!bg-gradient-to-r !from-[#d4af37] !to-[#8B6914] hover:!from-[#ffe066] hover:!to-[#CBA135] !text-[#0E0F12] !font-bold !px-6 !py-3 !rounded-xl !shadow-[0_0_20px_rgba(212,175,55,0.3)]"
-                onHeroComplete={true}
-              />
+              <div className="relative inline-flex">
+                <TryMeButton
+                  className="!bg-gradient-to-r !from-[#d4af37] !to-[#8B6914] hover:!from-[#ffe066] hover:!to-[#CBA135] !text-[#0E0F12] !font-bold !px-6 !py-3 !rounded-xl !shadow-[0_0_20px_rgba(212,175,55,0.3)]"
+                  onHeroComplete={true}
+                />
+                <span className="absolute -right-2 -top-2 flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-950/80 px-2 py-0.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Live</span>
+                </span>
+              </div>
             </motion.div>
 
             {/* Secondary CTA */}
@@ -204,6 +220,21 @@ export function HeroSection() {
               >
                 {hero.ctaSecondary}
               </GradientButton>
+            </motion.div>
+
+            {/* Inline social proof */}
+            <motion.div
+              variants={fadeIn}
+              initial="hidden"
+              animate="visible"
+              transition={{ delay: 0.28 }}
+              className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-500 dark:text-stone-400"
+            >
+              <span><span className="font-semibold text-amber-600 dark:text-amber-400">47,800+</span> prompts enhanced</span>
+              <span className="hidden sm:inline h-1 w-1 rounded-full bg-stone-400/40" />
+              <span><span className="font-semibold text-amber-600 dark:text-amber-400">4,200+</span> templates</span>
+              <span className="hidden sm:inline h-1 w-1 rounded-full bg-stone-400/40" />
+              <span><span className="font-semibold text-amber-600 dark:text-amber-400">4.8★</span> avg rating</span>
             </motion.div>
 
             {/* Platform strip */}
@@ -224,9 +255,12 @@ export function HeroSection() {
             initial="hidden"
             animate="visible"
             transition={{ delay: 0.35 }}
-            className="relative"
+            className="relative group"
           >
-            <BeforeAfterDemo />
+            <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-amber-500/20 via-purple-500/10 to-amber-500/20 opacity-0 blur-sm transition-opacity duration-500 group-hover:opacity-100" />
+            <div className="relative">
+              <BeforeAfterDemo />
+            </div>
           </motion.div>
         </div>
 

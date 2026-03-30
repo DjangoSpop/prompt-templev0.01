@@ -9,6 +9,7 @@ import { PromptEditorLite } from './PromptEditorLite';
 import { EgyptianLoadingLight } from './EgyptianLoadingLight';
 import { AIInsightCard } from './AIInsightCard';
 import { AISuggestionCard } from './AISuggestionCard';
+import { EnhanceResultActions } from './EnhanceResultActions';
 import { sseClient } from '@/lib/tryme/sseClient';
 import { renderSafeMarkdown } from '@/lib/tryme/sanitize';
 import { getGuestSessionId } from '@/lib/tryme/session';
@@ -138,7 +139,7 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
             // Update tracking
             setSuccessfulCompletions(prev => {
               const newCount = prev + 1;
-              if (newCount >= 3 && !showCTA) {
+              if (newCount >= 1 && !showCTA) {
                 setShowCTA(true);
               }
               return newCount;
@@ -355,6 +356,17 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
                     )}
                   </AnimatePresence>
                 </div>
+              )}
+
+              {/* Share / Copy / CTA actions */}
+              {optimizationResult.after && (
+                <EnhanceResultActions
+                  optimizedText={optimizationResult.after}
+                  originalText={optimizationResult.before}
+                  onCopy={copyToClipboard}
+                  copied={!!copiedStates.enhanced}
+                  latencyMs={latency}
+                />
               )}
             </motion.div>
           )}

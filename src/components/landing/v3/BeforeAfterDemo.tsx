@@ -16,7 +16,7 @@ export function BeforeAfterDemo() {
   }, []);
 
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white p-1 shadow-xl dark:border-stone-700 dark:bg-stone-900 dark:shadow-2xl dark:shadow-black/30">
+    <div className="rounded-2xl border border-amber-500/20 bg-white p-1 shadow-[0_0_40px_rgba(212,175,55,0.06)] transition-all duration-500 hover:shadow-[0_0_60px_rgba(212,175,55,0.12)] dark:border-amber-400/15 dark:bg-stone-900">
       {/* Header bar — browser chrome */}
       <div className="flex items-center gap-2 rounded-t-xl bg-stone-50 px-4 py-3 dark:bg-stone-800/80">
         <div className="flex gap-1.5">
@@ -29,6 +29,10 @@ export function BeforeAfterDemo() {
             Prompt Temple — AI Enhancement
           </span>
         </div>
+        <span className="flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-500 dark:text-emerald-400">Live Demo</span>
+        </span>
       </div>
 
       <div className="space-y-3 p-4 md:p-5">

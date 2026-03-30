@@ -37,7 +37,7 @@ export function TryMeButton({ className, onHeroComplete = false }: TryMeButtonPr
       // Add pulse effect if motion is allowed
       if (!prefersReducedMotion) {
         pulseAnimation.current = gsap.to(button, {
-          boxShadow: '0 0 40px rgba(99, 102, 241, 0.4)',
+          boxShadow: '0 0 40px rgba(212, 175, 55, 0.5)',
           duration: 2,
           repeat: -1,
           yoyo: true,

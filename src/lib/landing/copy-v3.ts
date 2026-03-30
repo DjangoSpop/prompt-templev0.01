@@ -7,7 +7,8 @@ export const COPY_V3 = {
   },
 
   hero: {
-    pill: 'Trusted by 5,000+ Prompt Architects',
+    pill: 'Powered by AI — results in seconds',
+    freeBadge: 'FREE · NO SIGNUP',
     headline: 'Your Prompts, Forged in the Temple of AI.',
     subtitle:
       'Optimize any prompt with sacred AI precision. Craft SEO-ready content that ranks. Send one prompt to 12 AI models instantly with our extension. Enter the Temple — your AI mastery begins here.',
@@ -198,6 +199,13 @@ Format: Ready to send — no placeholders.`,
         a: 'Yes. Your prompts are private and encrypted. We never share your data with third parties.',
       },
     ],
+  },
+
+  broadcaster: {
+    title: 'One Prompt. Every AI. Instant Comparison.',
+    subtitle: 'Send your prompt to multiple AI models at once. Compare speed, quality, and style side-by-side.',
+    samplePrompt: 'Write a compelling product description for a smart water bottle that tracks hydration and syncs with your fitness app.',
+    cta: 'Try Broadcaster Free →',
   },
 
   footer: {

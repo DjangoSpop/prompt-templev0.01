@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
@@ -41,6 +41,12 @@ import {
   Brain,
   Zap,
   MessageCircle,
+  ArrowUp,
+  LayoutGrid,
+  List,
+  ChevronDown,
+  ChevronUp,
+  XCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -341,6 +347,7 @@ function PublicPromptCard({
   onOpen,
   onEnhance,
   similarityScore,
+  viewMode = 'grid',
 }: {
   prompt: SavedPrompt;
   onCopy: (id: string) => void;
@@ -348,10 +355,97 @@ function PublicPromptCard({
   onOpen: (prompt: SavedPrompt) => void;
   onEnhance: (prompt: SavedPrompt) => void;
   similarityScore?: number;
+  viewMode?: 'grid' | 'list';
 }) {
-  const preview = prompt.content.slice(0, 160);
-  const isTruncated = prompt.content.length > 160;
+  const [quickCopied, setQuickCopied] = useState(false);
+  const preview = prompt.content.slice(0, viewMode === 'list' ? 120 : 160);
+  const isTruncated = prompt.content.length > (viewMode === 'list' ? 120 : 160);
 
+  const handleQuickCopy = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    await navigator.clipboard.writeText(prompt.content);
+    setQuickCopied(true);
+    setTimeout(() => setQuickCopied(false), 1500);
+  };
+
+  // ── List view ──
+  if (viewMode === 'list') {
+    return (
+      <motion.div
+        layout
+        initial={{ opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -4 }}
+        className="min-w-0"
+      >
+        <Card className="min-w-0 overflow-hidden px-3 py-2.5 sm:px-4 sm:py-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 rounded-lg border-border/50 hover:border-[#C9A227]/40 hover:shadow-sm transition-all duration-200">
+          {/* Content — clickable */}
+          <button
+            type="button"
+            onClick={() => onOpen(prompt)}
+            className="flex-1 min-w-0 text-left group flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3"
+          >
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <h3 className="font-semibold text-sm leading-snug truncate group-hover:text-primary transition-colors">
+                {prompt.title}
+              </h3>
+              {similarityScore !== undefined && (
+                <span
+                  className={cn(
+                    'shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold',
+                    similarityScore >= 0.85
+                      ? 'bg-green-500/15 text-green-600 dark:text-green-400'
+                      : similarityScore >= 0.70
+                      ? 'bg-[#C9A227]/15 text-[#C9A227]'
+                      : 'bg-muted text-muted-foreground'
+                  )}
+                >
+                  <Brain className="h-2.5 w-2.5" />
+                  {Math.round(similarityScore * 100)}%
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground truncate max-w-xs hidden md:block">
+              {preview}{isTruncated && '…'}
+            </p>
+          </button>
+
+          {/* Meta + actions */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Badge variant="outline" className="text-[10px] shrink-0 hidden sm:inline-flex">
+              {prompt.category}
+            </Badge>
+            <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+              <TrendingUp className="h-3 w-3" />
+              {prompt.use_count}
+            </span>
+            <Button size="sm" variant="ghost" onClick={handleQuickCopy} className="h-7 w-7 p-0" title="Copy prompt text">
+              {quickCopied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={(e) => { e.stopPropagation(); onEnhance(prompt); }}
+              className="h-7 px-2 text-[10px] flex items-center gap-1 border-[#C9A227]/40 text-[#C9A227] hover:bg-[#C9A227]/10"
+            >
+              <Wand2 className="h-3 w-3" />
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={(e) => { e.stopPropagation(); onCopy(prompt.id); }}
+              disabled={isCopying}
+              className="h-7 px-2 text-[10px] flex items-center gap-1"
+            >
+              {isCopying ? <Loader2 className="h-3 w-3 animate-spin" /> : <Library className="h-3 w-3" />}
+            </Button>
+          </div>
+        </Card>
+      </motion.div>
+    );
+  }
+
+  // ── Grid view (default) ──
   return (
     <motion.div
       layout
@@ -431,6 +525,10 @@ function PublicPromptCard({
             <TrendingUp className="h-3 w-3" />
             {prompt.use_count}
           </span>
+          {/* Quick copy — 1 tap clipboard */}
+          <Button size="sm" variant="ghost" onClick={handleQuickCopy} className="h-7 w-7 p-0" title="Copy prompt text">
+            {quickCopied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+          </Button>
           <Button
             size="sm"
             variant="outline"
@@ -450,9 +548,9 @@ function PublicPromptCard({
             {isCopying ? (
               <Loader2 className="h-3 w-3 animate-spin" />
             ) : (
-              <Copy className="h-3 w-3" />
+              <Library className="h-3 w-3" />
             )}
-            {isCopying ? 'Saving…' : 'Copy'}
+            {isCopying ? 'Saving…' : <span className="hidden sm:inline">Save</span>}
           </Button>
           <PromptShareMenu prompt={prompt} />
         </div>
@@ -521,6 +619,9 @@ export default function DiscoverPage() {
   const [extensionInstalled, setExtensionInstalled] = useState<boolean | null>(null);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [searchMode, setSearchMode] = useState<'keyword' | 'semantic'>('keyword');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [showBackToTop, setShowBackToTop] = useState(false);
+  const [categoriesExpanded, setCategoriesExpanded] = useState(false);
 
   const ragSearch = useRagSearch();
 
@@ -569,6 +670,24 @@ export default function DiscoverPage() {
 
   useEffect(() => {
     detectExtension().then(setExtensionInstalled);
+  }, []);
+
+  // Back-to-top visibility
+  useEffect(() => {
+    const handleScroll = () => setShowBackToTop(window.scrollY > 600);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  const clearAllFilters = useCallback(() => {
+    setSearchInput('');
+    setDebouncedSearch('');
+    setActiveCategory('all');
+    setSortBy('use_count');
   }, []);
 
   const copyMutation = useCopyFromTemplate();
@@ -763,7 +882,7 @@ export default function DiscoverPage() {
       )}
 
       {/* Hero */}
-      <div className="mb-6 md:mb-10 text-center">
+      <div className="mb-6 md:mb-8 text-center">
         <div className="inline-flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-full bg-[#C9A227]/10 mb-3 md:mb-4">
           <Globe className="h-6 w-6 md:h-7 md:w-7 text-[#C9A227]" />
         </div>
@@ -776,9 +895,10 @@ export default function DiscoverPage() {
         </p>
       </div>
 
-      {/* Search + mode toggle */}
-      <div className="mb-5 space-y-2">
-        <div className="relative">
+      {/* ── Sticky search + filters bar ── */}
+      <div className="sticky top-0 z-20 -mx-4 px-4 py-3 bg-background/95 backdrop-blur-md border-b border-transparent transition-colors [&.is-stuck]:border-border/50 [&.is-stuck]:shadow-sm mb-4">
+        {/* Search input */}
+        <div className="relative mb-2">
           {isSemanticMode ? (
             <Brain className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#C9A227]" />
           ) : (
@@ -786,29 +906,37 @@ export default function DiscoverPage() {
           )}
           <input
             type="text"
-            placeholder={isSemanticMode ? 'Describe what you need… (semantic search)' : 'Search public prompts...'}
+            placeholder={isSemanticMode ? 'Describe what you need… (semantic search)' : `Search ${totalCount > 0 ? totalCount.toLocaleString() + ' ' : ''}prompts...`}
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             className={cn(
-              'w-full pl-9 pr-4 py-2 border rounded-lg focus:ring-2 focus:border-primary bg-background text-foreground transition-colors',
+              'w-full pl-9 pr-10 py-2.5 border rounded-lg focus:ring-2 focus:border-primary bg-background text-foreground transition-colors',
               isSemanticMode
                 ? 'border-[#C9A227]/40 focus:ring-[#C9A227]/20'
                 : 'focus:ring-primary/20'
             )}
           />
-          {isSemanticLoading && (
-            <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-[#C9A227]" />
-          )}
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+            {isSemanticLoading && (
+              <Loader2 className="h-4 w-4 animate-spin text-[#C9A227]" />
+            )}
+            {searchInput && (
+              <button type="button" onClick={() => setSearchInput('')} className="p-1 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted transition-colors">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Search mode toggle */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 rounded-lg border p-1">
+        {/* Controls row: search mode + sort + view toggle */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Search mode toggle */}
+          <div className="flex items-center gap-1 rounded-lg border p-0.5">
             <button
               type="button"
               onClick={() => setSearchMode('keyword')}
               className={cn(
-                'flex items-center gap-1.5 px-3 py-1 rounded-md text-xs transition-colors',
+                'flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs transition-colors',
                 searchMode === 'keyword'
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:text-foreground'
@@ -821,7 +949,7 @@ export default function DiscoverPage() {
               type="button"
               onClick={() => setSearchMode('semantic')}
               className={cn(
-                'flex items-center gap-1.5 px-3 py-1 rounded-md text-xs transition-colors',
+                'flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs transition-colors',
                 searchMode === 'semantic'
                   ? 'bg-[#C9A227] text-black font-semibold'
                   : 'text-muted-foreground hover:text-foreground'
@@ -831,89 +959,166 @@ export default function DiscoverPage() {
               Semantic
             </button>
           </div>
+
           {isSemanticMode && (
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
+            <p className="text-xs text-muted-foreground items-center gap-1 hidden sm:flex">
               <Zap className="h-3 w-3 text-[#C9A227]" />
-              AI finds prompts by meaning, not exact words
+              AI finds prompts by meaning
               {ragMode === 'fallback' && (
-                <span className="text-orange-500 ml-1">(fallback mode)</span>
+                <span className="text-orange-500 ml-1">(fallback)</span>
               )}
             </p>
           )}
+
+          <div className="ml-auto flex items-center gap-1.5">
+            {/* Sort toggle — keyword mode only */}
+            {!isSemanticMode && (
+              <div className="flex items-center gap-1 rounded-lg border p-0.5">
+                <button
+                  type="button"
+                  onClick={() => setSortBy('use_count')}
+                  className={cn(
+                    'flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-colors',
+                    sortBy === 'use_count'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  <TrendingUp className="h-3 w-3" />
+                  <span className="hidden sm:inline">Trending</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSortBy('created_at')}
+                  className={cn(
+                    'flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-colors',
+                    sortBy === 'created_at'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  <Clock className="h-3 w-3" />
+                  <span className="hidden sm:inline">Newest</span>
+                </button>
+              </div>
+            )}
+
+            {/* View mode toggle */}
+            <div className="flex items-center gap-1 rounded-lg border p-0.5">
+              <button
+                type="button"
+                onClick={() => setViewMode('grid')}
+                className={cn(
+                  'p-1 rounded-md transition-colors',
+                  viewMode === 'grid' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                )}
+                title="Grid view"
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('list')}
+                className={cn(
+                  'p-1 rounded-md transition-colors',
+                  viewMode === 'list' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                )}
+                title="List view"
+              >
+                <List className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Category filter */}
-      <div className="w-full overflow-x-auto pb-2 mb-6 scrollbar-hide">
-        <div className="flex gap-2 min-w-max">
+      {/* ── Category filter — wrapping grid on mobile ── */}
+      <div className="mb-4">
+        <div className={cn(
+          'flex flex-wrap gap-1.5 transition-all duration-300 overflow-hidden',
+          !categoriesExpanded && 'max-h-[72px] sm:max-h-none'
+        )}>
           {categories.map((cat) => (
             <button
               key={cat}
               type="button"
               onClick={() => setActiveCategory(cat)}
               className={cn(
-                'px-3 py-1 rounded-full text-sm border transition-colors whitespace-nowrap shrink-0',
+                'px-2.5 py-1 rounded-full text-xs border transition-colors whitespace-nowrap',
                 activeCategory === cat
                   ? 'bg-primary text-primary-foreground border-primary'
                   : 'bg-background text-muted-foreground border-border hover:border-primary/50 hover:text-foreground'
               )}
             >
-              {cat === 'all' ? 'All Categories' : cat}
+              {cat === 'all' ? 'All' : cat}
             </button>
           ))}
         </div>
+        {/* Show more/less toggle on mobile when categories overflow */}
+        {categories.length > 8 && (
+          <button
+            type="button"
+            onClick={() => setCategoriesExpanded(!categoriesExpanded)}
+            className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors sm:hidden"
+          >
+            {categoriesExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+            {categoriesExpanded ? 'Show less' : `Show all ${categories.length} categories`}
+          </button>
+        )}
       </div>
 
-      {/* Result count + sort toggle */}
-      {!isLoading && !isError && (
-        <div className="flex items-center gap-3 mb-4 flex-wrap">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground min-w-0">
-            {isSemanticMode ? (
-              <Brain className="h-4 w-4 shrink-0 text-[#C9A227]" />
-            ) : (
-              <BookOpen className="h-4 w-4 shrink-0" />
-            )}
-            <span className="min-w-0 truncate">
-              {isSemanticMode
-                ? ragResults.length > 0
-                  ? `${ragResults.length} semantic result${ragResults.length !== 1 ? 's' : ''}${searchInput ? ` for "${searchInput}"` : ''}`
-                  : debouncedSearch
-                  ? 'No semantic results'
-                  : 'Type to search semantically'
-                : `${filteredPrompts.length} of ${totalCount.toLocaleString()} prompt${totalCount !== 1 ? 's' : ''}${searchInput ? ` matching "${searchInput}"` : ''}`
-              }
-            </span>
-          </div>
-          {!isSemanticMode && (
-            <div className="sm:ml-auto flex items-center gap-1 rounded-lg border p-1 w-full sm:w-auto overflow-x-auto">
-              <button
-                type="button"
-                onClick={() => setSortBy('use_count')}
-                className={cn(
-                  'flex items-center gap-1.5 px-3 py-1 rounded-md text-xs transition-colors',
-                  sortBy === 'use_count'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                <TrendingUp className="h-3 w-3" />
-                Trending
-              </button>
-              <button
-                type="button"
-                onClick={() => setSortBy('created_at')}
-                className={cn(
-                  'flex items-center gap-1.5 px-3 py-1 rounded-md text-xs transition-colors',
-                  sortBy === 'created_at'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                <Clock className="h-3 w-3" />
-                Newest
-              </button>
-            </div>
+      {/* ── Active filter chips ── */}
+      {(searchInput || activeCategory !== 'all') && (
+        <div className="flex items-center gap-2 mb-4 flex-wrap">
+          <span className="text-xs text-muted-foreground">Filters:</span>
+          {activeCategory !== 'all' && (
+            <button
+              type="button"
+              onClick={() => setActiveCategory('all')}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs border border-primary/20 hover:bg-primary/20 transition-colors"
+            >
+              {activeCategory}
+              <XCircle className="h-3 w-3" />
+            </button>
           )}
+          {searchInput && (
+            <button
+              type="button"
+              onClick={() => setSearchInput('')}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted text-foreground text-xs border hover:bg-muted/80 transition-colors"
+            >
+              &ldquo;{searchInput.length > 20 ? searchInput.slice(0, 20) + '…' : searchInput}&rdquo;
+              <XCircle className="h-3 w-3" />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={clearAllFilters}
+            className="text-xs text-muted-foreground hover:text-destructive transition-colors ml-1"
+          >
+            Clear all
+          </button>
+        </div>
+      )}
+
+      {/* ── Result count ── */}
+      {!isLoading && !isError && (
+        <div className="flex items-center gap-2 mb-3 text-sm text-muted-foreground">
+          {isSemanticMode ? (
+            <Brain className="h-4 w-4 shrink-0 text-[#C9A227]" />
+          ) : (
+            <BookOpen className="h-4 w-4 shrink-0" />
+          )}
+          <span className="min-w-0 truncate">
+            {isSemanticMode
+              ? ragResults.length > 0
+                ? `${ragResults.length} semantic result${ragResults.length !== 1 ? 's' : ''}${searchInput ? ` for "${searchInput}"` : ''}`
+                : debouncedSearch
+                ? 'No semantic results'
+                : 'Type to search semantically'
+              : `${filteredPrompts.length} of ${totalCount.toLocaleString()} prompt${totalCount !== 1 ? 's' : ''}${searchInput ? ` matching "${searchInput}"` : ''}`
+            }
+          </span>
         </div>
       )}
 
@@ -972,7 +1177,11 @@ export default function DiscoverPage() {
       ) : (
         <>
           <AnimatePresence mode="popLayout">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+            <div className={cn(
+              viewMode === 'grid'
+                ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4'
+                : 'flex flex-col gap-2'
+            )}>
               {displayPrompts.map((prompt) => (
                 <PublicPromptCard
                   key={prompt.id}
@@ -982,6 +1191,7 @@ export default function DiscoverPage() {
                   onOpen={setSelectedPrompt}
                   onEnhance={handleEnhance}
                   similarityScore={isSemanticMode ? ragScoreMap.get(prompt.id) : undefined}
+                  viewMode={viewMode}
                 />
               ))}
             </div>
@@ -1205,6 +1415,23 @@ export default function DiscoverPage() {
 
         </div>
       </Modal>
+
+      {/* ── Back to top FAB ── */}
+      <AnimatePresence>
+        {showBackToTop && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            type="button"
+            onClick={scrollToTop}
+            className="fixed bottom-20 right-4 lg:bottom-8 lg:right-8 z-30 flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl transition-shadow"
+            aria-label="Back to top"
+          >
+            <ArrowUp className="h-4 w-4" />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
