@@ -173,7 +173,12 @@ export default function AcademyPage() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-b from-obsidian-950 via-obsidian-900 to-obsidian-950 pt-16">
+      <div
+        className="min-h-screen pt-16"
+        style={{
+          background: 'linear-gradient(180deg, #0E0F12 0%, #111827 30%, #0E0F12 60%, #131620 80%, #0E0F12 100%)',
+        }}
+      >
         {/* Hero Section */}
         <AcademyHero />
 
@@ -182,16 +187,29 @@ export default function AcademyPage() {
           {/* Section Header */}
           <div className="text-center mb-12">
             <div className="inline-flex items-center justify-center space-x-2 mb-4">
-              <Crown className="w-6 h-6 text-royal-gold-400" />
-              <span className="text-sm font-semibold text-royal-gold-400 tracking-widest uppercase">
+              <Crown className="w-5 h-5 text-amber-400" />
+              <span className="text-sm font-semibold text-amber-400 tracking-widest uppercase">
                 Course Catalog
               </span>
-              <Crown className="w-6 h-6 text-royal-gold-400" />
+              <Crown className="w-5 h-5 text-amber-400" />
             </div>
-            <h2 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200 bg-clip-text text-transparent mb-4">
-              {courses.filter((c) => !c.isComingSoon).length} Courses, {modules.length} Modules
+            <h2
+              className="text-4xl lg:text-5xl font-bold text-white mb-4"
+              style={{ fontFamily: "'Playfair Display', serif" }}
+            >
+              {courses.filter((c) => !c.isComingSoon).length} Courses,{' '}
+              <span
+                style={{
+                  background: 'linear-gradient(135deg, #ffe066 0%, #d4af37 40%, #CBA135 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                }}
+              >
+                {modules.length} Modules
+              </span>
             </h2>
-            <p className="text-lg text-desert-sand-200 max-w-2xl mx-auto mb-8">
+            <p className="text-lg text-stone-400 max-w-2xl mx-auto mb-8">
               From prompt engineering foundations to production AI agents. Choose your learning path and start building.
             </p>
 
@@ -199,12 +217,13 @@ export default function AcademyPage() {
             <div className="flex items-center justify-center gap-2 flex-wrap">
               {(['all', 'beginner', 'intermediate', 'advanced'] as LevelFilter[]).map((level) => (
                 <button
+                  type="button"
                   key={level}
                   onClick={() => setLevelFilter(level)}
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                     levelFilter === level
-                      ? 'bg-amber-200/20 text-amber-100 border border-amber-200/40'
-                      : 'bg-obsidian-800/40 text-desert-sand-300 border border-desert-sand-700/30 hover:border-amber-200/40 hover:text-amber-100'
+                      ? 'bg-amber-500/15 text-amber-200 border border-amber-500/40'
+                      : 'bg-white/[0.03] text-stone-400 border border-white/10 hover:border-amber-500/30 hover:text-amber-200'
                   }`}
                 >
                   {level === 'all' ? 'All Courses' : level.charAt(0).toUpperCase() + level.slice(1)}
@@ -242,93 +261,76 @@ export default function AcademyPage() {
           )}
 
           {/* Value Proposition Cards */}
-          <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-amber-400/10 to-amber-300/10 rounded-xl blur-lg group-hover:blur-xl transition-all duration-300 opacity-0 group-hover:opacity-100" />
-              <div className="relative p-8 bg-obsidian-800/40 rounded-xl border border-amber-200/20 group-hover:border-amber-200/30 transition-all duration-300 backdrop-blur-sm">
-                <div className="flex items-center justify-center w-14 h-14 rounded-lg bg-gradient-to-br from-amber-400/20 to-amber-300/15 mb-4 mx-auto">
-                  <BookOpen className="w-8 h-8 text-amber-200" />
+          <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {[
+              { icon: <BookOpen className="w-7 h-7" />, title: 'Practical & Applied', desc: 'Every concept backed by real-world examples. Build AI chatbots, automation workflows, and production systems.', color: 'amber' },
+              { icon: <Award className="w-7 h-7" />, title: 'Earn XP & Badges', desc: 'Track progress with XP points. Earn badges: Bronze Scarab, Silver Ankh, Gold Eye of Horus, Lapis Crown.', color: 'emerald' },
+              { icon: <Zap className="w-7 h-7" />, title: '100% Free Courses', desc: `${courses.filter((c) => c.isFree && !c.isComingSoon).length} full courses completely free. No credit card needed. Premium courses coming soon.`, color: 'blue' },
+            ].map((card) => (
+              <div key={card.title} className="group relative rounded-2xl border border-amber-500/15 p-7 text-center transition-all duration-300 hover:border-amber-400/30 hover:shadow-[0_0_30px_rgba(212,175,55,0.08)]" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl border border-amber-500/20 text-amber-400 transition-colors group-hover:border-amber-400/40 group-hover:text-amber-300" style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(212,175,55,0.02) 100%)' }}>
+                  {card.icon}
                 </div>
-                <h3 className="text-xl font-semibold text-amber-200 mb-2 text-center">
-                  Practical & Applied
-                </h3>
-                <p className="text-desert-sand-200 text-sm text-center">
-                  Every concept backed by real-world examples. Build AI chatbots, automation workflows, and production systems.
-                </p>
+                <h3 className="text-lg font-bold text-white mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>{card.title}</h3>
+                <p className="text-stone-400 text-sm">{card.desc}</p>
               </div>
-            </div>
-
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-teal-400/10 to-teal-300/10 rounded-xl blur-lg group-hover:blur-xl transition-all duration-300 opacity-0 group-hover:opacity-100" />
-              <div className="relative p-8 bg-obsidian-800/40 rounded-xl border border-teal-200/20 group-hover:border-teal-200/30 transition-all duration-300 backdrop-blur-sm">
-                <div className="flex items-center justify-center w-14 h-14 rounded-lg bg-gradient-to-br from-teal-400/20 to-teal-300/15 mb-4 mx-auto">
-                  <Award className="w-8 h-8 text-teal-200" />
-                </div>
-                <h3 className="text-xl font-semibold text-teal-200 mb-2 text-center">
-                  Earn XP & Badges
-                </h3>
-                <p className="text-desert-sand-200 text-sm text-center">
-                  Track progress with XP points. Earn badges: Bronze Scarab, Silver Ankh, Gold Eye of Horus, Lapis Crown.
-                </p>
-              </div>
-            </div>
-
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-400/10 to-blue-300/10 rounded-xl blur-lg group-hover:blur-xl transition-all duration-300 opacity-0 group-hover:opacity-100" />
-              <div className="relative p-8 bg-obsidian-800/40 rounded-xl border border-blue-200/20 group-hover:border-blue-200/30 transition-all duration-300 backdrop-blur-sm">
-                <div className="flex items-center justify-center w-14 h-14 rounded-lg bg-gradient-to-br from-blue-400/20 to-blue-300/15 mb-4 mx-auto">
-                  <Zap className="w-8 h-8 text-blue-200" />
-                </div>
-                <h3 className="text-xl font-semibold text-blue-200 mb-2 text-center">
-                  100% Free Courses
-                </h3>
-                <p className="text-desert-sand-200 text-sm text-center">
-                  {courses.filter((c) => c.isFree && !c.isComingSoon).length} full courses completely free. No credit card needed. Premium courses coming soon.
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
 
           {/* Stats Section */}
-          <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto py-12 border-y border-amber-200/15">
+          <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto py-12 border-y border-amber-500/15">
             <div className="text-center">
-              <div className="text-4xl font-bold text-amber-200 mb-2">{courses.filter((c) => !c.isComingSoon).length}</div>
-              <p className="text-desert-sand-200 text-sm">Active Courses</p>
+              <div className="text-4xl font-bold text-amber-300 mb-2">{courses.filter((c) => !c.isComingSoon).length}</div>
+              <p className="text-stone-400 text-sm">Active Courses</p>
             </div>
             <div className="text-center">
-              <div className="text-4xl font-bold text-teal-200 mb-2">{modules.length}+</div>
-              <p className="text-desert-sand-200 text-sm">Total Modules</p>
+              <div className="text-4xl font-bold text-emerald-300 mb-2">{modules.length}+</div>
+              <p className="text-stone-400 text-sm">Total Modules</p>
             </div>
             <div className="text-center">
-              <div className="text-4xl font-bold text-blue-200 mb-2">98%</div>
-              <p className="text-desert-sand-200 text-sm">Completion Rate</p>
+              <div className="text-4xl font-bold text-blue-300 mb-2">98%</div>
+              <p className="text-stone-400 text-sm">Completion Rate</p>
             </div>
             <div className="text-center">
-              <div className="text-4xl font-bold text-purple-200 mb-2">4.9★</div>
-              <p className="text-desert-sand-200 text-sm">Average Rating</p>
+              <div className="text-4xl font-bold text-purple-300 mb-2">4.9★</div>
+              <p className="text-stone-400 text-sm">Average Rating</p>
             </div>
           </div>
         </section>
 
         {/* Footer CTA */}
-        <section className="container mx-auto px-4 py-20 text-center border-t border-amber-200/15">
+        <section className="container mx-auto px-4 py-20 text-center border-t border-amber-500/15">
           <div className="max-w-2xl mx-auto">
             <div className="inline-flex items-center justify-center space-x-2 mb-6">
-              <Scroll className="w-5 h-5 text-amber-200" />
-              <span className="text-sm font-semibold text-amber-200 tracking-widest uppercase">
+              <Scroll className="w-5 h-5 text-amber-400" />
+              <span className="text-sm font-semibold text-amber-400 tracking-widest uppercase">
                 Begin Your Journey
               </span>
-              <Scroll className="w-5 h-5 text-amber-200" />
+              <Scroll className="w-5 h-5 text-amber-400" />
             </div>
-            <h3 className="text-3xl md:text-4xl font-bold text-amber-200 mb-4">
-              Ready to Master AI?
+            <h3
+              className="text-3xl md:text-4xl font-bold text-white mb-4"
+              style={{ fontFamily: "'Playfair Display', serif" }}
+            >
+              Ready to{' '}
+              <span
+                style={{
+                  background: 'linear-gradient(135deg, #ffe066 0%, #d4af37 40%, #CBA135 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                }}
+              >
+                Master AI?
+              </span>
             </h3>
-            <p className="text-desert-sand-200 mb-8 text-lg">
+            <p className="text-stone-400 mb-8 text-lg">
               Start with any course for free. From prompt engineering to production AI agents — your path to mastery begins here.
             </p>
             <a
               href="#modules"
-              className="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-amber-200/20 to-amber-300/15 hover:from-amber-200/30 hover:to-amber-300/20 text-amber-100 border border-amber-200/30 font-semibold rounded-lg transition-all shadow-lg hover:shadow-amber-200/20 hover:scale-105 duration-300"
+              className="inline-flex items-center space-x-2 px-8 py-4 font-bold text-[#0E0F12] rounded-xl shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] hover:scale-[1.02] transition-all duration-300"
+              style={{ background: 'linear-gradient(135deg, #ffe066, #d4af37, #CBA135)' }}
             >
               <span>Start Learning Now</span>
               <ArrowRight className="w-5 h-5" />
@@ -336,7 +338,14 @@ export default function AcademyPage() {
           </div>
         </section>
 
-        <div className="h-1 bg-gradient-to-r from-transparent via-amber-200/30 to-transparent opacity-40 mt-16" />
+        {/* Bottom gold line */}
+        <div
+          className="h-[2px] mt-16"
+          style={{
+            background: 'linear-gradient(90deg, transparent 5%, #d4af37 30%, #ffe066 50%, #d4af37 70%, transparent 95%)',
+            opacity: 0.4,
+          }}
+        />
       </div>
     </>
   );

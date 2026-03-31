@@ -21,7 +21,7 @@ export default function AcademyLayout({ children }: AcademyLayoutProps) {
   // Note: Sidebar is conditionally rendered only on module pages, not on the landing page
   // The landing page handles its own layout
   return (
-    <div className="min-h-screen bg-obsidian-950">
+    <div className="min-h-screen" style={{ background: '#0E0F12' }}>
       {children}
     </div>
   );

@@ -145,10 +145,10 @@ export function QuizEngine({ quiz, moduleId }: QuizEngineProps) {
       {/* Progress Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-3">
-          <span className="text-sm font-medium text-desert-sand-200">
+          <span className="text-sm font-medium text-stone-600 dark:text-desert-sand-200">
             Question {currentQuestionIndex + 1} of {totalQuestions}
           </span>
-          <span className="text-sm font-medium text-amber-200">
+          <span className="text-sm font-medium text-amber-700 dark:text-amber-200">
             {progressPercentage}% Complete
           </span>
         </div>
@@ -164,9 +164,9 @@ export function QuizEngine({ quiz, moduleId }: QuizEngineProps) {
           exit={{ opacity: 0, x: -20 }}
           transition={{ duration: 0.3 }}
         >
-          <Card className="p-8 border-amber-200/25">
+          <Card className="p-8 border-amber-600/20 dark:border-amber-200/25">
             {/* Question */}
-            <h3 className="text-xl lg:text-2xl font-semibold text-amber-100 mb-6">
+            <h3 className="text-xl lg:text-2xl font-semibold text-stone-900 dark:text-amber-100 mb-6">
               {currentQuestion.question}
             </h3>
 
@@ -182,12 +182,12 @@ export function QuizEngine({ quiz, moduleId }: QuizEngineProps) {
 
                 if (showFeedback && isSelected) {
                   buttonClasses += isCorrect
-                    ? ' border-teal-200 bg-teal-400/15'
-                    : ' border-red-200 bg-red-400/15';
+                    ? ' border-teal-600 dark:border-teal-200 bg-teal-500/15'
+                    : ' border-red-500 dark:border-red-200 bg-red-500/15';
                 } else if (showFeedback && isCorrectOption) {
-                  buttonClasses += ' border-teal-200 bg-teal-400/10';
+                  buttonClasses += ' border-teal-600 dark:border-teal-200 bg-teal-500/10';
                 } else if (!showFeedback) {
-                  buttonClasses += ' hover:border-amber-200 hover:bg-amber-400/5';
+                  buttonClasses += ' hover:border-amber-600 dark:hover:border-amber-200 hover:bg-amber-500/5';
                 }
 
                 return (
@@ -205,9 +205,9 @@ export function QuizEngine({ quiz, moduleId }: QuizEngineProps) {
                       <span className="flex-1">{option}</span>
                       {showFeedback && isSelected && (
                         isCorrect ? (
-                          <CheckCircle className="w-5 h-5 text-teal-200" />
+                          <CheckCircle className="w-5 h-5 text-teal-600 dark:text-teal-200" />
                         ) : (
-                          <XCircle className="w-5 h-5 text-red-200" />
+                          <XCircle className="w-5 h-5 text-red-600 dark:text-red-200" />
                         )
                       )}
                     </span>
@@ -225,26 +225,26 @@ export function QuizEngine({ quiz, moduleId }: QuizEngineProps) {
                   exit={{ opacity: 0, y: -10 }}
                   className={`p-6 rounded-lg border ${
                     isCorrect
-                      ? 'bg-teal-400/10 border-teal-200/40'
-                      : 'bg-red-400/10 border-red-200/40'
+                      ? 'bg-teal-500/10 border-teal-600/30 dark:border-teal-200/40'
+                      : 'bg-red-500/10 border-red-600/30 dark:border-red-200/40'
                   }`}
                 >
                   <div className="flex items-start gap-3">
                     {isCorrect ? (
-                      <CheckCircle className="w-5 h-5 text-teal-200 flex-shrink-0 mt-1" />
+                      <CheckCircle className="w-5 h-5 text-teal-600 dark:text-teal-200 flex-shrink-0 mt-1" />
                     ) : (
-                      <XCircle className="w-5 h-5 text-red-200 flex-shrink-0 mt-1" />
+                      <XCircle className="w-5 h-5 text-red-600 dark:text-red-200 flex-shrink-0 mt-1" />
                     )}
                     <div>
-                      <p className={`font-semibold mb-2 ${isCorrect ? 'text-teal-200' : 'text-red-200'}`}>
+                      <p className={`font-semibold mb-2 ${isCorrect ? 'text-teal-700 dark:text-teal-200' : 'text-red-700 dark:text-red-200'}`}>
                         {isCorrect ? 'Correct!' : 'Not quite right'}
                       </p>
-                      <p className="text-sm text-desert-sand-200 leading-relaxed">
+                      <p className="text-sm text-stone-600 dark:text-desert-sand-200 leading-relaxed">
                         {currentQuestion.explanation}
                       </p>
                       <div className="mt-3 flex items-center gap-2 text-sm">
-                        <Award className="w-4 h-4 text-amber-200" />
-                        <span className="text-amber-200 font-semibold">
+                        <Award className="w-4 h-4 text-amber-600 dark:text-amber-200" />
+                        <span className="text-amber-700 dark:text-amber-200 font-semibold">
                           +{isCorrect ? currentQuestion.points : 0} points
                         </span>
                       </div>
@@ -275,6 +275,10 @@ interface QuizResultsProps {
 
 function QuizResults({ score, passingScore, passed, xpReward, moduleId, onRetry }: QuizResultsProps) {
   const isCourseComplete = useAcademyStore(selectIsCourseComplete);
+
+  // Compute next module link: module-1 → module-2, etc.
+  const moduleNum = parseInt(moduleId.replace('module-', ''), 10);
+  const nextModuleId = !isNaN(moduleNum) && moduleNum < 27 ? `module-${moduleNum + 1}` : null;
 
   useEffect(() => {
     if (passed) {
@@ -310,7 +314,7 @@ function QuizResults({ score, passingScore, passed, xpReward, moduleId, onRetry 
       animate={{ opacity: 1, scale: 1 }}
       className="max-w-2xl mx-auto"
     >
-      <Card className="p-8 lg:p-12 text-center border-amber-200/25">
+      <Card className="p-8 lg:p-12 text-center border-amber-600/20 dark:border-amber-200/25">
         {/* Score Display */}
         <div className="mb-8">
           {passed ? (
@@ -323,15 +327,15 @@ function QuizResults({ score, passingScore, passed, xpReward, moduleId, onRetry 
               <CheckCircle className="w-12 h-12 text-white" />
             </motion.div>
           ) : (
-            <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-desert-sand-600 to-desert-sand-700 mb-4">
+            <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-stone-400 to-stone-500 dark:from-desert-sand-600 dark:to-desert-sand-700 mb-4">
               <XCircle className="w-12 h-12 text-white" />
             </div>
           )}
 
-          <h2 className="text-3xl lg:text-4xl font-bold text-amber-200 mb-2">
+          <h2 className="text-3xl lg:text-4xl font-bold text-amber-700 dark:text-amber-200 mb-2">
             {score}%
           </h2>
-          <p className="text-lg text-desert-sand-200">
+          <p className="text-lg text-stone-600 dark:text-desert-sand-200">
             {getScoreMessage()}
           </p>
         </div>
@@ -355,13 +359,13 @@ function QuizResults({ score, passingScore, passed, xpReward, moduleId, onRetry 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="mb-8 p-6 bg-amber-200/15 border border-amber-200/40 rounded-lg"
+            className="mb-8 p-6 bg-amber-500/10 border border-amber-600/30 dark:border-amber-200/40 rounded-lg"
           >
             <div className="flex items-center justify-center gap-3">
-              <Award className="w-8 h-8 text-amber-200" />
+              <Award className="w-8 h-8 text-amber-600 dark:text-amber-200" />
               <div className="text-left">
-                <p className="text-sm text-desert-sand-300">XP Earned</p>
-                <p className="text-2xl font-bold text-amber-200">+{xpReward} XP</p>
+                <p className="text-sm text-stone-500 dark:text-desert-sand-300">XP Earned</p>
+                <p className="text-2xl font-bold text-amber-700 dark:text-amber-200">+{xpReward} XP</p>
               </div>
             </div>
           </motion.div>
@@ -373,13 +377,13 @@ function QuizResults({ score, passingScore, passed, xpReward, moduleId, onRetry 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="mb-8 p-6 bg-gradient-to-r from-amber-200/15 to-teal-200/15 border border-amber-200/40 rounded-xl"
+            className="mb-8 p-6 bg-gradient-to-r from-amber-500/10 to-teal-500/10 border border-amber-600/30 dark:border-amber-200/40 rounded-xl"
           >
-            <GraduationCap className="w-10 h-10 text-amber-200 mx-auto mb-3" />
-            <h3 className="text-xl font-bold text-amber-200 mb-2">
+            <GraduationCap className="w-10 h-10 text-amber-600 dark:text-amber-200 mx-auto mb-3" />
+            <h3 className="text-xl font-bold text-amber-700 dark:text-amber-200 mb-2">
               All Modules Complete!
             </h3>
-            <p className="text-desert-sand-300 text-sm mb-4">
+            <p className="text-stone-500 dark:text-desert-sand-300 text-sm mb-4">
               You&apos;ve mastered all 27 modules. Claim your professional certificate now!
             </p>
             <Link href="/academy/completion">
@@ -408,17 +412,17 @@ function QuizResults({ score, passingScore, passed, xpReward, moduleId, onRetry 
             <>
               <Button
                 variant="outline"
-                className="flex items-center gap-2 border-amber-200/30 text-amber-200 hover:border-amber-200/50"
+                className="flex items-center gap-2 border-amber-600/30 dark:border-amber-200/30 text-amber-700 dark:text-amber-200 hover:border-amber-600/50 dark:hover:border-amber-200/50"
               >
                 <Share2 className="w-4 h-4" />
                 Share Achievement
               </Button>
 
-              <Link href="/academy">
+              <Link href={nextModuleId ? `/academy/${nextModuleId}` : '/academy'}>
                 <Button
                   className="bg-gradient-to-r from-amber-200/30 to-amber-300/20 hover:from-amber-200/40 hover:to-amber-300/25 text-amber-100 border-amber-200/40"
                 >
-                  Next Module →
+                  {nextModuleId ? 'Next Module →' : 'Back to Academy'}
                 </Button>
               </Link>
             </>
@@ -428,7 +432,7 @@ function QuizResults({ score, passingScore, passed, xpReward, moduleId, onRetry 
             <Link href="/academy">
               <Button
                 variant="outline"
-                className="flex items-center gap-2 border-amber-200/30 text-amber-200 hover:border-amber-200/50"
+                className="flex items-center gap-2 border-amber-600/30 dark:border-amber-200/30 text-amber-700 dark:text-amber-200 hover:border-amber-600/50 dark:hover:border-amber-200/50"
               >
                 Back to Academy
               </Button>
