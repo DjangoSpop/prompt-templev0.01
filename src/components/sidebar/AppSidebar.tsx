@@ -171,6 +171,15 @@ const navigationItems: NavItem[] = [
     category: 'tools',
   },
   {
+    id: 'research',
+    label: 'Research',
+    href: '/research',
+    icon: Search,
+    description: 'AI-powered deep research agent',
+    badge: 'New',
+    category: 'tools',
+  },
+  {
     id: 'broadcast',
     label: 'Broadcast',
     href: '/broadcast',
@@ -195,14 +204,6 @@ const navigationItems: NavItem[] = [
     icon: Bot,
     description: 'Build prompts with AI questions',
     badge: 'New',
-    category: 'tools',
-  },
-  {
-    id: 'assistant',
-    label: 'AI Assistant',
-    href: '/assistant',
-    icon: Sparkles,
-    description: 'Thread-based AI conversations',
     category: 'tools',
   },
   {

@@ -921,7 +921,8 @@ export default function DiscoverPage() {
               <Loader2 className="h-4 w-4 animate-spin text-[#C9A227]" />
             )}
             {searchInput && (
-              <button type="button" onClick={() => setSearchInput('')} className="p-1 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted transition-colors">
+              <button
+                  title='button' type="button" onClick={() => setSearchInput('')} className="p-1 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted transition-colors">
                 <X className="h-3.5 w-3.5" />
               </button>
             )}

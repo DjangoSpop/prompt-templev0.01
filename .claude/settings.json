@@ -5,7 +5,10 @@
       "Bash(find 'c:\\\\Users\\\\ahmed el bahi\\\\PromptTemplev0.01' -type f -name *library*)",
       "Bash(python3 -c \":*)",
       "Bash(grep -v \"^$\")",
-      "Bash(grep -v \"//.*version\")"
+      "Bash(grep -v \"//.*version\")",
+      "Read(//c/Users/ahmed el bahi/PromptTemplev0.01/src/app/**)",
+      "Read(//c/Users/ahmed el bahi/PromptTemplev0.01/src/app//**)",
+      "Read(//c/Users/ahmed el bahi/PromptTemplev0.01/src/components/**)"
     ]
   }
 }

@@ -21,6 +21,9 @@ export const CREDIT_COSTS = {
   templateRecommendations: 1, // Sprint 4: AI semantic search per query
   templateVariations: 5, // Sprint 4: Generate 3 tone variations
 
+  // Research Agent
+  research: 10,
+
   // Fallback
   default: 5,
 } as const;
@@ -55,6 +58,7 @@ export function getCreditCost(feature: string, mode?: string): number {
   if (feature === 'smartFill') return CREDIT_COSTS.smartFill;
   if (feature === 'recommendations') return CREDIT_COSTS.templateRecommendations;
   if (feature === 'variations') return CREDIT_COSTS.templateVariations;
+  if (feature === 'research') return CREDIT_COSTS.research;
 
   return CREDIT_COSTS.default;
 }
