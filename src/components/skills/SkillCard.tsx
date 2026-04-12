@@ -6,6 +6,9 @@ import { Eye, Bookmark, Zap, CheckCircle } from 'lucide-react';
 import type { Skill } from '@/types/mcp';
 import { MCPDifficultyBadge } from '@/components/mcp/MCPDifficultyBadge';
 import { SkillTypeBadge } from './SkillTypeBadge';
+import { ShareMenu } from '@/components/sharing/ShareMenu';
+
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://www.prompt-temple.com').replace(/\/$/, '');
 
 interface Props {
   skill: Skill;
@@ -20,8 +23,17 @@ export function SkillCard({ skill }: Props) {
                    border-[var(--border)] bg-[var(--card)] p-5
                    hover:border-[#C9A227]/40 transition-all cursor-pointer"
       >
+        <ShareMenu
+          title={skill.title}
+          description={skill.description}
+          url={`${SITE_URL}/skills/${skill.slug}`}
+          entityType="skill"
+          entityId={skill.id}
+          extraAnalyticsData={{ skill_title: skill.title, skill_slug: skill.slug }}
+          className="absolute top-3 right-3 z-10"
+        />
         {/* Top row: badges */}
-        <div className="flex items-center justify-between gap-2 mb-3">
+        <div className="flex items-center justify-between gap-2 mb-3 pr-10">
           <div className="flex items-center gap-2">
             {skill.is_featured && (
               <span className="inline-flex items-center gap-1 rounded-full

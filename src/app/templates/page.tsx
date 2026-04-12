@@ -32,7 +32,6 @@ import {
   Zap,
   Clock,
   Hash,
-  Share2,
   CheckCircle,
   Loader2,
   X,
@@ -43,19 +42,11 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { ShareMenu } from '@/components/sharing/ShareMenu';
 import Link from 'next/link';
 
 type ViewMode = 'grid' | 'list';
 type SortOption = 'popularity' | 'rating' | 'recent' | 'trending';
-type ShareChannel = 'native' | 'copy_link' | 'x' | 'linkedin';
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://www.prompt-temple.com').replace(/\/$/, '');
 
@@ -302,129 +293,21 @@ export default function TemplatesPage() {
     }
   };
 
-  const buildTemplateSharePayload = (template: TemplateList) => {
+  const TemplateShareMenu = ({ template }: { template: TemplateList }) => {
     const templateUrl = `${SITE_URL}/templates/${template.id}`;
     const ogImageUrl = `${SITE_URL}/api/og/share/template?title=${encodeURIComponent(template.title)}&category=${encodeURIComponent(template.category.name)}&fields=${encodeURIComponent(String(template.field_count || '0'))}`;
-    const shareText = `Discover the \"${template.title}\" template on Prompt Temple and start building faster with AI.`;
-    const xShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(templateUrl)}`;
-    const linkedInShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(templateUrl)}`;
-
-    return {
-      templateUrl,
-      ogImageUrl,
-      shareText,
-      xShareUrl,
-      linkedInShareUrl,
-    };
-  };
-
-  const trackTemplateShare = async (template: TemplateList, channel: ShareChannel, shareUrl: string) => {
-    try {
-      await apiClient.trackEvent({
-        event_type: 'template_shared',
-        data: {
-          template_id: template.id,
-          template_title: template.title,
-          channel,
-          share_url: shareUrl,
-        },
-      });
-    } catch (analyticsError) {
-      console.warn('Analytics tracking failed:', analyticsError);
-    }
-  };
-
-  const handleTemplateShare = async (template: TemplateList, channel: ShareChannel = 'native') => {
-    const { templateUrl, shareText, xShareUrl, linkedInShareUrl } = buildTemplateSharePayload(template);
-
-    try {
-      if (channel === 'x') {
-        window.open(xShareUrl, '_blank', 'noopener,noreferrer,width=640,height=560');
-        toast.success('Opening X share...');
-        await trackTemplateShare(template, 'x', templateUrl);
-        return;
-      }
-
-      if (channel === 'linkedin') {
-        window.open(linkedInShareUrl, '_blank', 'noopener,noreferrer,width=640,height=560');
-        toast.success('Opening LinkedIn share...');
-        await trackTemplateShare(template, 'linkedin', templateUrl);
-        return;
-      }
-
-      if (channel === 'copy_link') {
-        await navigator.clipboard.writeText(templateUrl);
-        toast.success('Template link copied!', {
-          icon: '🔗',
-          duration: 2500,
-        });
-        await trackTemplateShare(template, 'copy_link', templateUrl);
-        return;
-      }
-
-      if (navigator.share) {
-        await navigator.share({
-          title: `${template.title} · Prompt Temple`,
-          text: shareText,
-          url: templateUrl,
-        });
-        toast.success('Template shared successfully!');
-        await trackTemplateShare(template, 'native', templateUrl);
-        return;
-      }
-
-      await navigator.clipboard.writeText(templateUrl);
-      toast.success('Share not supported here. Link copied instead!', {
-        icon: '🔗',
-        duration: 3000,
-      });
-      await trackTemplateShare(template, 'copy_link', templateUrl);
-    } catch (error) {
-      console.error('Failed to share template:', error);
-      toast.error('Unable to share this template right now.');
-    }
-  };
-
-  const TemplateShareMenu = ({ template }: { template: TemplateList }) => {
-    const share = buildTemplateSharePayload(template);
+    const shareText = `Discover the "${template.title}" template on Prompt Temple and start building faster with AI.`;
 
     return (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            size="sm"
-            variant="outline"
-            className="border-primary/30 hover:border-primary hover:bg-primary/10 text-xs"
-            onClick={(event) => event.stopPropagation()}
-            aria-label={`Share ${template.title}`}
-          >
-            <Share2 className="h-3 w-3" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuLabel>Share Template</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={() => handleTemplateShare(template, 'native')}>
-            <Share2 className="h-4 w-4 mr-2" />
-            Quick Share
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => handleTemplateShare(template, 'x')}>
-            X (Twitter)
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => handleTemplateShare(template, 'linkedin')}>
-            LinkedIn
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => handleTemplateShare(template, 'copy_link')}>
-            Copy Link
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem asChild>
-            <a href={share.ogImageUrl} target="_blank" rel="noopener noreferrer">
-              Preview OG Card
-            </a>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <ShareMenu
+        title={template.title}
+        description={shareText}
+        url={templateUrl}
+        ogImageUrl={ogImageUrl}
+        entityType="template"
+        entityId={template.id}
+        extraAnalyticsData={{ template_title: template.title }}
+      />
     );
   };
 

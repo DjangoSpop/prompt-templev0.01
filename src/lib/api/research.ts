@@ -1,4 +1,5 @@
 import { BaseApiClient } from '@/lib/api/base';
+import { useCreditsStore } from '@/store/credits';
 import type {
   CreateJobRequest,
   QuickResearchResponse,
@@ -16,24 +17,92 @@ const RESEARCH_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   'https://prompt-temple-2777469a4e35.herokuapp.com';
 
+/**
+ * Sync credit headers from a fetch Response into the Zustand credits store.
+ */
+function syncCreditsFromResponse(res: Response) {
+  if (typeof window === 'undefined') return;
+
+  const remaining = res.headers.get('X-Credits-Remaining');
+  const used = res.headers.get('X-Credits-Used');
+  const low = res.headers.get('X-Low-Credits');
+  const balance = res.headers.get('X-Credits-Balance');
+  const reserved = res.headers.get('X-Credits-Reserved');
+
+  if (remaining !== null || balance !== null || low !== null) {
+    useCreditsStore.getState().syncFromHeaders(
+      remaining !== null ? Number(remaining) : null,
+      used !== null ? Number(used) : null,
+      low === 'true',
+      balance !== null ? Number(balance) : null,
+      reserved !== null ? Number(reserved) : null
+    );
+  }
+}
+
+/**
+ * Get the auth header from localStorage (same pattern as broadcast.ts).
+ */
+function getAuthHeaders(): HeadersInit {
+  const headers: HeadersInit = { 'Content-Type': 'application/json' };
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('access_token');
+    if (token && token !== 'undefined') {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+  }
+  return headers;
+}
+
 class ResearchClient extends BaseApiClient {
   constructor() {
     super(RESEARCH_BASE_URL);
   }
 
-  // ─── Job Creation ─────────────────────────────────────
+  // ─── Job Creation (routed through Next.js proxy for credit handling) ──
   async quickResearch(data: CreateJobRequest): Promise<QuickResearchResponse> {
-    return this.request<QuickResearchResponse>('/api/v2/research/quick/', {
+    const res = await fetch('/api/v2/research/create', {
       method: 'POST',
-      data,
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
     });
+
+    // Sync credit headers from the proxy response
+    syncCreditsFromResponse(res);
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ error: 'Request failed' }));
+      const err = new Error(error.error || 'Research request failed');
+      (err as any).status = res.status;
+      (err as any).code = error.code;
+      (err as any).response = error;
+      throw err;
+    }
+
+    return res.json();
   }
 
   async intentFast(data: CreateJobRequest): Promise<IntentFastResponse> {
-    return this.request<IntentFastResponse>('/api/v2/research/intent_fast/', {
+    // intent_fast also goes through the proxy for credit deduction
+    // Reuses the same proxy — the proxy calls /quick/ on Heroku
+    const res = await fetch('/api/v2/research/create', {
       method: 'POST',
-      data,
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
     });
+
+    syncCreditsFromResponse(res);
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ error: 'Request failed' }));
+      const err = new Error(error.error || 'Research request failed');
+      (err as any).status = res.status;
+      (err as any).code = error.code;
+      (err as any).response = error;
+      throw err;
+    }
+
+    return res.json();
   }
 
   async batchResearch(queries: string[], top_k = 6) {
@@ -43,7 +112,7 @@ class ResearchClient extends BaseApiClient {
     });
   }
 
-  // ─── Job Retrieval ────────────────────────────────────
+  // ─── Job Retrieval (direct to Heroku — no credits needed) ─────────
   async getJob(jobId: string): Promise<ResearchJob> {
     return this.request<ResearchJob>(`/api/v2/research/jobs/${jobId}/`);
   }
@@ -67,7 +136,7 @@ class ResearchClient extends BaseApiClient {
     return this.request(`/api/v2/research/jobs/${jobId}/progress/`);
   }
 
-  // ─── Job Data ─────────────────────────────────────────
+  // ─── Job Data (direct to Heroku) ──────────────────────
   async getJobDocs(jobId: string): Promise<SourceDoc[]> {
     return this.request<SourceDoc[]>(`/api/v2/research/jobs/${jobId}/docs/`);
   }
@@ -81,7 +150,7 @@ class ResearchClient extends BaseApiClient {
     );
   }
 
-  // ─── System ───────────────────────────────────────────
+  // ─── System (direct to Heroku — public endpoints) ─────
   async getHealth(): Promise<SystemHealth> {
     return this.request<SystemHealth>('/api/v2/research/health/');
   }
@@ -90,7 +159,7 @@ class ResearchClient extends BaseApiClient {
     return this.request<SystemStats>('/api/v2/research/stats/');
   }
 
-  // ─── SSE Stream URL Builder ───────────────────────────
+  // ─── SSE Stream URL Builder (direct to Heroku) ────────
   getStreamUrl(jobId: string): string {
     return `${RESEARCH_BASE_URL}/api/v2/research/jobs/${jobId}/stream/`;
   }

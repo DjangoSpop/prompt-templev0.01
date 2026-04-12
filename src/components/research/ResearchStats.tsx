@@ -14,16 +14,16 @@ export function ResearchStats() {
     <div className="space-y-4">
       {/* Health indicators */}
       {health && (
-        <div className="glass-pharaoh flex items-center gap-4 rounded-xl px-4 py-3">
+        <div className="glass-pharaoh flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2 rounded-xl px-4 py-3">
           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             System
           </span>
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5">
             {healthKeys.map((key) => (
               <div key={key} className="flex items-center gap-1.5">
                 <span
                   className={cn(
-                    'h-2 w-2 rounded-full',
+                    'h-2 w-2 shrink-0 rounded-full',
                     health[key]
                       ? 'bg-emerald-500 shadow-sm shadow-emerald-500/30'
                       : 'bg-red-500 shadow-sm shadow-red-500/30'

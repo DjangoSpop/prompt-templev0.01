@@ -5,6 +5,9 @@ import { motion } from 'framer-motion';
 import type { MCPPromptListItem } from '@/types/mcp';
 import { MCPDifficultyBadge } from './MCPDifficultyBadge';
 import { MCPModelBadges } from './MCPModelBadges';
+import { ShareMenu } from '@/components/sharing/ShareMenu';
+
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://www.prompt-temple.com').replace(/\/$/, '');
 
 interface Props {
   prompt: MCPPromptListItem;
@@ -19,8 +22,17 @@ export function MCPPromptCard({ prompt }: Props) {
                    border-[var(--border)] bg-[var(--card)] p-5
                    hover:border-[#C9A227]/40 transition-all cursor-pointer"
       >
+        <ShareMenu
+          title={prompt.title}
+          description={prompt.description}
+          url={`${SITE_URL}/mcp/prompts/${prompt.slug}`}
+          entityType="mcp_prompt"
+          entityId={prompt.id}
+          extraAnalyticsData={{ mcp_prompt_title: prompt.title, mcp_prompt_slug: prompt.slug }}
+          className="absolute top-3 right-3 z-10"
+        />
         {/* Top row: badges */}
-        <div className="flex items-center justify-between gap-2 mb-3">
+        <div className="flex items-center justify-between gap-2 mb-3 pr-10">
           <div className="flex items-center gap-2">
             {prompt.is_featured && (
               <span className="inline-flex items-center gap-1 rounded-full

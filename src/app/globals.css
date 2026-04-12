@@ -113,9 +113,9 @@
     --gradient-temple: linear-gradient(180deg, #1B2B6B 0%, #0D0D0D 100%);
     --gradient-papyrus: linear-gradient(120deg, #F0E6D3 0%, #D4B896 100%);
 
-    /* Glass morphism */
-    --glass-bg: rgba(245, 197, 24, 0.05);
-    --glass-border: rgba(245, 197, 24, 0.15);
+    /* Glass morphism — light mode: semi-opaque white card on papyrus bg, subtle sand-line border */
+    --glass-bg: rgba(255, 255, 255, 0.72);
+    --glass-border: rgba(14, 27, 42, 0.08);
     --glass-blur: blur(20px);
 
     /* Typography */
@@ -1132,13 +1132,13 @@ select:focus-visible {
 
 /* ── Mobile Performance ─────────────────────────────────── */
 
-/* Disable backdrop-blur on mobile for performance */
+/* Disable backdrop-blur on mobile for performance — keep theme-appropriate fills */
 @media (max-width: 767px) {
   .glass-effect,
   .glass-pharaoh {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
-    background-color: rgba(14, 15, 18, 0.95) !important;
+    background-color: rgba(255, 255, 255, 0.92) !important;
   }
   .dark .glass-effect,
   .dark .glass-pharaoh {

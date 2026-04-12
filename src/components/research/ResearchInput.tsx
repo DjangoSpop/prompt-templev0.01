@@ -90,7 +90,7 @@ export function ResearchInput({ onSubmit, isLoading, creditsAvailable }: Researc
                 type="submit"
                 disabled={!query.trim() || isLoading || !canAfford}
                 size="sm"
-                className="gap-2 bg-lapis-blue-500 font-medium text-white shadow-sm hover:bg-lapis-blue-600 disabled:bg-muted disabled:text-muted-foreground"
+                className="gap-2 bg-lapis-blue-500 font-medium text-white shadow-sm hover:bg-lapis-blue-600 disabled:bg-lapis-blue-500/40 disabled:text-white/90 disabled:cursor-not-allowed disabled:shadow-none"
               >
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

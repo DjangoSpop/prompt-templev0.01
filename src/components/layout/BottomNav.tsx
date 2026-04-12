@@ -8,10 +8,15 @@ import {
   BookOpen,
   Sparkles,
   User,
+  Compass,
+  Gem,
+  Zap,
+  Crown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/providers/AuthProvider';
 
-const NAV_ITEMS = [
+const AUTH_NAV_ITEMS = [
   { href: '/dashboard',  label: 'Home',       icon: Home     },
   { href: '/discover',   label: 'Discover',   icon: Globe    },
   { href: '/templates',  label: 'Templates',  icon: BookOpen },
@@ -19,8 +24,18 @@ const NAV_ITEMS = [
   { href: '/profile',    label: 'Profile',    icon: User     },
 ] as const;
 
+const PUBLIC_NAV_ITEMS = [
+  { href: '/discover',  label: 'Discover',  icon: Compass  },
+  { href: '/templates', label: 'Templates', icon: BookOpen },
+  { href: '/skills',    label: 'Skills',    icon: Gem      },
+  { href: '/mcp',       label: 'MCPs',      icon: Zap      },
+  { href: '/academy',   label: 'Academy',   icon: Crown    },
+] as const;
+
 export function BottomNav() {
   const pathname = usePathname();
+  const { isAuthenticated } = useAuth();
+  const navItems = isAuthenticated ? AUTH_NAV_ITEMS : PUBLIC_NAV_ITEMS;
 
   // Hide on full-screen module pages — they have their own navigation footer
   const isModulePage = pathname.startsWith('/academy/module');
@@ -38,7 +53,7 @@ export function BottomNav() {
           'lg:hidden',        // hidden on desktop — sidebar takes over
         )}
       >
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+        {navItems.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(href + '/');
           return (
             <Link

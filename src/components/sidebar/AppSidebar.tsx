@@ -12,7 +12,10 @@ import {
   BrainCircuit,
   ChevronLeft,
   ChevronRight,
+  Compass,
+  Crown,
   Database,
+  Gem,
   GraduationCap,
   Download,
   Globe,
@@ -349,6 +352,21 @@ const groupedItems = {
   resources: navigationItems.filter((item) => item.category === 'resources'),
 };
 
+// Public nav shown to unauthenticated visitors — only the 5 discoverable, auth-free sections.
+const publicNavItems: NavItem[] = [
+  { id: 'discover',  label: 'Discover',  href: '/discover',  icon: Compass,  description: 'Explore prompts & tools',    category: 'main' },
+  { id: 'templates', label: 'Templates', href: '/templates', icon: BookOpen, description: 'Prompt library',             category: 'main' },
+  { id: 'skills',    label: 'Skills',    href: '/skills',    icon: Gem,      description: 'MCP skills library',         category: 'main' },
+  { id: 'mcps',      label: 'MCPs',      href: '/mcp',       icon: Zap,      description: 'MCP integrations',           category: 'main' },
+  { id: 'academy',   label: 'Academy',   href: '/academy',   icon: Crown,    description: 'Learn prompt engineering',   category: 'main' },
+];
+
+const publicGroupedItems = {
+  main: publicNavItems,
+  tools: [] as NavItem[],
+  resources: [] as NavItem[],
+};
+
 interface AppSidebarProps {
   className?: string;
 }
@@ -493,7 +511,7 @@ export function AppSidebar({ className }: AppSidebarProps) {
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto px-3 py-4 scrollbar-hide">
-          {Object.entries(groupedItems).map(([category, items]) => (
+          {Object.entries(isAuthenticated ? groupedItems : publicGroupedItems).map(([category, items]) => (
             <div key={category} className="mb-6">
               {/* Category Label */}
               {!isCollapsed && (
@@ -655,8 +673,10 @@ export function AppSidebar({ className }: AppSidebarProps) {
             </Tooltip>
           )}
 
-          {/* Settings */}
-          {settingsItems.map((item) => {
+          {/* Settings — hide account-gated Settings link for unauthenticated users, keep legal pages */}
+          {settingsItems
+            .filter((item) => isAuthenticated || item.id !== 'settings')
+            .map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href);
 

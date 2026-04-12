@@ -34,7 +34,9 @@ import {
   BookOpen
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 import { useProfile, useUpdateProfile, useUserStats } from '@/hooks/api/useAuth';
+import { useAuth } from '@/lib/hooks/useAuth';
 import type { UserProfile } from '@/lib/api/typed-client';
 
 // Profile form data interface
@@ -274,12 +276,33 @@ const PreferencesForm = ({ formData, onUpdate }: {
 
 // Main Profile Page Component
 export default function ProfilePage() {
+  const router = useRouter();
+  const { isAuthenticated, isLoadingUser } = useAuth();
   const { data: profile, isLoading: profileLoading, error: profileError } = useProfile();
   const { data: userStats, isLoading: statsLoading } = useUserStats();
   const updateProfileMutation = useUpdateProfile();
 
   const [formData, setFormData] = useState<ProfileFormData>({});
   const [hasChanges, setHasChanges] = useState(false);
+
+  // Auth guard — redirect unauthenticated users to /discover instead of showing a broken profile
+  useEffect(() => {
+    if (!isLoadingUser && !isAuthenticated) {
+      router.replace('/discover');
+    }
+  }, [isLoadingUser, isAuthenticated, router]);
+
+  if (isLoadingUser || !isAuthenticated) {
+    return (
+      <div className="temple-background min-h-screen p-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="h-8 w-8 animate-spin text-accent" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Initialize form data when profile loads
   useEffect(() => {
@@ -344,8 +367,8 @@ export default function ProfilePage() {
       <div className="temple-background min-h-screen p-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center space-y-4">
-            <h1 className="text-2xl font-bold text-fg">Profile Not Found</h1>
-            <p className="text-fg/60">Unable to load your profile information.</p>
+            <h1 className="text-2xl font-bold text-fg">Unable to load profile</h1>
+            <p className="text-fg/60">Something went wrong while fetching your profile. Please try again.</p>
             <Button onClick={() => window.location.reload()}>
               Retry
             </Button>
