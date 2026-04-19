@@ -1,9 +1,12 @@
 ﻿import path from "path";
 import { fileURLToPath } from "url";
 import type { NextConfig } from "next";
+import { applyDesktopOverrides } from "./next.config.desktop";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const isDesktopBuild = process.env.BUILD_TARGET === "desktop";
 
 const nextConfig: NextConfig = {
   // Enable experimental features
@@ -125,4 +128,4 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
 };
 
-export default nextConfig;
+export default isDesktopBuild ? applyDesktopOverrides(nextConfig) : nextConfig;

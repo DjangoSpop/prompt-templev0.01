@@ -31,6 +31,13 @@ export function AppLayoutWithSidebar({ children }: AppLayoutWithSidebarProps) {
   const [isMounted, setIsMounted] = useState(false);
   const isAnonymousLanding = pathname === '/' && !isAuthenticated;
 
+  // Desktop overlay window: render children with no sidebar, no wrappers, no
+  // background gradient. The Electron overlay window is frameless + transparent,
+  // and the overlay page draws its own card.
+  if (pathname?.startsWith('/desktop/')) {
+    return <>{children}</>;
+  }
+
   useEffect(() => {
     setIsMounted(true);
   }, []);

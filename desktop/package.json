@@ -1,0 +1,34 @@
+{
+  "name": "prompt-temple-desktop",
+  "version": "1.0.0",
+  "description": "Prompt Temple — One Prompt. Eleven AIs. Now on your desktop.",
+  "private": true,
+  "main": "dist/electron/main.js",
+  "author": {
+    "name": "Prompt Temple",
+    "email": "support@prompt-temple.com"
+  },
+  "scripts": {
+    "build:next": "cd .. && npm run build:desktop",
+    "copy-standalone": "node scripts/copy-standalone.js",
+    "build:electron": "tsc -p .",
+    "build": "npm run build:next && npm run copy-standalone && npm run build:electron",
+    "dev": "npm run build:electron && cross-env DESKTOP_DEV=1 electron .",
+    "package": "npm run build && electron-builder",
+    "package:win": "npm run build && electron-builder --win",
+    "package:mac": "npm run build && electron-builder --mac",
+    "package:linux": "npm run build && electron-builder --linux"
+  },
+  "devDependencies": {
+    "@types/auto-launch": "^5.0.5",
+    "@types/node": "^22.0.0",
+    "cross-env": "^7.0.3",
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0",
+    "typescript": "^5.6.0"
+  },
+  "dependencies": {
+    "auto-launch": "^5.0.6",
+    "electron-store": "^8.2.0"
+  }
+}
