@@ -1,0 +1,88 @@
+appId: com.prompttemple.desktop
+productName: Prompt Temple
+copyright: Copyright © 2026 Prompt Temple
+
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - dist/**/*
+  - package.json
+  - "!node_modules/**/*.{md,markdown,map,ts,tsx}"
+  - "!**/{CHANGELOG.md,README.md,readme.md,LICENSE,license,LICENSE.md}"
+
+extraResources:
+  - from: resources/standalone
+    to: standalone
+    filter: ["**/*"]
+  - from: resources/.env.desktop
+    to: .env.desktop
+    filter: ["**/*"]
+
+asar: true
+asarUnpack:
+  - "**/*.node"
+compression: maximum
+
+# Avoid bundling native dev tooling in the installer.
+removePackageScripts: true
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: msi
+      arch: [x64]
+  icon: build/icon.ico
+  publisherName: Prompt Temple
+  requestedExecutionLevel: asInvoker
+  verifyUpdateCodeSignature: false
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Prompt Temple
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
+msi:
+  oneClick: false
+  perMachine: true
+
+mac:
+  target:
+    - target: dmg
+      arch: [universal]
+    - target: zip
+      arch: [universal]
+  icon: build/icon.icns
+  category: public.app-category.productivity
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  notarize: false
+dmg:
+  sign: false
+  contents:
+    - x: 130
+      y: 220
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
+
+linux:
+  target:
+    - AppImage
+    - deb
+    - rpm
+  icon: build/icon.png
+  category: Office
+  maintainer: support@prompt-temple.com
+  desktop:
+    Name: Prompt Temple
+    Comment: One Prompt. Eleven AIs.
+    Keywords: ai;prompt;productivity;

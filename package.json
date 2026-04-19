@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "build:desktop": "cross-env BUILD_TARGET=desktop next build",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
@@ -87,6 +88,7 @@
   "devDependencies": {
     "@types/react": "19.1.13",
     "@types/react-syntax-highlighter": "^15.5.13",
+    "cross-env": "^7.0.3",
     "typescript": "5.9.2"
   }
 }
