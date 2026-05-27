@@ -1,6 +1,0 @@
-node_modules/
-dist/
-release/
-resources/standalone/
-resources/.env.desktop
-*.log

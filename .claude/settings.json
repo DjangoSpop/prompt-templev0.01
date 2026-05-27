@@ -8,7 +8,8 @@
       "Bash(grep -v \"//.*version\")",
       "Read(//c/Users/ahmed el bahi/PromptTemplev0.01/src/app/**)",
       "Read(//c/Users/ahmed el bahi/PromptTemplev0.01/src/app//**)",
-      "Read(//c/Users/ahmed el bahi/PromptTemplev0.01/src/components/**)"
+      "Read(//c/Users/ahmed el bahi/PromptTemplev0.01/src/components/**)",
+      "Bash(npm install *)"
     ]
   }
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -35,7 +36,16 @@ const PUBLIC_NAV_ITEMS = [
 export function BottomNav() {
   const pathname = usePathname();
   const { isAuthenticated } = useAuth();
-  const navItems = isAuthenticated ? AUTH_NAV_ITEMS : PUBLIC_NAV_ITEMS;
+
+  // Auth state is unknown during SSR (no session), so the server always renders
+  // the PUBLIC set. If we branched on `isAuthenticated` during the first client
+  // render too, an authenticated user's client tree would differ from the
+  // server HTML → hydration mismatch (the /discover↔/dashboard, Compass↔Home
+  // flip). Gate the auth-aware selection behind a mounted flag so SSR and the
+  // first client render agree; we switch to the auth nav after hydration.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const navItems = mounted && isAuthenticated ? AUTH_NAV_ITEMS : PUBLIC_NAV_ITEMS;
 
   // Hide on full-screen module pages — they have their own navigation footer
   const isModulePage = pathname.startsWith('/academy/module');

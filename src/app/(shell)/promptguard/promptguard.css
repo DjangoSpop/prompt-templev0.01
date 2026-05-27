@@ -1,0 +1,358 @@
+/*
+ * PromptGuard — Pharaonic visual identity (Sprint 5).
+ *
+ * Scoped to `.pg-scope` so it overrides shadcn's HSL theme tokens ONLY inside
+ * the PromptGuard route — every shadcn component nested here (Button, Card,
+ * Badge, Skeleton…) inherits the deep-navy / cream / gold palette with no
+ * per-component changes, and the rest of prompt-temple.com is untouched
+ * (AD-5: no global theme changes).
+ */
+.pg-scope {
+  /* shadcn token overrides — this project uses the `-fg` suffix convention */
+  --background: 218 59% 9%;
+  --foreground: 47 67% 86%;
+  --card: 212 56% 14%;
+  --card-fg: 47 67% 86%;
+  --popover: 212 56% 14%;
+  --popover-fg: 47 67% 86%;
+  --primary: 40 62% 56%;
+  --primary-fg: 218 59% 9%;
+  --secondary: 211 58% 20%;
+  --secondary-fg: 47 67% 86%;
+  --muted: 211 58% 20%;
+  --muted-fg: 43 32% 59%;
+  --accent: 40 62% 56%;
+  --accent-fg: 218 59% 9%;
+  /* gold-tinted + lighter so card hairlines and outline-button borders read on
+     the navy background (fixes low-contrast ghost buttons) */
+  --border: 40 38% 34%;
+  --input: 40 34% 38%;
+  --ring: 40 62% 56%;
+  --destructive: 0 55% 53%;
+  --destructive-fg: 47 67% 90%;
+
+  /* raw palette (used by the .pg-* theater classes) */
+  --pg-bg: #0a1426;
+  --pg-surface: #102338;
+  --pg-elevated: #15314f;
+  --pg-text: #f3e8c2;
+  --pg-text-muted: #b8a575;
+  --pg-gold: #d4a64a;
+  --pg-gold-soft: #8a6e2f;
+  --pg-success: #5d9b6a;
+  --pg-danger: #c05050;
+  --pg-line: rgba(212, 166, 74, 0.18);
+  --pg-line-strong: rgba(212, 166, 74, 0.42);
+
+  --pg-serif: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif;
+
+  background: var(--pg-bg);
+  color: var(--pg-text);
+  border-radius: 1rem;
+  min-height: 70vh;
+  padding: 1.25rem;
+}
+@media (min-width: 768px) {
+  .pg-scope {
+    padding: 2rem;
+  }
+}
+
+/* Headline */
+.pg-headline {
+  font-family: var(--pg-serif);
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  color: var(--pg-gold);
+}
+.pg-tagline {
+  color: var(--pg-text-muted);
+  letter-spacing: 0.02em;
+}
+
+/* ---------------------------------------------------------------- Theater -- */
+.pg-theater {
+  position: relative;
+  overflow: hidden;
+  background: var(--pg-surface);
+  border: 1px solid var(--pg-line);
+  border-top: 1px solid var(--pg-line-strong);
+  border-radius: 14px;
+  padding: 1.75rem;
+}
+.pg-theater::before {
+  /* hairline gold accent at the top edge — the Pharaonic touch */
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 1.5rem;
+  right: 1.5rem;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--pg-gold), transparent);
+  opacity: 0.6;
+}
+.pg-theater-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.pg-theater-title {
+  font-family: var(--pg-serif);
+  font-size: 1.75rem;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  color: var(--pg-gold);
+  line-height: 1.1;
+}
+.pg-theater-subtitle {
+  margin-top: 0.2rem;
+  font-size: 0.9rem;
+  color: var(--pg-text-muted);
+}
+
+/* Top-line score */
+.pg-theater-score {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 1.25rem 0 0.75rem;
+}
+.pg-score-value {
+  font-family: var(--pg-serif);
+  font-size: clamp(3rem, 8vw, 4.5rem);
+  font-weight: 300;
+  color: var(--pg-gold);
+  line-height: 1;
+}
+.pg-score-denom {
+  font-size: 1.1rem;
+  color: var(--pg-text-muted);
+}
+.pg-score-label {
+  margin-left: auto;
+  align-self: center;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pg-text-muted);
+}
+
+/* Progress rail */
+.pg-progress-rail {
+  height: 3px;
+  border-radius: 3px;
+  background: rgba(212, 166, 74, 0.12);
+  overflow: hidden;
+  margin: 0.5rem 0 1.25rem;
+}
+.pg-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--pg-gold-soft), var(--pg-gold));
+}
+
+/* Active case — pulsing while the judge thinks */
+.pg-active-case {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1.1rem;
+  background: var(--pg-elevated);
+  border-left: 2px solid var(--pg-gold);
+  border-radius: 6px;
+  margin: 0.75rem 0;
+}
+.pg-active-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--pg-gold);
+  box-shadow: 0 0 12px var(--pg-gold);
+  animation: pg-pulse 1.4s ease-in-out infinite;
+}
+.pg-active-type {
+  flex: none;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: var(--pg-gold);
+}
+.pg-active-prompt {
+  flex: 1;
+  min-width: 0;
+  color: var(--pg-text);
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pg-active-status {
+  flex: none;
+  font-size: 0.8rem;
+  color: var(--pg-text-muted);
+  animation: pg-pulse 1.4s ease-in-out infinite;
+}
+@keyframes pg-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Completed case rows */
+.pg-theater-cases {
+  margin-top: 0.5rem;
+}
+.pg-case-row {
+  background: var(--pg-elevated);
+  border: 1px solid var(--pg-line);
+  border-left-width: 3px;
+  border-radius: 8px;
+  padding: 0.85rem 1.1rem;
+  margin-bottom: 0.6rem;
+}
+.pg-case-row.pg-score-high {
+  border-left-color: var(--pg-success);
+}
+.pg-case-row.pg-score-mid {
+  border-left-color: var(--pg-gold);
+}
+.pg-case-row.pg-score-low {
+  border-left-color: var(--pg-danger);
+}
+.pg-case-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.pg-case-type {
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  color: var(--pg-text-muted);
+}
+.pg-case-score {
+  font-family: var(--pg-serif);
+  font-size: 1.5rem;
+  color: var(--pg-gold);
+}
+.pg-case-denom {
+  font-size: 0.8rem;
+  color: var(--pg-text-muted);
+}
+.pg-case-dims {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0.4rem 0;
+}
+.pg-dim {
+  font-size: 0.78rem;
+  color: var(--pg-text-muted);
+}
+.pg-dim strong {
+  color: var(--pg-text);
+  margin-left: 0.2rem;
+}
+.pg-case-reasoning {
+  margin-top: 0.4rem;
+  font-style: italic;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--pg-text-muted);
+}
+
+/* CTA button */
+.pg-theater-cta {
+  margin-top: 1.25rem;
+}
+.pg-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--pg-gold);
+  color: var(--pg-bg);
+  border: none;
+  padding: 0.7rem 1.4rem;
+  border-radius: 8px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    transform 120ms ease,
+    box-shadow 150ms ease;
+}
+.pg-btn-primary:hover {
+  background: #e5b85b;
+  box-shadow: 0 4px 18px rgba(212, 166, 74, 0.25);
+}
+.pg-btn-primary:active {
+  transform: translateY(1px);
+}
+.pg-btn-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.pg-theater-hint {
+  margin-top: 0.6rem;
+  font-size: 0.78rem;
+  color: var(--pg-text-muted);
+}
+.pg-theater-error {
+  margin-top: 1rem;
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(192, 80, 80, 0.4);
+  background: rgba(192, 80, 80, 0.12);
+  color: #f0c0c0;
+  font-size: 0.85rem;
+}
+
+/* Status badge */
+.pg-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: none;
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid var(--pg-line);
+  color: var(--pg-text-muted);
+  background: rgba(212, 166, 74, 0.06);
+}
+.pg-status-streaming,
+.pg-status-connecting {
+  color: var(--pg-gold);
+  border-color: var(--pg-line-strong);
+}
+.pg-status-done {
+  color: var(--pg-success);
+  border-color: rgba(93, 155, 106, 0.5);
+}
+.pg-status-failed {
+  color: #e08a8a;
+  border-color: rgba(192, 80, 80, 0.5);
+}
+.pg-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pg-pulse 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pg-active-dot,
+  .pg-active-status,
+  .pg-status-dot {
+    animation: none;
+  }
+}

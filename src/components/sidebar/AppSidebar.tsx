@@ -120,6 +120,15 @@ const navigationItems: NavItem[] = [
     category: 'main',
   },
   {
+    id: 'promptguard',
+    label: 'PromptGuard',
+    href: '/promptguard',
+    icon: Shield,
+    description: 'Autonomous prompt-quality monitor & reasoning',
+    badge: 'New',
+    category: 'main',
+  },
+  {
     id: 'usage',
     label: 'Usage Dashboard',
     href: '/usage',

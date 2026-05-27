@@ -1,4 +1,9 @@
 {
+  "env": {
+    "ANTHROPIC_AUTH_TOKEN": "20b0829bcb234d0b8c073245bad18bc0",
+    "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
+    "API_TIMEOUT_MS": "3000000"
+  },
   "permissions": {
     "allow": [
       "Read(//c/Users/ahmed el bahi/**)",
@@ -20,16 +25,10 @@
       "Bash(python3:*)",
       "Bash(npm run build)",
       "Bash(npx next build --no-lint)",
-      "Bash(xargs grep -l \"SSE\\\\|streaming\\\\|EventSource\\\\|fetch.*stream\")"
+      "Bash(xargs grep -l \"SSE\\\\|streaming\\\\|EventSource\\\\|fetch.*stream\")",
+      "Bash(node *)"
     ],
     "deny": [],
     "ask": []
   }
-  {
-  "env": {
-    "ANTHROPIC_AUTH_TOKEN": "20b0829bcb234d0b8c073245bad18bc0",
-    "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
-    "API_TIMEOUT_MS": "3000000"
-  }
-}
 }
