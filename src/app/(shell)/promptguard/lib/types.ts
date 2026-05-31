@@ -167,6 +167,8 @@ export type TriggerIncidentResponse = {
   task_id?: string;
   status_url?: string;
   no_regression?: boolean;
+  // Backend guard: {"ok": false, "error": "no_active_monitored_enhancer"}.
+  error?: string;
 };
 
 export type EvaluateActiveResponse = {

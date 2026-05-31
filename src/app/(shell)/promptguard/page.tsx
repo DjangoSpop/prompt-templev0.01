@@ -1,5 +1,6 @@
 'use client';
 
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -37,6 +38,40 @@ export default function PromptGuardDashboard() {
   const trigger = useTriggerIncident();
   const evaluate = useEvaluateActive();
 
+  // Surface the trigger result. Without this the button fires but the common
+  // "no regression" path (and the "no active monitored enhancer" guard) leave
+  // the dashboard unchanged — looking like the button does nothing.
+  const handleTrigger = () => {
+    if (trigger.isPending) return;
+    trigger.mutate(undefined, {
+      onSuccess: (res) => {
+        if (res.ok === false) {
+          toast.error(
+            `Cannot trigger: ${res.error ?? 'no active monitored enhancer'}`
+          );
+          return;
+        }
+        if (res.no_regression) {
+          toast.success('No regression detected — the live prompt set is healthy.');
+          return;
+        }
+        if (res.incident_id) {
+          toast.success(
+            `Incident opened — the agent is diagnosing now (${res.incident_id.slice(0, 8)}). ` +
+              'Watch the activity stream below.'
+          );
+          return;
+        }
+        toast.success('Incident trigger accepted.');
+      },
+      onError: (err) => {
+        toast.error(
+          `Trigger failed: ${err instanceof Error ? err.message : String(err)}`
+        );
+      },
+    });
+  };
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -70,7 +105,7 @@ export default function PromptGuardDashboard() {
             )}
             {evaluate.isPending ? 'Evaluating…' : 'Run evaluation'}
           </Button>
-          <Button onClick={() => trigger.mutate()} disabled={trigger.isPending}>
+          <Button onClick={handleTrigger} disabled={trigger.isPending}>
             {trigger.isPending ? (
               <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
             ) : (
