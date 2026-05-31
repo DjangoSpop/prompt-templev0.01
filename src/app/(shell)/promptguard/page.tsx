@@ -73,21 +73,21 @@ export default function PromptGuardDashboard() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Header */}
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="pg-headline flex items-center gap-3 text-4xl md:text-5xl">
+      <header className="flex flex-col gap-4 sm:gap-5 lg:flex-row lg:items-start lg:justify-between">
+        <div className="space-y-1">
+          <h1 className="pg-headline flex items-center gap-3 text-3xl sm:text-4xl md:text-5xl">
             <ShieldCheck className="h-8 w-8 text-accent" />
             PromptGuard
           </h1>
-          <p className="pg-tagline mt-1 text-sm">
+          <p className="pg-tagline max-w-2xl text-sm sm:text-[0.95rem]">
             The agent that improves the agent · watch it think in real time
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-stretch gap-2 sm:gap-3 lg:items-center lg:justify-end">
           {data && data.open_incidents > 0 && (
-            <Badge variant="destructive" className="gap-1">
+            <Badge variant="destructive" className="h-9 gap-1.5 px-3 text-xs sm:h-10">
               <AlertTriangle className="h-3 w-3" />
               {data.open_incidents} open
             </Badge>
@@ -97,6 +97,7 @@ export default function PromptGuardDashboard() {
             onClick={() => evaluate.mutate()}
             disabled={evaluate.isPending}
             title="Evaluate the live prompt set against the eval suite (real LLM judging)"
+            className="h-10 px-4 text-sm sm:px-5"
           >
             {evaluate.isPending ? (
               <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
@@ -105,7 +106,11 @@ export default function PromptGuardDashboard() {
             )}
             {evaluate.isPending ? 'Evaluating…' : 'Run evaluation'}
           </Button>
-          <Button onClick={handleTrigger} disabled={trigger.isPending}>
+          <Button
+            onClick={handleTrigger}
+            disabled={trigger.isPending}
+            className="h-10 px-4 text-sm sm:px-5"
+          >
             {trigger.isPending ? (
               <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
             ) : (
@@ -147,7 +152,7 @@ export default function PromptGuardDashboard() {
               />
             </div>
             {/* Sidebar column */}
-            <div className="space-y-6 lg:col-span-1">
+            <div className="space-y-4 sm:space-y-5 lg:col-span-1">
               <ActiveVersionCard active={data.active_version} />
               <EvalScoreCard
                 evalSummary={data.latest_eval}
