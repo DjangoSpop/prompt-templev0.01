@@ -123,11 +123,11 @@ function PromptDetailModal({
         <DialogHeader className="px-6 pt-6 pb-4 border-b">
           <div className="flex items-start justify-between gap-3 pr-6">
             <div className="flex-1 min-w-0">
-              <DialogTitle className="text-lg font-semibold leading-snug">
+              <DialogTitle className="font-display text-2xl md:text-3xl font-bold leading-tight tracking-tight">
                 {prompt.title}
               </DialogTitle>
               {prompt.description && (
-                <DialogDescription className="mt-1 text-sm text-muted-foreground line-clamp-2">
+                <DialogDescription className="font-body mt-1.5 text-base text-muted-foreground line-clamp-2 leading-relaxed">
                   {prompt.description}
                 </DialogDescription>
               )}
@@ -145,9 +145,10 @@ function PromptDetailModal({
                 {tag}
               </Badge>
             ))}
-            <span className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground">
+            <span className="ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#C9A227]/10 text-[#C9A227]">
               <TrendingUp className="h-3.5 w-3.5" />
-              {prompt.use_count} uses
+              <span className="text-xs font-bold tabular-nums">{prompt.use_count.toLocaleString()}</span>
+              <span className="text-[11px] font-medium opacity-70">uses</span>
             </span>
             <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <CalendarDays className="h-3.5 w-3.5" />
@@ -159,7 +160,7 @@ function PromptDetailModal({
         {/* Prompt content */}
         <div className="px-6 py-4 flex-1 overflow-y-auto max-h-[50vh]">
           <div className="relative group">
-            <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed bg-muted/40 border rounded-lg px-4 py-3 text-foreground">
+            <pre className="whitespace-pre-wrap font-mono text-[15px] leading-7 bg-muted/40 border border-l-2 border-l-[#C9A227]/50 rounded-lg px-4 py-3.5 text-foreground/90">
               {prompt.content}
             </pre>
             <button
@@ -386,7 +387,7 @@ function PublicPromptCard({
             className="flex-1 min-w-0 text-left group flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3"
           >
             <div className="flex items-center gap-2 min-w-0 flex-1">
-              <h3 className="font-semibold text-sm leading-snug truncate group-hover:text-primary transition-colors">
+              <h3 className="font-display text-base md:text-lg font-bold leading-snug tracking-tight truncate group-hover:text-primary transition-colors">
                 {prompt.title}
               </h3>
               {similarityScore !== undefined && (
@@ -405,7 +406,7 @@ function PublicPromptCard({
                 </span>
               )}
             </div>
-            <p className="text-xs text-muted-foreground truncate max-w-xs hidden md:block">
+            <p className="font-body text-sm text-muted-foreground truncate max-w-xs hidden md:block leading-relaxed">
               {preview}{isTruncated && '…'}
             </p>
           </button>
@@ -415,9 +416,9 @@ function PublicPromptCard({
             <Badge variant="outline" className="text-[10px] shrink-0 hidden sm:inline-flex">
               {prompt.category}
             </Badge>
-            <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#C9A227]/10 text-[#C9A227]">
               <TrendingUp className="h-3 w-3" />
-              {prompt.use_count}
+              <span className="text-[11px] font-bold tabular-nums">{prompt.use_count.toLocaleString()}</span>
             </span>
             <Button size="sm" variant="ghost" onClick={handleQuickCopy} className="h-7 w-7 p-0" title="Copy prompt text">
               {quickCopied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
@@ -463,7 +464,7 @@ function PublicPromptCard({
         >
           <div className="flex-1 min-w-0">
             <div className="flex items-start gap-2">
-              <h3 className="font-semibold text-sm leading-snug line-clamp-1 break-words group-hover:text-primary transition-colors flex-1">
+              <h3 className="font-display text-lg md:text-xl font-bold leading-tight tracking-tight line-clamp-2 break-words group-hover:text-primary transition-colors flex-1">
                 {prompt.title}
               </h3>
               {similarityScore !== undefined && (
@@ -483,7 +484,7 @@ function PublicPromptCard({
               )}
             </div>
             {prompt.description && (
-              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2 break-words">
+              <p className="font-body text-sm text-muted-foreground mt-1 line-clamp-2 break-words leading-relaxed">
                 {prompt.description}
               </p>
             )}
@@ -494,10 +495,12 @@ function PublicPromptCard({
         <button
           type="button"
           onClick={() => onOpen(prompt)}
-          className="rounded-md bg-muted/40 border px-3 py-2 text-xs text-muted-foreground font-mono leading-relaxed text-left w-full hover:bg-muted/60 transition-colors line-clamp-3 overflow-hidden break-words"
+          className="relative rounded-lg bg-muted/40 border border-border/60 px-3.5 py-2.5 text-[13px] text-foreground/70 font-mono leading-relaxed text-left w-full hover:bg-muted/60 hover:border-[#C9A227]/30 transition-colors line-clamp-3 overflow-hidden break-words before:absolute before:left-0 before:top-2 before:bottom-2 before:w-0.5 before:rounded-full before:bg-[#C9A227]/40"
         >
-          {preview}
-          {isTruncated && '…'}
+          <span className="pl-1.5 block">
+            {preview}
+            {isTruncated && '…'}
+          </span>
         </button>
 
         {/* Tags */}
@@ -521,9 +524,10 @@ function PublicPromptCard({
 
         {/* Actions row */}
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="flex items-center gap-1 text-[10px] text-muted-foreground mr-auto">
-            <TrendingUp className="h-3 w-3" />
-            {prompt.use_count}
+          <span className="flex items-center gap-1.5 mr-auto px-2 py-1 rounded-full bg-[#C9A227]/10 text-[#C9A227]">
+            <TrendingUp className="h-3.5 w-3.5" />
+            <span className="text-xs font-bold tabular-nums">{prompt.use_count.toLocaleString()}</span>
+            <span className="text-[10px] font-medium opacity-70">uses</span>
           </span>
           {/* Quick copy — 1 tap clipboard */}
           <Button size="sm" variant="ghost" onClick={handleQuickCopy} className="h-7 w-7 p-0" title="Copy prompt text">
@@ -882,16 +886,23 @@ export default function DiscoverPage() {
       )}
 
       {/* Hero */}
-      <div className="mb-6 md:mb-8 text-center">
-        <div className="inline-flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-full bg-[#C9A227]/10 mb-3 md:mb-4">
-          <Globe className="h-6 w-6 md:h-7 md:w-7 text-[#C9A227]" />
+      <div className="mb-7 md:mb-10 text-center">
+        <div className="inline-flex items-center justify-center w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-[#C9A227]/20 to-[#C9A227]/5 ring-1 ring-[#C9A227]/20 shadow-[0_8px_30px_-12px_rgba(201,162,39,0.5)] mb-4 md:mb-5">
+          <Globe className="h-7 w-7 md:h-8 md:w-8 text-[#C9A227]" />
         </div>
-        <h1 className="text-2xl md:text-3xl font-bold mb-2 flex items-center justify-center gap-2">
-          Discover Prompts
-          <Sparkles className="h-5 w-5 md:h-6 md:w-6 text-[#C9A227]" />
+        <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-bold leading-[1.05] tracking-tight mb-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+          <span className="text-foreground">Discover</span>
+          <span className="text-shimmer">Prompts</span>
+          <Sparkles className="h-6 w-6 md:h-8 md:w-8 text-[#C9A227] shrink-0" />
         </h1>
-        <p className="text-muted-foreground text-sm md:text-base max-w-xl mx-auto">
-          Explore {totalCount > 0 ? `${totalCount.toLocaleString()}+` : ''} prompts shared by the community
+        <p className="font-body text-base md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          Explore{' '}
+          {totalCount > 0 && (
+            <span className="font-semibold text-foreground tabular-nums">
+              {totalCount.toLocaleString()}+
+            </span>
+          )}{' '}
+          battle-tested prompts crafted and shared by the community.
         </p>
       </div>
 
