@@ -252,3 +252,52 @@ export const ITERATION_CHANGE_TYPES: { value: InteractionType; label: string; de
   { value: 'correction', label: 'Correction', description: 'Fix an error or inaccuracy' },
   { value: 'experiment', label: 'Experiment', description: 'Try an experimental variation' },
 ];
+
+// ============================================
+// Public Discover feed (GET /api/v2/history/saved-prompts/discover/)
+// Curated library prompts carry a Claude-written card (hook) and license attribution (source).
+// ============================================
+
+export interface PromptSource {
+  /** e.g. "msitarzewski/agency-agents" */
+  name: string;
+  url: string;
+  /** e.g. "MIT", "CC0 1.0" — must be shown with the prompt */
+  license: string;
+}
+
+export interface DiscoverPrompt {
+  id: string;
+  title: string;
+  /** One-line card text without the attribution line; equals description for non-curated prompts */
+  hook: string;
+  description: string;
+  content: string;
+  category: string;
+  category_slug: string;
+  tags: string[];
+  use_cases: string[];
+  use_count: number;
+  is_public: boolean;
+  is_featured: boolean;
+  is_curated: boolean;
+  /** 1-5 editor rating; null for non-curated prompts */
+  editor_quality: number | null;
+  /** null for non-curated prompts */
+  source: PromptSource | null;
+  subcategory?: string;
+  prompt_framework?: string;
+  extracted_keywords?: string[];
+}
+
+/** Trimmed card returned by the Next.js route /api/landing/curated */
+export type CuratedShowcaseCard = Pick<
+  DiscoverPrompt,
+  'id' | 'title' | 'hook' | 'category' | 'category_slug' | 'editor_quality' | 'use_count' | 'source'
+>;
+
+export interface CuratedShowcaseResponse {
+  /** Total curated prompts in the library; null when the backend could not be reached */
+  count: number | null;
+  results: CuratedShowcaseCard[];
+}

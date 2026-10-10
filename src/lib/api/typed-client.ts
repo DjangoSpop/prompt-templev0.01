@@ -725,19 +725,19 @@ class ApiClient {
   async discoverTemplates(params?: {
     search?: string;
     category?: string;
-    sort_by?: 'use_count' | 'created_at';
+    subcategory?: string;
+    framework?: string;
+    curated?: boolean;
+    featured?: boolean;
+    sort_by?: 'use_count' | 'created_at' | 'title' | 'popularity';
     sort_order?: 'asc' | 'desc';
     page?: number;
   }): Promise<PaginatedSavedPrompts> {
+    // The backend reads sort_by/sort_order directly (it ignores DRF-style `ordering=`)
     const queryParams = new URLSearchParams();
     if (params) {
-      const { sort_by, sort_order, ...rest } = params;
-      if (sort_by) {
-        const prefix = sort_order === 'asc' ? '' : '-';
-        queryParams.append('ordering', `${prefix}${sort_by}`);
-      }
-      Object.entries(rest).forEach(([key, value]) => {
-        if (value !== undefined) queryParams.append(key, String(value));
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') queryParams.append(key, String(value));
       });
     }
     return this.request<PaginatedSavedPrompts>(

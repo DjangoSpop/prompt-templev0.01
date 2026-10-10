@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { Search, Sparkles, Send, ArrowRight } from 'lucide-react';
 import { COPY_V3 } from '@/lib/landing/copy-v3';
+import { LANDING_EVENTS, trackLanding } from '@/lib/landing/analytics';
 import { slideUp, staggerContainer } from '@/lib/landing/motion';
 import Link from 'next/link';
 
@@ -27,6 +28,9 @@ const STEP_COLORS = [
     connector: '',
   },
 ];
+
+const STEP_CARD_CLASS =
+  'step-card relative rounded-2xl border border-stone-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md dark:border-stone-800 dark:bg-stone-900 dark:hover:border-stone-700 md:p-8';
 
 export function HowItWorksSection() {
   return (
@@ -64,12 +68,8 @@ export function HowItWorksSection() {
         >
           {howItWorks.steps.map((step, i) => {
             const Icon = STEP_ICONS[i];
-            return (
-              <motion.div
-                key={step.number}
-                variants={slideUp}
-                className="step-card relative rounded-2xl border border-stone-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md dark:border-stone-800 dark:bg-stone-900 dark:hover:border-stone-700 md:p-8"
-              >
+            const body = (
+              <>
                 {/* Number badge */}
                 <div className="mb-5 flex items-center gap-3">
                   <div
@@ -94,6 +94,39 @@ export function HowItWorksSection() {
                 <p className="text-sm leading-relaxed text-stone-500 dark:text-stone-400">
                   {step.description}
                 </p>
+
+                {/* Affordance (linked steps only) */}
+                {step.cta && (
+                  <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-[#0E3A8C]/80 transition-colors group-hover:text-[#0E3A8C] dark:text-blue-400/80 dark:group-hover:text-blue-400">
+                    {step.cta}
+                    <ArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+                  </span>
+                )}
+              </>
+            );
+            return (
+              <motion.div
+                key={step.number}
+                variants={slideUp}
+                className={step.href ? 'relative' : STEP_CARD_CLASS}
+              >
+                {step.href ? (
+                  <Link
+                    href={step.href}
+                    onClick={() =>
+                      trackLanding(LANDING_EVENTS.LIBRARY_CARD_CLICK, {
+                        section: 'how_it_works',
+                        label: step.title,
+                        href: step.href,
+                      })
+                    }
+                    className={`group block h-full ${STEP_CARD_CLASS} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-stone-950`}
+                  >
+                    {body}
+                  </Link>
+                ) : (
+                  body
+                )}
 
                 {/* Connector arrow (desktop only) */}
                 {i < 2 && STEP_COLORS[i].connector && (

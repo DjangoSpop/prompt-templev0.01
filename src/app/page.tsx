@@ -42,6 +42,7 @@ import DownloadHero from '@/components/DownloadHero';
 const TrustStrip = dynamic(() => import('@/components/landing/v3/TrustStrip'), { ssr: false });
 const HowItWorksSection = dynamic(() => import('@/components/landing/v3/HowItWorksSection'), { ssr: false });
 const FeatureCardsSection = dynamic(() => import('@/components/landing/v3/FeatureCardsSection'), { ssr: false });
+const LibraryShowcaseSection = dynamic(() => import('@/components/landing/v3/LibraryShowcaseSection'), { ssr: false });
 const UseCasesSection = dynamic(() => import('@/components/landing/v3/UseCasesSection'), { ssr: false });
 const SocialProofSectionV3 = dynamic(() => import('@/components/landing/v3/SocialProofSection'), { ssr: false });
 const FinalCTASection = dynamic(() => import('@/components/landing/v3/FinalCTASection'), { ssr: false });
@@ -95,6 +96,7 @@ export default function DashboardPage() {
 
         {/* 4. FEATURES — 2x2 card grid */}
         <FeatureCardsSection />
+        <LibraryShowcaseSection />
 
         {/* 5. USE CASES — Who it's for */}
         <UseCasesSection />

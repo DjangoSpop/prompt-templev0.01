@@ -336,7 +336,11 @@ export function usePromptUsageHistory(promptId: string, page = 1, limit = 20) {
 export function useDiscoverTemplates(filters?: {
   search?: string;
   category?: string;
-  sort_by?: 'use_count' | 'created_at';
+  subcategory?: string;
+  framework?: string;
+  curated?: boolean;
+  featured?: boolean;
+  sort_by?: 'use_count' | 'created_at' | 'title' | 'popularity';
   sort_order?: 'asc' | 'desc';
   page?: number;
 }) {
@@ -354,7 +358,11 @@ export function useDiscoverTemplates(filters?: {
 export function useDiscoverTemplatesInfinite(filters?: {
   search?: string;
   category?: string;
-  sort_by?: 'use_count' | 'created_at';
+  subcategory?: string;
+  framework?: string;
+  curated?: boolean;
+  featured?: boolean;
+  sort_by?: 'use_count' | 'created_at' | 'title' | 'popularity';
   sort_order?: 'asc' | 'desc';
 }) {
   return useInfiniteQuery({

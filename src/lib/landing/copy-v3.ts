@@ -1,5 +1,71 @@
 /** Landing page V3 copy — clarity-first, conversion-optimized. */
 
+import type { CuratedShowcaseCard } from '@/types/saved-prompts';
+
+/** Real featured curated prompts — shown while the live showcase is unavailable or empty. */
+const LIBRARY_FALLBACK: CuratedShowcaseCard[] = [
+  {
+    id: 'abb53ea1-122f-454f-8622-ed401440423e',
+    title: 'Audit a BigQuery Pipeline for Cost, Safety and Reruns',
+    hook: 'Get a structured review of your Python and BigQuery pipeline that flags runaway costs, unsafe reruns and hidden failures before they reach production.',
+    category: 'Data & Analytics',
+    category_slug: 'data-analytics',
+    editor_quality: 5,
+    use_count: 0,
+    source: { name: 'github/awesome-copilot', url: 'https://github.com/github/awesome-copilot/blob/main/skills/bigquery-pipeline-audit/SKILL.md', license: 'MIT' },
+  },
+  {
+    id: '3a3797f8-adb5-4424-b0c0-83003202a1d4',
+    title: 'Write a Lean Product Requirements Document',
+    hook: 'Turns a product idea into a short, decision-ready PRD that engineers, designers and leadership can read in minutes and act on.',
+    category: 'Business & Strategy',
+    category_slug: 'business-strategy',
+    editor_quality: 5,
+    use_count: 0,
+    source: { name: 'phuryn/pm-skills', url: 'https://github.com/phuryn/pm-skills/blob/main/pm-execution/skills/create-prd/SKILL.md', license: 'MIT' },
+  },
+  {
+    id: 'c094682b-b661-4f84-a1bf-b0d2a9f025d0',
+    title: 'Technical Interview Coach for Mock System Design and Behavioral Rounds',
+    hook: 'Run realistic mock interviews with direct feedback on system design, STAR behavioral answers, and coding prep for software engineers.',
+    category: 'Education & Learning',
+    category_slug: 'education-learning',
+    editor_quality: 5,
+    use_count: 0,
+    source: { name: 'github/awesome-copilot', url: 'https://github.com/github/awesome-copilot/blob/main/agents/interview-prep.agent.md', license: 'MIT' },
+  },
+  {
+    id: 'd8b2afab-c975-4b53-be63-e06d977ac577',
+    title: 'Systematic Debugging: Find Root Cause Before Fixing',
+    hook: 'A disciplined four-phase process that stops guesswork and symptom patches, helping developers isolate the true cause of any bug before writing a fix.',
+    category: 'Coding & Development',
+    category_slug: 'coding-development',
+    editor_quality: 5,
+    use_count: 0,
+    source: { name: 'obra/superpowers', url: 'https://github.com/obra/superpowers/blob/main/skills/systematic-debugging/SKILL.md', license: 'MIT' },
+  },
+  {
+    id: '0c30f175-5b3b-4e3a-9433-92ac78e4cff4',
+    title: 'Audit AI-Generated Code for Secrets and Auth Flaws',
+    hook: 'Finds leaked keys, open Supabase row-level security, forgeable admin checks, and prompt injection in AI-written code, with the exploit and fix for each.',
+    category: 'Coding & Development',
+    category_slug: 'coding-development',
+    editor_quality: 5,
+    use_count: 0,
+    source: { name: 'msitarzewski/agency-agents', url: 'https://github.com/msitarzewski/agency-agents/blob/main/security/security-ai-generated-code-auditor.md', license: 'MIT' },
+  },
+  {
+    id: 'd0dd337b-8500-4ba7-90ba-a96e54adc6ff',
+    title: 'Idempotent Stripe Payments and Billing Engineer',
+    hook: 'Design payment and subscription flows that never double-charge, verify webhooks, and reconcile every cent against processor payouts.',
+    category: 'Coding & Development',
+    category_slug: 'coding-development',
+    editor_quality: 5,
+    use_count: 0,
+    source: { name: 'msitarzewski/agency-agents', url: 'https://github.com/msitarzewski/agency-agents/blob/main/engineering/engineering-payments-billing-engineer.md', license: 'MIT' },
+  },
+];
+
 export const COPY_V3 = {
   nav: {
     logo: 'Prompt Temple',
@@ -37,18 +103,24 @@ export const COPY_V3 = {
         title: 'Search or Paste',
         description:
           'Find a ready-made prompt from our library. Or paste your rough idea.',
+        href: '/discover?curated=true&sort=popularity',
+        cta: 'Browse the library',
       },
       {
         number: '2',
         title: 'Enhance with AI',
         description:
           'Our AI rewrites it into a professional prompt that gets better results.',
+        href: null,
+        cta: null,
       },
       {
         number: '3',
         title: 'Use Anywhere',
         description:
           'Copy it, or send it directly to ChatGPT, Claude, or Gemini with our Chrome extension.',
+        href: null,
+        cta: null,
       },
     ],
     cta: 'Try It Free →',
@@ -64,6 +136,8 @@ export const COPY_V3 = {
         description:
           'Type what you need in plain English. We find the best prompt — even if you don\'t use the exact words.',
         tag: 'Semantic Search',
+        href: '/discover?mode=semantic',
+        cta: 'Try a search',
       },
       {
         icon: '📋',
@@ -71,6 +145,8 @@ export const COPY_V3 = {
         description:
           'Browse templates for marketing, writing, business, code, and more. Pick one, fill in the blanks, done.',
         tag: 'Templates',
+        href: '/discover?curated=true&sort=popularity',
+        cta: 'Browse the library',
       },
       {
         icon: '✨',
@@ -78,6 +154,8 @@ export const COPY_V3 = {
         description:
           'Paste a rough idea. AI rewrites it with expert techniques. Get 10x better results from any AI.',
         tag: 'AI Enhancer',
+        href: '/prompt-optimizer',
+        cta: 'Enhance a prompt',
       },
       {
         icon: '🌐',
@@ -85,6 +163,8 @@ export const COPY_V3 = {
         description:
           'Install our free Chrome extension. Access your prompt library right inside any AI tool. No copy-paste needed.',
         tag: 'Chrome Extension',
+        href: '/download',
+        cta: 'Get the extension',
       },
     ],
   },
@@ -114,18 +194,31 @@ Format: Ready to send — no placeholders.`,
     cta: 'Try it yourself — free',
   },
 
+  library: {
+    tag: 'From the Library',
+    title: 'Fresh From the World\'s Open Prompt Libraries',
+    subtitle:
+      'Hand-picked, open-licensed prompts from popular open-source collections — each with an editor-written card and its source credited.',
+    ctaTemplate: 'Browse all {count} curated prompts →',
+    ctaFallback: 'Browse 1,600+ curated prompts →',
+    secondary: 'or browse templates →',
+    openPrompt: 'Open prompt →',
+    fallback: LIBRARY_FALLBACK,
+  },
+
   useCases: {
     title: 'Built for Everyone Who Uses AI',
     subtitle: 'No matter your role, Prompt Temple makes AI work better for you.',
+    cta: 'Explore →',
     roles: [
-      { emoji: '👩‍💼', role: 'Marketers', benefit: 'Write campaigns that convert, faster' },
-      { emoji: '✍️', role: 'Writers', benefit: 'Beat writer\'s block with expert prompts' },
-      { emoji: '💼', role: 'Freelancers', benefit: 'Deliver better client work with AI' },
-      { emoji: '🎓', role: 'Students', benefit: 'Get better study guides and research prompts' },
-      { emoji: '👨‍💻', role: 'Developers', benefit: 'Code review, debugging, and architecture prompts' },
-      { emoji: '🏢', role: 'Business', benefit: 'Strategy, planning, and analysis prompts' },
-      { emoji: '🎨', role: 'Creators', benefit: 'Generate ideas and content briefs in seconds' },
-      { emoji: '📊', role: 'Analysts', benefit: 'Data analysis and reporting prompts ready to go' },
+      { emoji: '👩‍💼', role: 'Marketers', benefit: 'Write campaigns that convert, faster', category: 'Marketing & Sales' },
+      { emoji: '✍️', role: 'Writers', benefit: 'Beat writer\'s block with expert prompts', category: 'Writing & Content' },
+      { emoji: '💼', role: 'Freelancers', benefit: 'Deliver better client work with AI', category: 'Business & Strategy' },
+      { emoji: '🎓', role: 'Students', benefit: 'Get better study guides and research prompts', category: 'Research & Analysis' },
+      { emoji: '👨‍💻', role: 'Developers', benefit: 'Code review, debugging, and architecture prompts', category: 'Coding & Development' },
+      { emoji: '🏢', role: 'Business', benefit: 'Strategy, planning, and analysis prompts', category: 'Business & Strategy' },
+      { emoji: '🎨', role: 'Creators', benefit: 'Generate ideas and content briefs in seconds', category: 'Image Generation & Art' },
+      { emoji: '📊', role: 'Analysts', benefit: 'Data analysis and reporting prompts ready to go', category: 'Data & Analytics' },
     ],
   },
 

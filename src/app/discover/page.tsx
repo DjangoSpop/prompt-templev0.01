@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -47,6 +48,8 @@ import {
   ChevronDown,
   ChevronUp,
   XCircle,
+  Star,
+  BadgeCheck,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -57,7 +60,7 @@ import {
   useRagSearch,
   type RagSearchResult,
 } from '@/hooks/api/useSavedPrompts';
-import { PROMPT_CATEGORIES, type SavedPrompt } from '@/types/saved-prompts';
+import { PROMPT_CATEGORIES, type SavedPrompt, type DiscoverPrompt, type PromptSource } from '@/types/saved-prompts';
 import {
   detectExtension,
   sendPromptToExtension,
@@ -76,6 +79,36 @@ import { usePromptOptimization } from '@/hooks/api/useAI';
 import { useCreditsStore } from '@/store/credits';
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://www.prompt-temple.com').replace(/\/$/, '');
+
+type DiscoverSort = 'use_count' | 'created_at' | 'popularity';
+const DISCOVER_SORTS: DiscoverSort[] = ['use_count', 'created_at', 'popularity'];
+
+// Discover rows are DiscoverPrompt at runtime: curated ones carry a clean card `hook`
+// (their description ends with a "Source: ..." line) and license attribution in `source`.
+// RAG results only have the raw description, so the attribution is parsed back out of it:
+// "{hook}\n\nSource: owner/repo (License) · https://..."
+const ATTRIBUTION_SEPARATOR = '\n\nSource:';
+const ATTRIBUTION_RE = /^\s*(.+?)\s*\(([^)]+)\)\s*(?:·\s*(\S+))?/;
+
+function discoverFields(prompt: SavedPrompt) {
+  const d = prompt as unknown as Partial<DiscoverPrompt>;
+  if (!(d.source && typeof d.source === 'object')) {
+    const at = (prompt.description || '').indexOf(ATTRIBUTION_SEPARATOR);
+    const match = at >= 0 ? prompt.description.slice(at + ATTRIBUTION_SEPARATOR.length).match(ATTRIBUTION_RE) : null;
+    if (match) {
+      return {
+        cardText: d.hook || prompt.description.slice(0, at).trim(),
+        attribution: { name: match[1], license: match[2], url: match[3] ?? '' } as PromptSource,
+        isCurated: true,
+      };
+    }
+  }
+  return {
+    cardText: d.hook || prompt.description,
+    attribution: d.source && typeof d.source === 'object' ? d.source : null,
+    isCurated: !!d.is_curated,
+  };
+}
 
 // ============================================
 // PromptDetailModal
@@ -104,6 +137,8 @@ function PromptDetailModal({
 
   if (!prompt) return null;
 
+  const { cardText, attribution, isCurated } = discoverFields(prompt);
+
   const handleCopyText = async () => {
     await navigator.clipboard.writeText(prompt.content);
     setCopied(true);
@@ -126,16 +161,36 @@ function PromptDetailModal({
               <DialogTitle className="font-display text-2xl md:text-3xl font-bold leading-tight tracking-tight">
                 {prompt.title}
               </DialogTitle>
-              {prompt.description && (
+              {cardText && (
                 <DialogDescription className="font-body mt-1.5 text-base text-muted-foreground line-clamp-2 leading-relaxed">
-                  {prompt.description}
+                  {cardText}
                 </DialogDescription>
               )}
+              {attribution && (attribution.url ? (
+                <a
+                  href={attribution.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1 inline-block text-xs text-muted-foreground/80 hover:text-foreground underline-offset-2 hover:underline transition-colors"
+                >
+                  {attribution.name} · {attribution.license}
+                </a>
+              ) : (
+                <span className="mt-1 inline-block text-xs text-muted-foreground/80">
+                  {attribution.name} · {attribution.license}
+                </span>
+              ))}
             </div>
           </div>
 
           {/* Meta row */}
           <div className="flex items-center gap-3 flex-wrap mt-3">
+            {isCurated && (
+              <Badge variant="outline" className="text-xs flex items-center gap-1 border-[#C9A227]/40 text-[#C9A227]">
+                <BadgeCheck className="h-3 w-3" />
+                Curated
+              </Badge>
+            )}
             <Badge variant="outline" className="text-xs">
               {prompt.category}
             </Badge>
@@ -359,6 +414,7 @@ function PublicPromptCard({
   viewMode?: 'grid' | 'list';
 }) {
   const [quickCopied, setQuickCopied] = useState(false);
+  const { cardText, attribution, isCurated } = discoverFields(prompt);
   const preview = prompt.content.slice(0, viewMode === 'list' ? 120 : 160);
   const isTruncated = prompt.content.length > (viewMode === 'list' ? 120 : 160);
 
@@ -406,6 +462,11 @@ function PublicPromptCard({
                 </span>
               )}
             </div>
+            {attribution && (
+              <span className="text-[11px] text-muted-foreground/80 truncate shrink-0 sm:max-w-[30%]">
+                {attribution.name} · {attribution.license}
+              </span>
+            )}
             <p className="font-body text-sm text-muted-foreground truncate max-w-xs hidden md:block leading-relaxed">
               {preview}{isTruncated && '…'}
             </p>
@@ -413,6 +474,11 @@ function PublicPromptCard({
 
           {/* Meta + actions */}
           <div className="flex items-center gap-1.5 shrink-0">
+            {isCurated && (
+              <span title="Curated" className="shrink-0 hidden sm:inline-flex text-[#C9A227]">
+                <BadgeCheck className="h-3.5 w-3.5" />
+              </span>
+            )}
             <Badge variant="outline" className="text-[10px] shrink-0 hidden sm:inline-flex">
               {prompt.category}
             </Badge>
@@ -483,10 +549,15 @@ function PublicPromptCard({
                 </span>
               )}
             </div>
-            {prompt.description && (
+            {cardText && (
               <p className="font-body text-sm text-muted-foreground mt-1 line-clamp-2 break-words leading-relaxed">
-                {prompt.description}
+                {cardText}
               </p>
+            )}
+            {attribution && (
+              <span className="block mt-1 text-[11px] text-muted-foreground/80 truncate">
+                {attribution.name} · {attribution.license}
+              </span>
             )}
           </div>
         </button>
@@ -505,6 +576,12 @@ function PublicPromptCard({
 
         {/* Tags */}
         <div className="flex items-center gap-1.5 flex-wrap overflow-hidden max-h-8">
+          {isCurated && (
+            <Badge variant="outline" className="text-[10px] flex items-center gap-1 shrink-0 border-[#C9A227]/40 text-[#C9A227]">
+              <BadgeCheck className="h-2.5 w-2.5" />
+              Curated
+            </Badge>
+          )}
           <Badge variant="outline" className="text-[10px] shrink-0 max-w-full truncate">
             {prompt.category}
           </Badge>
@@ -613,16 +690,57 @@ function ragToPrompt(r: RagSearchResult): SavedPrompt {
   } as unknown as SavedPrompt;
 }
 
+// Prerendered stand-in while the client reads the URL params: same hero, skeleton grid
+function DiscoverShellSkeleton() {
+  return (
+    <div className="w-full min-w-0 overflow-x-hidden pb-24 lg:pb-8">
+      <div className="mb-7 md:mb-10 text-center">
+        <div className="inline-flex items-center justify-center w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-[#C9A227]/20 to-[#C9A227]/5 ring-1 ring-[#C9A227]/20 shadow-[0_8px_30px_-12px_rgba(201,162,39,0.5)] mb-4 md:mb-5">
+          <Globe className="h-7 w-7 md:h-8 md:w-8 text-[#C9A227]" />
+        </div>
+        <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-bold leading-[1.05] tracking-tight mb-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+          <span className="text-foreground">Discover</span>
+          <span className="text-shimmer">Prompts</span>
+          <Sparkles className="h-6 w-6 md:h-8 md:w-8 text-[#C9A227] shrink-0" />
+        </h1>
+        <p className="font-body text-base md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          Explore battle-tested prompts crafted and shared by the community.
+        </p>
+      </div>
+      <Skeleton className="h-11 w-full rounded-lg mb-4" />
+      <DiscoverSkeleton />
+    </div>
+  );
+}
+
+// useSearchParams needs a Suspense boundary in Next 15 (missing-suspense-with-csr-bailout)
 export default function DiscoverPage() {
-  const [searchInput, setSearchInput] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [activeCategory, setActiveCategory] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<'use_count' | 'created_at'>('use_count');
+  return (
+    <Suspense fallback={<DiscoverShellSkeleton />}>
+      <DiscoverPageInner />
+    </Suspense>
+  );
+}
+
+function DiscoverPageInner() {
+  // Deep links from the landing page: ?search= ?category= ?mode=semantic ?sort= ?curated=true
+  const searchParams = useSearchParams();
+  const [searchInput, setSearchInput] = useState(() => searchParams.get('search') ?? '');
+  const [debouncedSearch, setDebouncedSearch] = useState(() => searchParams.get('search') ?? '');
+  const [activeCategory, setActiveCategory] = useState<string>(() => searchParams.get('category') || 'all');
+  const [curatedOnly, setCuratedOnly] = useState(() => searchParams.get('curated') === 'true');
+  const [sortBy, setSortBy] = useState<DiscoverSort>(() => {
+    const sort = searchParams.get('sort') as DiscoverSort | null;
+    if (sort && DISCOVER_SORTS.includes(sort)) return sort;
+    return searchParams.get('curated') === 'true' ? 'popularity' : 'use_count';
+  });
   const [copyingId, setCopyingId] = useState<string | null>(null);
   const [selectedPrompt, setSelectedPrompt] = useState<SavedPrompt | null>(null);
   const [extensionInstalled, setExtensionInstalled] = useState<boolean | null>(null);
   const [bannerDismissed, setBannerDismissed] = useState(false);
-  const [searchMode, setSearchMode] = useState<'keyword' | 'semantic'>('keyword');
+  const [searchMode, setSearchMode] = useState<'keyword' | 'semantic'>(() =>
+    searchParams.get('mode') === 'semantic' ? 'semantic' : 'keyword'
+  );
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [categoriesExpanded, setCategoriesExpanded] = useState(false);
@@ -691,6 +809,7 @@ export default function DiscoverPage() {
     setSearchInput('');
     setDebouncedSearch('');
     setActiveCategory('all');
+    setCuratedOnly(false);
     setSortBy('use_count');
   }, []);
 
@@ -700,10 +819,11 @@ export default function DiscoverPage() {
     () => ({
       search: debouncedSearch || undefined,
       category: activeCategory !== 'all' ? activeCategory : undefined,
+      curated: curatedOnly || undefined,
       sort_by: sortBy,
       sort_order: 'desc' as const,
     }),
-    [debouncedSearch, activeCategory, sortBy]
+    [debouncedSearch, activeCategory, curatedOnly, sortBy]
   );
 
   const {
@@ -746,7 +866,13 @@ export default function DiscoverPage() {
     [data]
   );
   const totalCount = data?.pages?.[0]?.count ?? 0;
-  const categories = ['all', ...(categoryList ?? PROMPT_CATEGORIES)];
+  const baseCategories: readonly string[] = categoryList ?? PROMPT_CATEGORIES;
+  // Keep a deep-linked ?category= selectable even when the API list doesn't include it
+  const categories = [
+    'all',
+    ...baseCategories,
+    ...(activeCategory !== 'all' && !baseCategories.includes(activeCategory) ? [activeCategory] : []),
+  ];
 
   // Client-side instant filtering on already-loaded prompts
   const filteredPrompts = useMemo(() => {
@@ -989,6 +1115,8 @@ export default function DiscoverPage() {
                 <button
                   type="button"
                   onClick={() => setSortBy('use_count')}
+                  aria-label="Trending"
+                  aria-pressed={sortBy === 'use_count'}
                   className={cn(
                     'flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-colors',
                     sortBy === 'use_count'
@@ -1002,6 +1130,8 @@ export default function DiscoverPage() {
                 <button
                   type="button"
                   onClick={() => setSortBy('created_at')}
+                  aria-label="Newest"
+                  aria-pressed={sortBy === 'created_at'}
                   className={cn(
                     'flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-colors',
                     sortBy === 'created_at'
@@ -1011,6 +1141,21 @@ export default function DiscoverPage() {
                 >
                   <Clock className="h-3 w-3" />
                   <span className="hidden sm:inline">Newest</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSortBy('popularity')}
+                  aria-label="Top rated"
+                  aria-pressed={sortBy === 'popularity'}
+                  className={cn(
+                    'flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-colors',
+                    sortBy === 'popularity'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  <Star className="h-3 w-3" />
+                  <span className="hidden sm:inline">Top rated</span>
                 </button>
               </div>
             )}
@@ -1080,9 +1225,19 @@ export default function DiscoverPage() {
       </div>
 
       {/* ── Active filter chips ── */}
-      {(searchInput || activeCategory !== 'all') && (
+      {(searchInput || activeCategory !== 'all' || curatedOnly) && (
         <div className="flex items-center gap-2 mb-4 flex-wrap">
           <span className="text-xs text-muted-foreground">Filters:</span>
+          {curatedOnly && (
+            <button
+              type="button"
+              onClick={() => setCuratedOnly(false)}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs border border-primary/20 hover:bg-primary/20 transition-colors"
+            >
+              Curated
+              <XCircle className="h-3 w-3" />
+            </button>
+          )}
           {activeCategory !== 'all' && (
             <button
               type="button"
@@ -1172,7 +1327,7 @@ export default function DiscoverPage() {
           <h3 className="text-lg font-medium mb-2">
             {isSemanticMode && !debouncedSearch
               ? 'Describe what you need'
-              : searchInput || activeCategory !== 'all'
+              : searchInput || activeCategory !== 'all' || curatedOnly
               ? 'No prompts match your filters'
               : 'No public prompts yet'}
           </h3>
@@ -1181,7 +1336,7 @@ export default function DiscoverPage() {
               ? 'Type a natural-language description — the AI will find the most relevant prompts.'
               : isSemanticMode
               ? 'Try a different description or switch to Keyword search.'
-              : searchInput || activeCategory !== 'all'
+              : searchInput || activeCategory !== 'all' || curatedOnly
               ? 'Try adjusting your search or category filter.'
               : 'Be the first to share a prompt with the community.'}
           </p>
