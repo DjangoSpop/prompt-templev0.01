@@ -164,7 +164,7 @@ export function PrivacyPolicyContent() {
               <li>Plan level (Free, Pro, or Power), credit balance, and per-feature usage counters.</li>
             </ul>
             <p className="text-sm text-gray-700 dark:text-gray-300">
-              All payment processing is handled by <strong>Stripe</strong>. The extension and our servers <strong>never</strong> collect, receive, or store credit card numbers, bank account details, or any payment instrument information.
+              All payment processing is handled by our reseller <strong>Paddle.com</strong> (the merchant of record for our subscriptions) or, for some products, <strong>Gumroad</strong>. The extension and our servers <strong>never</strong> collect, receive, or store credit card numbers, bank account details, or any payment instrument information.
             </p>
           </div>
 
@@ -217,7 +217,7 @@ export function PrivacyPolicyContent() {
               <li>General web browsing history or activity on websites not listed above.</li>
               <li>Keystrokes, form data, or autofill data from any website.</li>
               <li>Passwords or credentials from any third-party website.</li>
-              <li>Financial or payment instrument information (handled entirely by Stripe).</li>
+              <li>Financial or payment instrument information (handled entirely by Paddle.com or Gumroad).</li>
               <li>Health, biometric, or genetic data.</li>
               <li>Geolocation, contacts, calendar, camera, microphone, or device sensor data.</li>
               <li>Contents of any communication (email, SMS, chat) outside the explicit AI-provider broadcast interaction.</li>
@@ -359,9 +359,9 @@ export function PrivacyPolicyContent() {
                   <td className="px-4 py-3">Social sign-in only.</td>
                 </tr>
                 <tr>
-                  <td className="px-4 py-3 font-medium">Stripe (via our backend)</td>
+                  <td className="px-4 py-3 font-medium">Paddle.com / Gumroad (via our backend)</td>
                   <td className="px-4 py-3">Subscription and payment details routed through our server.</td>
-                  <td className="px-4 py-3">Payment processing. The extension never communicates directly with Stripe.</td>
+                  <td className="px-4 py-3">Payment processing. The extension never communicates directly with the payment provider.</td>
                 </tr>
               </tbody>
             </table>
