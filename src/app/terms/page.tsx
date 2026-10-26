@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 const UPDATED = "26 October 2026";
-const CONTACT = "privacy@prompt-temple.com";
+const CONTACT = "behodjango@gmail.com";
 
 function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
   return (

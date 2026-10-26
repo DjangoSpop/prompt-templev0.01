@@ -3,6 +3,7 @@
 import Script from "next/script";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { apiClient } from "@/lib/api/typed-client";
 
 type PaddleEvent = { name?: string };
 type PaddleJs = {
@@ -32,13 +33,27 @@ function nextPath(): string {
   }
 }
 
+/** The signed-in buyer's Paddle customer id (ctm_...) for Retain, or "" if unknown. Never blocks checkout. */
+async function paddleCustomerId(): Promise<string> {
+  try {
+    const res = await Promise.race([
+      apiClient.getSubscription(),
+      new Promise<never>((_, reject) => window.setTimeout(() => reject(new Error("timeout")), 2500)),
+    ]);
+    const id = (res as { subscription?: { paddle_customer_id?: string } })?.subscription?.paddle_customer_id || "";
+    return /^ctm_[a-z0-9]+$/.test(id) ? id : "";
+  } catch {
+    return "";
+  }
+}
+
 export default function PayClient() {
   const [state, setState] = useState<"loading" | "open" | "done" | "closed" | "error">("loading");
   const [message, setMessage] = useState("");
   const completed = useRef(false);
   const started = useRef(false);
 
-  const start = () => {
+  const start = async () => {
     if (started.current || !window.Paddle) return;
     started.current = true;
     if (!TOKEN) {
@@ -51,9 +66,13 @@ export default function PayClient() {
       setMessage("There is no checkout to open. Pick a plan on the pricing page first.");
       return;
     }
-    if (ENV === "sandbox") window.Paddle.Environment.set("sandbox");
-    window.Paddle.Initialize({
+    const paddle = window.Paddle;
+    if (ENV === "sandbox") paddle.Environment.set("sandbox");
+    const customerId = await paddleCustomerId();
+    paddle.Initialize({
       token: TOKEN,
+      // Paddle Retain identifies the customer by their Paddle customer id (not our user id or email).
+      ...(customerId ? { pwCustomer: { id: customerId } } : {}),
       checkout: { settings: { displayMode: "overlay", theme: "dark", locale: "en" } },
       eventCallback: (event: PaddleEvent) => {
         if (event?.name === "checkout.loaded") setState("open");

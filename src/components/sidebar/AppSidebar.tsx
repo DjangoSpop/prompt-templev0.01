@@ -352,6 +352,14 @@ const settingsItems: NavItem[] = [
     description: '14-day money-back guarantee',
     category: 'settings',
   },
+  {
+    id: 'contact',
+    label: 'Contact',
+    href: '/contact',
+    icon: FileText,
+    description: 'Support, billing and privacy',
+    category: 'settings',
+  },
 ];
 
 // Category labels

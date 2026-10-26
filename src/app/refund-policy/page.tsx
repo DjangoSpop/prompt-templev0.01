@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 const UPDATED = "26 October 2026";
-const CONTACT = "privacy@prompt-temple.com";
+const CONTACT = "behodjango@gmail.com";
 
 export default function RefundPolicyPage() {
   return (
