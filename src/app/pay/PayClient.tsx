@@ -18,7 +18,8 @@ declare global {
 }
 
 const TOKEN = process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN || "";
-const ENV = process.env.NEXT_PUBLIC_PADDLE_ENV === "production" ? "production" : "sandbox";
+// Live by default; set NEXT_PUBLIC_PADDLE_ENV=sandbox (with a test_ token) only for testing.
+const ENV = process.env.NEXT_PUBLIC_PADDLE_ENV === "sandbox" ? "sandbox" : "production";
 
 /** Only ever redirect to a page on this site, never to another domain (covers "//x", "/\\x", "/%09/x"). */
 function nextPath(): string {
