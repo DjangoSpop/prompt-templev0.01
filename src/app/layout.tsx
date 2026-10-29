@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     default: "Prompt Temple — AI Prompt Optimizer & Template Library",
     template: "%s | Prompt Temple",
   },
-  description: "The AI prompt optimization platform that turns bad prompts into genius-level instructions. Free to start. Average improvement: 1.8 → 9.4 out of 10. Used by 47,000+ AI builders.",
+  description: "Prompt Temple is a prompt-writing assistant: it scores your prompt, shows what is missing and rewrites it for ChatGPT, Claude and Gemini. 34,000+ templates. Free to start.",
   keywords: [
     "AI prompt optimizer", "prompt engineering tool", "ChatGPT prompt templates",
     "prompt library", "AI prompt enhancer", "Claude prompt optimizer",
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
     url: "https://prompt-temple.com",
     siteName: "Prompt Temple",
     title: "Prompt Temple — AI Prompt Optimizer & Template Library",
-    description: "Transform bad prompts into Pharaoh-level masterpieces. Free. Average 1.8 → 9.4/10 improvement.",
+    description: "Turn rough prompts into clear, complete instructions for ChatGPT, Claude and Gemini. Free to start.",
     images: [
       {
         url: "/api/og/share",
@@ -126,22 +126,16 @@ export default function RootLayout({
               applicationCategory: "ProductivityApplication",
               operatingSystem: "Web",
               url: "https://prompt-temple.com",
-              description: "AI prompt optimization platform with 5000+ templates for ChatGPT, Claude, and Gemini.",
+              description: "Prompt-writing assistant with 34,000+ templates for ChatGPT, Claude and Gemini.",
               offers: {
                 "@type": "Offer",
                 price: "0",
                 priceCurrency: "USD",
                 description: "Free tier with 5 daily optimizations",
               },
-              aggregateRating: {
-                "@type": "AggregateRating",
-                ratingValue: "4.8",
-                ratingCount: "1247",
-                bestRating: "5",
-              },
               author: {
                 "@type": "Organization",
-                name: "Prompt Temple",
+                name: "Pharaonic Tech",
                 url: "https://prompt-temple.com",
               },
             }),

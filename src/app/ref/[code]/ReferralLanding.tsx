@@ -60,7 +60,7 @@ export default function ReferralLanding({ code, referrerName, welcomeBonus }: Re
           )}
 
           <p className="text-[#E6D5A8]/60 mb-6">
-            Join the AI prompt optimization platform used by 47,000+ builders.
+            Join Prompt Temple, the prompt-writing assistant for ChatGPT, Claude and Gemini.
           </p>
 
           {/* Bonus Badge */}

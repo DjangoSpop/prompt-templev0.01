@@ -100,8 +100,9 @@ export function SocialProofSection() {
         </div>
       </div>
 
-      {/* Testimonials */}
+      {/* Testimonials (only real ones, shown when there are any) */}
       <div className="mx-auto max-w-5xl">
+        {social.testimonials.length > 0 && (
         <motion.div
           variants={staggerContainer}
           initial="hidden"
@@ -113,6 +114,7 @@ export function SocialProofSection() {
             <TestimonialCard key={i} testimonial={t} />
           ))}
         </motion.div>
+        )}
 
         {/* Trust strip */}
         <p className="mt-10 text-center text-sm text-stone-500 dark:text-stone-500">

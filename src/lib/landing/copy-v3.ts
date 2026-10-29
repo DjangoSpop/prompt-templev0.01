@@ -217,45 +217,22 @@ Format: Ready to send — no placeholders.`,
       { emoji: '🎓', role: 'Students', benefit: 'Get better study guides and research prompts', category: 'Research & Analysis' },
       { emoji: '👨‍💻', role: 'Developers', benefit: 'Code review, debugging, and architecture prompts', category: 'Coding & Development' },
       { emoji: '🏢', role: 'Business', benefit: 'Strategy, planning, and analysis prompts', category: 'Business & Strategy' },
-      { emoji: '🎨', role: 'Creators', benefit: 'Generate ideas and content briefs in seconds', category: 'Image Generation & Art' },
+      { emoji: '🎨', role: 'Creators', benefit: 'Plan posts, scripts and content briefs in seconds', category: 'Writing & Content' },
       { emoji: '📊', role: 'Analysts', benefit: 'Data analysis and reporting prompts ready to go', category: 'Data & Analytics' },
     ],
   },
 
   social: {
-    title: 'Trusted by Thousands',
+    // Only verifiable facts here: the template count comes from the live API (34,280 on 29 Oct 2026).
+    // Add real testimonials only with the person's permission.
+    title: 'Everything You Need to Write Better Prompts',
     stats: [
-      { value: 47832, label: 'prompts enhanced', suffix: '' },
-      { value: 4200, label: 'templates available', suffix: '+' },
-      { value: 5127, label: 'active users', suffix: '' },
-      { value: 4.8, label: 'average rating', suffix: '★', isDecimal: true },
+      { value: 34000, label: 'prompt templates', suffix: '+' },
+      { value: 5, label: 'AI platforms supported', suffix: '' },
+      { value: 1, label: 'click to improve a prompt', suffix: '' },
+      { value: 14, label: 'day money-back guarantee', suffix: '' },
     ],
-    testimonials: [
-      {
-        name: 'Sarah K.',
-        role: 'Marketing Director',
-        quote:
-          'I used to spend 20 minutes crafting each prompt. Now I search, click, and get better results in 10 seconds.',
-        rating: 5,
-        initials: 'SK',
-      },
-      {
-        name: 'James L.',
-        role: 'Product Lead',
-        quote:
-          'The browser extension changed everything. I access my prompt library right inside ChatGPT without switching tabs.',
-        rating: 5,
-        initials: 'JL',
-      },
-      {
-        name: 'Maria D.',
-        role: 'Freelance Writer',
-        quote:
-          'English is my second language. Prompt Temple turns my rough ideas into professional prompts every single time.',
-        rating: 5,
-        initials: 'MD',
-      },
-    ],
+    testimonials: [] as { name: string; role: string; quote: string; rating: number; initials: string }[],
     trustStrip: 'Free to start · No credit card · Cancel anytime · Your data stays yours',
   },
 
