@@ -86,9 +86,19 @@
     "zustand": "^4.5.4"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.64.1",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.8",
     "@types/react": "19.1.13",
     "@types/react-syntax-highlighter": "^15.5.13",
+    "@vitejs/plugin-react": "^4.7.0",
     "cross-env": "^7.0.3",
-    "typescript": "5.9.2"
+    "jsdom": "^26.1.0",
+    "msw": "^2.15.0",
+    "typescript": "5.9.2",
+    "vitest": "^3.2.7"
   }
 }

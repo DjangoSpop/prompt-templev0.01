@@ -34,7 +34,8 @@ import {
   ScrollText, // Added for Academy
   Pyramid, // Using a custom shape or general icon
   Wand2, // Skills
-  Compass // Discover
+  Compass, // Discover
+  Rss // Feed
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -92,6 +93,14 @@ const navigationGroups: NavGroup[] = [
         label: 'Skills',
         icon: Wand2,
         description: 'AI skills & MCP tools',
+        priority: 'primary'
+      },
+      {
+        href: '/feed',
+        label: 'Feed',
+        icon: Rss,
+        description: 'Trending prompts',
+        badge: 'New',
         priority: 'primary'
       },
       {

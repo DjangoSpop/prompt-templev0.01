@@ -15,7 +15,16 @@ export type ViralEvent =
   | 'referral_link_created'
   | 'template_used'
   | 'streak_milestone'
-  | 'page_view';
+  | 'page_view'
+  // Sprint 08 prompt feed (names mirror the backend analytics_events)
+  | 'feed_viewed'
+  | 'feed_item_impression'
+  | 'prompt_opened'
+  | 'prompt_reacted'
+  | 'prompt_copied'
+  | 'prompt_forked'
+  | 'prompt_view_switched'
+  | 'feed_filter_applied';
 
 interface EventPayload {
   event: ViralEvent;

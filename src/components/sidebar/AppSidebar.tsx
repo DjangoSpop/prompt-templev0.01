@@ -41,6 +41,7 @@ import {
   Shield,
   FileText,
   Search,
+  Rss,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -92,6 +93,14 @@ const navigationItems: NavItem[] = [
     href: '/templates',
     icon: BookOpen,
     description: 'Prompt library',
+    category: 'main',
+  },
+  {
+    id: 'feed',
+    label: 'Feed',
+    href: '/feed',
+    icon: Rss,
+    description: 'Trending prompts',
     category: 'main',
   },
   {
@@ -363,6 +372,7 @@ const groupedItems = {
 
 // Public nav shown to unauthenticated visitors — only the 5 discoverable, auth-free sections.
 const publicNavItems: NavItem[] = [
+  { id: 'feed',      label: 'Feed',      href: '/feed',      icon: Rss,      description: 'Trending prompts',           category: 'main' },
   { id: 'discover',  label: 'Discover',  href: '/discover',  icon: Compass,  description: 'Explore prompts & tools',    category: 'main' },
   { id: 'templates', label: 'Templates', href: '/templates', icon: BookOpen, description: 'Prompt library',             category: 'main' },
   { id: 'skills',    label: 'Skills',    href: '/skills',    icon: Gem,      description: 'MCP skills library',         category: 'main' },
