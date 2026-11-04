@@ -8,7 +8,7 @@
  * of a prompt (feed pages, collection pages, prompt detail and its `related`) and
  * rolls back on error.
  */
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
 import {
   useInfiniteQuery,
   useMutation,
@@ -84,6 +84,80 @@ export function usePrompt(slug: string | null, options: { enabled?: boolean; fro
     queryFn: () => getPrompt(slug!, { from: options.from }),
     enabled: !!slug && (options.enabled ?? true),
     staleTime: 5 * 60_000,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Sprint 09 R1 — the reader reads from the feed cache, never from its own query
+// ---------------------------------------------------------------------------
+
+/** First copy of `slug` in any cached feed shape (list pages, collections, prompt detail, related). */
+export function findCachedItem(client: QueryClient, slug: string): FeedItem | undefined {
+  for (const [, data] of client.getQueriesData({ queryKey: feedKeys.all })) {
+    if (!data || typeof data !== 'object') continue;
+    const d = data as Record<string, unknown>;
+    if (Array.isArray(d.pages)) {
+      for (const page of d.pages as (FeedPage | CollectionPage)[]) {
+        const hit = page?.results?.find((item) => item.slug === slug);
+        if (hit) return hit;
+      }
+    } else if (typeof d.slug === 'string' && Array.isArray(d.related)) {
+      const detail = d as unknown as FeedPromptDetail;
+      if (detail.slug === slug) return detail;
+      const hit = detail.related.find((item) => item.slug === slug);
+      if (hit) return hit;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Selector over the React Query cache: the item for `slug` wherever it is cached, kept in
+ * sync with reactions and the on-open text fill. No request is ever made here.
+ */
+export function useFeedItem(slug: string | null): FeedItem | undefined {
+  const client = useQueryClient();
+  const subscribe = useCallback((cb: () => void) => client.getQueryCache().subscribe(cb), [client]);
+  const read = useCallback(() => (slug ? findCachedItem(client, slug) : undefined), [client, slug]);
+  return useSyncExternalStore(subscribe, read, read);
+}
+
+/**
+ * R1 degrade path: when an open item has no inline text (B7 not deployed, cap set to 0)
+ * or its text was cut at FEED_INLINE_TEXT_CAP, fetch the detail once and write `text`,
+ * `views` into every cached copy. Cached items with full text never reach the network.
+ */
+export function useEnsureReaderText(item: FeedItem | undefined, open: boolean) {
+  const client = useQueryClient();
+  const authed = useAuthed();
+  const needed = !!item && open && item.text_available !== false && (item.text === null || item.text_truncated);
+  const query = useQuery({
+    queryKey: feedKeys.prompt(item?.slug ?? '', authed),
+    queryFn: () => getPrompt(item!.slug),
+    enabled: needed,
+    staleTime: 5 * 60_000,
+  });
+  useEffect(() => {
+    const detail = query.data;
+    if (!detail || !needed) return;
+    patchEverywhere(client, detail.slug, (cached) =>
+      cached.text === detail.text && cached.views === detail.views
+        ? cached
+        : { ...cached, text: detail.text, text_truncated: false, text_available: detail.text_available, views: detail.views ?? cached.views }
+    );
+  }, [client, needed, query.data]);
+  return { loading: needed && query.isPending, error: needed && query.isError };
+}
+
+/** Related prompts for the reader footer — only when the reader asks (after it is open). */
+export function useRelated(slug: string, enabled: boolean) {
+  const authed = useAuthed();
+  return useQuery({
+    queryKey: feedKeys.prompt(slug, authed),
+    queryFn: () => getPrompt(slug),
+    enabled,
+    staleTime: 5 * 60_000,
+    select: (d) => d.related,
   });
 }
 

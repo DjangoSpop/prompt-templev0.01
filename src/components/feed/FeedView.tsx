@@ -9,18 +9,17 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Clock, Flame, Lock, RefreshCw, Sparkles, Trophy } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Clock, Flame, Lock, Sparkles, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/user';
 import { trackFeed } from '@/lib/feed/analytics';
 import { isFeedDisabled } from '@/lib/feed/api';
-import { useCollection, useFeed, usePendingReactionReplay } from '@/lib/feed/hooks';
+import { useCollection, useFeed, useFeedItem, usePendingReactionReplay, usePrompt } from '@/lib/feed/hooks';
 import { hasActiveFilters, parseFeedQuery, serializeFeedQuery, toggleFilterValue } from '@/lib/feed/params';
 import type { CollectionSummary, FacetKey, FeedItem, FeedPage, FeedQuery, FeedTab } from '@/lib/feed/types';
+import { FeedColumn } from './FeedColumn';
 import { ActiveFilterChips, FiltersButton, FiltersSidebar } from './FeedFilters';
 import { ForkDialog } from './ForkDialog';
-import { PromptCard, PromptCardSkeleton } from './PromptCard';
 import { SignUpCta, type CtaIntent } from './SignUpCta';
 
 const DiscoverFallback = dynamic(() => import('@/app/discover/page'), {
@@ -54,100 +53,17 @@ export function FeedDisabledNotice() {
   );
 }
 
-function useInfiniteSentinel(onVisible: () => void, enabled: boolean) {
-  const ref = useRef<HTMLDivElement>(null);
-  const cb = useRef(onVisible);
-  cb.current = onVisible;
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || !enabled || typeof IntersectionObserver === 'undefined') return;
-    const observer = new IntersectionObserver(([entry]) => entry.isIntersecting && cb.current(), { rootMargin: '600px 0px' });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [enabled]);
-  return ref;
-}
-
-interface FeedListProps {
-  items: FeedItem[];
-  from: string;
-  isLoading: boolean;
-  isError: boolean;
-  error: unknown;
-  hasNextPage: boolean;
-  isFetchingNextPage: boolean;
-  fetchNextPage: () => void;
-  refetch: () => void;
-  emptyText: string;
-  onRequireAuth: (intent: NonNullable<CtaIntent>) => void;
-  onFork: (item: FeedItem) => void;
-}
-
-function FeedList(props: FeedListProps) {
-  const { items, from, isLoading, isError, hasNextPage, isFetchingNextPage, fetchNextPage } = props;
-  const sentinel = useInfiniteSentinel(() => {
-    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
-  }, hasNextPage);
-
-  if (isLoading) {
-    return (
-      <div className="space-y-3" aria-busy="true" aria-label="Loading prompts">
-        {Array.from({ length: 6 }, (_, i) => (
-          <PromptCardSkeleton key={i} />
-        ))}
-      </div>
-    );
-  }
-  if (isError && !items.length) {
-    return (
-      <div className="rounded-xl border border-border/60 p-8 text-center" role="alert">
-        <p className="font-medium">We could not load prompts.</p>
-        <p className="mt-1 text-sm text-muted-foreground">Check your connection and try again.</p>
-        <div className="mt-4 flex justify-center gap-2">
-          <Button variant="outline" size="sm" onClick={props.refetch} className="gap-1.5">
-            <RefreshCw className="h-3.5 w-3.5" aria-hidden /> Retry
-          </Button>
-          <Button asChild variant="ghost" size="sm">
-            <Link href="/discover">Browse the library instead</Link>
-          </Button>
-        </div>
-      </div>
-    );
-  }
-  if (!items.length) {
-    return <p className="rounded-xl border border-dashed border-border/60 p-8 text-center text-sm text-muted-foreground">{props.emptyText}</p>;
-  }
-  return (
-    <div>
-      <ol className="space-y-3" aria-label="Prompts">
-        {items.map((item, i) => (
-          <li key={item.id}>
-            <PromptCard item={item} from={from} position={i + 1} onRequireAuth={props.onRequireAuth} onFork={props.onFork} />
-          </li>
-        ))}
-      </ol>
-      <div ref={sentinel} className="h-px" aria-hidden />
-      {(hasNextPage || isFetchingNextPage) && (
-        <div className="mt-4 flex justify-center">
-          {isFetchingNextPage ? (
-            <div className="w-full space-y-3" aria-busy="true" aria-label="Loading more prompts">
-              <PromptCardSkeleton />
-              <PromptCardSkeleton />
-            </div>
-          ) : (
-            <Button variant="outline" onClick={fetchNextPage}>
-              Load more
-            </Button>
-          )}
-        </div>
-      )}
-      {isError && items.length > 0 && (
-        <p className="mt-3 text-center text-xs text-muted-foreground" role="alert">
-          Could not load more. <button className="underline" onClick={fetchNextPage}>Try again</button>
-        </p>
-      )}
-    </div>
-  );
+/**
+ * R1 deep links: `?p=<slug>`. When the slug is not in the loaded pages, use any cached copy
+ * (a related item, a prompt page) or fetch the detail once and pin it as the first card.
+ */
+function usePinned(slug: string | null, items: FeedItem[], loading: boolean) {
+  const inList = !!slug && items.some((i) => i.slug === slug);
+  const cached = useFeedItem(slug && !inList ? slug : null);
+  const needFetch = !!slug && !loading && !inList && !cached;
+  const detail = usePrompt(slug, { enabled: needFetch, from: 'deeplink' });
+  const pinned = slug && !inList ? (cached ?? detail.data ?? null) : null;
+  return { pinned, pinnedLoading: needFetch && detail.isPending };
 }
 
 function useOverlays() {
@@ -175,15 +91,20 @@ export function FeedView({ initialPage }: FeedViewProps) {
   const feed = useFeed(query, query.tab === 'trending' && !hasActiveFilters(query.filters) ? initialPage : undefined);
   const { overlays, requireAuth, fork } = useOverlays();
   usePendingReactionReplay();
+  const items = feed.data?.pages.flatMap((p) => p.results) ?? [];
+  const deepLink = searchParams.get('p');
+  const { pinned, pinnedLoading } = usePinned(deepLink, items, feed.isLoading);
 
   useEffect(() => {
     trackFeed('feed_viewed', { tab: query.tab, filtered: hasActiveFilters(query.filters) });
   }, [query.tab, query.filters]);
 
   const navigate = useCallback(
-    (next: FeedQuery) => router.replace(`${pathname}${serializeFeedQuery(next)}`, { scroll: false }),
+    (next: FeedQuery, extra?: Record<string, string | undefined>) =>
+      router.replace(`${pathname}${serializeFeedQuery(next, extra)}`, { scroll: false }),
     [router, pathname]
   );
+  const openExternal = useCallback((slug: string) => navigate(query, { p: slug }), [navigate, query]);
   const onToggle = (key: FacetKey, value: string) => {
     const filters = toggleFilterValue(query.filters, key, value);
     if ((filters[key]?.length ?? 0) > (query.filters[key]?.length ?? 0)) trackFeed('feed_filter_applied', { facet: key });
@@ -197,7 +118,6 @@ export function FeedView({ initialPage }: FeedViewProps) {
 
   if (isFeedDisabled(feed.error)) return <FeedDisabledNotice />;
 
-  const items = feed.data?.pages.flatMap((p) => p.results) ?? [];
   const fallback = feed.data?.pages[0]?.tab_fallback;
   const filterProps = { value: query.filters, onToggle, onClear };
 
@@ -214,7 +134,7 @@ export function FeedView({ initialPage }: FeedViewProps) {
       </header>
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <div role="tablist" aria-label="Feed" className="flex gap-1 overflow-x-auto rounded-lg bg-muted/60 p-1">
+        <div role="tablist" aria-label="Feed" className="flex gap-1 overflow-x-auto rounded-lg bg-foreground/5 p-1">
           {TABS.map(({ id, label, icon: Icon }) => {
             const active = query.tab === id;
             return (
@@ -254,7 +174,7 @@ export function FeedView({ initialPage }: FeedViewProps) {
               )}
             </p>
           )}
-          <FeedList
+          <FeedColumn
             items={items}
             from={query.tab}
             isLoading={feed.isLoading}
@@ -267,6 +187,11 @@ export function FeedView({ initialPage }: FeedViewProps) {
             emptyText={hasActiveFilters(query.filters) ? FILTERED_EMPTY : EMPTY_COPY[query.tab]}
             onRequireAuth={requireAuth}
             onFork={fork}
+            pinned={pinned}
+            pinnedLoading={pinnedLoading}
+            initialOpenSlug={deepLink}
+            resetKey={serializeFeedQuery(query)}
+            onOpenExternal={openExternal}
           />
         </section>
         <FiltersSidebar {...filterProps} />
@@ -280,9 +205,18 @@ const SOTA_EXPLAINER =
   "Top-ranked, licensed, structured prompts from the world's public libraries, refreshed weekly.";
 
 export function CollectionView({ slug, initial }: { slug: string; initial?: CollectionSummary | null }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const collection = useCollection(slug);
   const { overlays, requireAuth, fork } = useOverlays();
   usePendingReactionReplay();
+  const items = collection.data?.pages.flatMap((p) => p.results) ?? [];
+  const deepLink = searchParams.get('p');
+  const { pinned, pinnedLoading } = usePinned(deepLink, items, collection.isLoading);
+  const openExternal = useCallback(
+    (s: string) => router.replace(`/feed/c/${encodeURIComponent(slug)}?p=${encodeURIComponent(s)}`, { scroll: false }),
+    [router, slug]
+  );
 
   useEffect(() => {
     trackFeed('feed_viewed', { tab: `collection:${slug}` });
@@ -291,7 +225,6 @@ export function CollectionView({ slug, initial }: { slug: string; initial?: Coll
   if (isFeedDisabled(collection.error)) return <FeedDisabledNotice />;
 
   const header = collection.data?.pages[0]?.collection ?? initial ?? null;
-  const items = collection.data?.pages.flatMap((p) => p.results) ?? [];
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6">
@@ -307,7 +240,7 @@ export function CollectionView({ slug, initial }: { slug: string; initial?: Coll
         )}
         {!!header?.count && <p className="mt-1 text-xs text-muted-foreground">{header.count.toLocaleString()} prompts</p>}
       </header>
-      <FeedList
+      <FeedColumn
         items={items}
         from={`collection:${slug}`}
         isLoading={collection.isLoading}
@@ -320,6 +253,11 @@ export function CollectionView({ slug, initial }: { slug: string; initial?: Coll
         emptyText="This collection is empty for now."
         onRequireAuth={requireAuth}
         onFork={fork}
+        pinned={pinned}
+        pinnedLoading={pinnedLoading}
+        initialOpenSlug={deepLink}
+        resetKey={`collection:${slug}`}
+        onOpenExternal={openExternal}
       />
       {overlays}
     </div>

@@ -13,12 +13,14 @@ import {
   Gem,
   Zap,
   Crown,
+  Rss,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/providers/AuthProvider';
 
 const AUTH_NAV_ITEMS = [
   { href: '/dashboard',  label: 'Home',       icon: Home     },
+  { href: '/feed',       label: 'Feed',       icon: Rss      },
   { href: '/discover',   label: 'Discover',   icon: Globe    },
   { href: '/templates',  label: 'Templates',  icon: BookOpen },
   { href: '/playground', label: 'Playground', icon: Sparkles },
@@ -26,6 +28,7 @@ const AUTH_NAV_ITEMS = [
 ] as const;
 
 const PUBLIC_NAV_ITEMS = [
+  { href: '/feed',      label: 'Feed',      icon: Rss      },
   { href: '/discover',  label: 'Discover',  icon: Compass  },
   { href: '/templates', label: 'Templates', icon: BookOpen },
   { href: '/skills',    label: 'Skills',    icon: Gem      },

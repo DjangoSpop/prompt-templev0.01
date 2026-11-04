@@ -96,7 +96,7 @@ export function PromptActions({ item, getText, onRequireAuth, onFork, copyView =
         variant="ghost"
         className={cn(btn, 'gap-1.5', item.viewer.liked && 'text-rose-600 dark:text-rose-400')}
         aria-pressed={item.viewer.liked}
-        aria-label={item.viewer.liked ? `Unlike (${item.stats.likes} likes)` : `Like (${item.stats.likes} likes)`}
+        aria-label={item.viewer.liked ? `Unlike, ${formatCount(item.stats.likes)} likes` : `Like, ${formatCount(item.stats.likes)} likes`}
         onClick={() => onReact('like')}
       >
         <Heart className={cn(icon, item.viewer.liked && 'fill-current')} aria-hidden />
@@ -108,7 +108,7 @@ export function PromptActions({ item, getText, onRequireAuth, onFork, copyView =
         variant="ghost"
         className={cn(btn, 'gap-1.5', item.viewer.saved && 'text-[#C9A227]')}
         aria-pressed={item.viewer.saved}
-        aria-label={item.viewer.saved ? `Unsave (${item.stats.saves} saves)` : `Save (${item.stats.saves} saves)`}
+        aria-label={item.viewer.saved ? `Unsave, ${formatCount(item.stats.saves)} saves` : `Save, ${formatCount(item.stats.saves)} saves`}
         onClick={() => onReact('save')}
       >
         <Bookmark className={cn(icon, item.viewer.saved && 'fill-current')} aria-hidden />
@@ -119,7 +119,7 @@ export function PromptActions({ item, getText, onRequireAuth, onFork, copyView =
       <Button
         variant="ghost"
         className={cn(btn, 'gap-1.5', item.viewer.forked && 'text-[#C9A227]')}
-        aria-label={`Fork (${item.stats.forks} forks)`}
+        aria-label={`Fork, ${formatCount(item.stats.forks)} forks`}
         onClick={() => (authed ? onFork() : onRequireAuth({ kind: 'fork', slug: item.slug }))}
       >
         <GitFork className={icon} aria-hidden />

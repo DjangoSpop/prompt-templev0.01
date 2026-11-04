@@ -10,7 +10,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
-import { BadgeCheck, Check, ChevronDown, Copy, ExternalLink, Flame, Scale } from 'lucide-react';
+import { BadgeCheck, BookOpen, Check, ChevronDown, Copy, ExternalLink, Flame, Scale } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,6 +28,7 @@ import {
   isSota,
   isStructuredForm,
   isTopTrending,
+  readerPath,
   readingTimeLabel,
   type FeedItem,
   type FeedPromptDetail,
@@ -368,6 +369,13 @@ export function PromptPageView({ slug, initial }: PromptPageViewProps) {
         </main>
 
         <aside className="space-y-5 lg:sticky lg:top-20 lg:self-start">
+          {prompt.text && (
+            <Button asChild variant="outline" className="w-full gap-1.5">
+              <Link href={readerPath(prompt)}>
+                <BookOpen className="h-4 w-4" aria-hidden /> Open in feed
+              </Link>
+            </Button>
+          )}
           {prompt.text && (
             <div className="rounded-xl border border-border/60 p-3">
               <PromptActions

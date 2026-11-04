@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion';
-import { Menu, X, Download, ArrowRight, Compass, BookOpen, GraduationCap, CreditCard, Wand2, Sun, Moon } from 'lucide-react';
+import { Menu, X, Download, ArrowRight, Compass, BookOpen, GraduationCap, CreditCard, Wand2, Sun, Moon, Rss } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Eyehorus from '@/components/pharaonic/Eyehorus';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -14,6 +14,7 @@ import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/comp
 
 const NAV_LINKS = [
   { href: '#how-it-works', label: 'How It Works', icon: Compass },
+  { href: '/feed', label: 'Feed', icon: Rss, tooltip: 'Trending prompts you can read and copy in place' },
   { href: '/discover', label: 'Discover', icon: BookOpen, tooltip: 'Explore community prompts & templates' },
   { href: '/skills', label: 'Skills', icon: Wand2, tooltip: 'AI skills & MCP tools' },
   { href: '/pricing', label: 'Pricing', icon: CreditCard },

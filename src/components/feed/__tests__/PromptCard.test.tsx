@@ -63,12 +63,26 @@ describe('PromptCard', () => {
     expect(onRequireAuth).toHaveBeenCalledWith({ kind: 'like', slug: makeItem(4).slug });
   });
 
-  it('expand is accessible', () => {
+  it('without a reader (related lists) the title links to the prompt page', () => {
     card(makeItem(1));
-    const toggle = screen.getByRole('button', { name: 'Show more' });
-    expect(toggle).toHaveAttribute('aria-expanded', 'false');
-    fireEvent.click(toggle);
-    expect(screen.getByRole('button', { name: 'Show less' })).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('link', { name: 'Prompt 1' })).toHaveAttribute('href', expect.stringContaining('/prompts/'));
+    expect(screen.queryByRole('button', { name: 'Read' })).toBeNull();
+  });
+
+  it('with a reader the title is a toggle and Read opens it', () => {
+    const onToggle = vi.fn();
+    const reader = {
+      open: false, active: false, onToggle, onClose: vi.fn(), onPrev: vi.fn(), onNext: vi.fn(), onSwipe: vi.fn(),
+      hasPrev: false, hasNext: true, onOpenRelated: vi.fn(), settings: { keepOpen: false, softCollapse: false },
+      onSetting: vi.fn(), focusMode: false, copyTick: 0,
+    };
+    renderWithQuery(
+      <PromptCard item={feedItemSchema.parse(makeItem(1))} from="trending" position={1} onRequireAuth={vi.fn()} onFork={vi.fn()} reader={reader} />
+    );
+    const title = screen.getByRole('button', { name: 'Prompt 1' });
+    expect(title).toHaveAttribute('aria-expanded', 'false');
+    fireEvent.click(screen.getByRole('button', { name: 'Read' }));
+    expect(onToggle).toHaveBeenCalledTimes(1);
   });
 
   it('uses RTL for Arabic items', () => {

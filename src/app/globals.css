@@ -1152,3 +1152,67 @@ select:focus-visible {
 
 
 
+
+/* ---------------------------------------------------------------------------
+   Sprint 09 — inline feed reader: semantic prompt colours (R3.2).
+   Seven reading-aid tokens, low saturation, AA against --card in both themes
+   (contrast table in docs/sprint09/sprint_log.md). Colour never changes the
+   characters: the renderer only adds data-kind attributes.
+   Rollback: remove this block; PromptText degrades to plain text.
+   --------------------------------------------------------------------------- */
+:root {
+  --pt-role: #2b4c9b;
+  --pt-heading: #1f2937;
+  --pt-rule: #9a3412;
+  --pt-variable: #6b3f0a;
+  --pt-variable-bg: #fef3c7;
+  --pt-example: #166534;
+  --pt-format: #6b21a8;
+  --pt-code: #334155;
+  --pt-code-bg: #f3f4f6;
+  --pt-dialogue: #0f766e;
+  --reader-sticky-top: 4.5rem;
+}
+.dark {
+  --pt-role: #9dbbff;
+  --pt-heading: #edeff3;
+  --pt-rule: #f4b183;
+  --pt-variable: #fde68a;
+  --pt-variable-bg: #3b2f0b;
+  --pt-example: #86efac;
+  --pt-format: #c4b5fd;
+  --pt-code: #cbd5e1;
+  --pt-code-bg: #0f1218;
+  --pt-dialogue: #5eead4;
+}
+
+.pt-text { max-width: 72ch; overflow-wrap: anywhere; }
+.pt-text[data-mode='large'] { font-size: 1.0625rem; line-height: 1.75; }
+.pt-text > * { margin: 0; }
+.pt-text > * + * { margin-top: 0.35rem; }
+.pt-text [data-empty] { min-height: 0.75rem; }
+.pt-text h4 { font-weight: 600; margin-top: 0.9rem; scroll-margin-top: calc(var(--reader-sticky-top) + 3.25rem); }
+.pt-text ul { list-style: none; padding-inline-start: 0.9rem; }
+.pt-text li { position: relative; }
+.pt-text li::before { content: '•'; position: absolute; inset-inline-start: -0.9rem; color: hsl(var(--muted-fg)); }
+.pt-text li[data-kind='rule'] { padding-inline-start: 0.4rem; border-inline-start: 2px solid transparent; }
+.pt-text pre { white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.8125rem; padding: 0.5rem 0.75rem; border-radius: 0.375rem; background: var(--pt-code-bg); color: var(--pt-code); }
+.pt-text mark[data-kind='variable'] { background: transparent; color: inherit; border-radius: 0.25rem; padding: 0 0.15rem; }
+.pt-text code[data-kind='inline_code'] { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.875em; padding: 0 0.2rem; border-radius: 0.25rem; background: var(--pt-code-bg); }
+.pt-text a[data-kind='url'] { text-decoration: underline; text-underline-offset: 2px; }
+.pt-text.pt-long > * { content-visibility: auto; contain-intrinsic-size: auto 1.5rem; }
+
+/* colour only in coloured / large mode */
+.pt-text:not([data-mode='plain']) [data-kind='role'] { color: var(--pt-role); font-weight: 500; }
+.pt-text:not([data-mode='plain']) h4[data-kind='heading'] { color: var(--pt-heading); }
+.pt-text:not([data-mode='plain']) [data-kind='rule'] { color: var(--pt-rule); border-inline-start-color: var(--pt-rule); }
+.pt-text:not([data-mode='plain']) [data-kind='example'] { color: var(--pt-example); }
+.pt-text:not([data-mode='plain']) [data-kind='format'] { color: var(--pt-format); }
+.pt-text:not([data-mode='plain']) [data-kind='dialogue'] { color: var(--pt-dialogue); }
+.pt-text:not([data-mode='plain']) mark[data-kind='variable'] { background: var(--pt-variable-bg); color: var(--pt-variable); font-weight: 500; cursor: pointer; }
+.pt-text:not([data-mode='plain']) [data-kind='emphasis'] { font-weight: 600; }
+.pt-text:not([data-mode='plain']) [data-kind='number'] { font-variant-numeric: tabular-nums; font-weight: 500; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pt-reader * { transition-duration: 0ms !important; animation-duration: 0ms !important; }
+}

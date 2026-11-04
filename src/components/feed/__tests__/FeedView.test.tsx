@@ -111,7 +111,7 @@ describe('reactions', () => {
     fireEvent.click(like);
     expect(await within(cards()[1]).findByRole('button', { name: /^Unlike/ })).toHaveAttribute('aria-pressed', 'true');
     await waitFor(() => expect(state.reactCalls).toEqual([{ slug: state.items[1].slug, kind: 'like' }]));
-    expect(within(cards()[1]).getByRole('button', { name: /^Unlike \(2 likes\)/ })).toBeInTheDocument();
+    expect(within(cards()[1]).getByRole('button', { name: /^Unlike, 2 likes/ })).toBeInTheDocument();
   });
 
   it('rolls back when the server rejects the reaction', async () => {
@@ -121,7 +121,7 @@ describe('reactions', () => {
     renderWithQuery(<FeedView />);
     await waitFor(() => expect(cards()).toHaveLength(20));
     fireEvent.click(within(cards()[1]).getByRole('button', { name: /^Like/ }));
-    await waitFor(() => expect(within(cards()[1]).getByRole('button', { name: /^Like \(1 likes\)/ })).toHaveAttribute('aria-pressed', 'false'));
+    await waitFor(() => expect(within(cards()[1]).getByRole('button', { name: /^Like, 1 likes/ })).toHaveAttribute('aria-pressed', 'false'));
   });
 
   it('replays the pending reaction once after sign-in', async () => {

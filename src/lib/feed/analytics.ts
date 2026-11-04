@@ -15,7 +15,15 @@ type FeedEvent =
   | 'prompt_copied'
   | 'prompt_forked'
   | 'prompt_view_switched'
-  | 'feed_filter_applied';
+  | 'feed_filter_applied'
+  // Sprint 09 reader (R5); dwell_ms on reader_closed is the retention metric
+  | 'reader_opened'
+  | 'reader_closed'
+  | 'reader_next'
+  | 'reader_view_switched'
+  | 'reader_legend';
+
+export type ReaderOpenMethod = 'tap' | 'j' | 'k' | 'swipe' | 'deeplink' | 'arrow' | 'outline';
 
 export function trackFeed(event: FeedEvent, props: Props = {}): void {
   try {

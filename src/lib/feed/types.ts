@@ -88,6 +88,78 @@ const titleListSchema = z
 const formSchema = z.enum(PROMPT_FORMS).catch('long_form');
 
 // ---------------------------------------------------------------------------
+// Prompt views (Sprint 09: inline on every FeedItem; null when PROMPT_VIEWS_ENABLED is off)
+// ---------------------------------------------------------------------------
+
+export const outlineSectionSchema = z
+  .object({
+    id: z.string().optional(),
+    title: z.string().catch('').default(''),
+    body: z.string().catch('').default(''),
+    level: z.number().int().min(1).max(6).catch(2).default(2),
+  })
+  .passthrough();
+export type OutlineSection = z.infer<typeof outlineSectionSchema>;
+
+export const promptVariableSchema = z
+  .object({
+    name: z.string().min(1),
+    hint: nullableString,
+    placeholder: nullableString,
+    default: nullableString,
+    required: z.boolean().catch(false).default(false),
+    occurrences: nonNegInt.default(0),
+  })
+  .passthrough();
+export type PromptVariable = z.infer<typeof promptVariableSchema>;
+
+/** Backend sends `{n, text}`; `{index, title, body}` is accepted too. */
+export const promptStepSchema = z
+  .object({
+    index: z.number().int().optional(),
+    n: z.number().int().optional(),
+    title: z.string().catch('').default(''),
+    body: z.string().catch('').default(''),
+    text: z.string().optional(),
+  })
+  .passthrough()
+  .transform(({ n, text, ...step }) => ({ ...step, index: step.index ?? n, body: step.body || text || '' }));
+export type PromptStep = z.infer<typeof promptStepSchema>;
+
+/** Accept `["a","b"]` or `[{name:"a"}]` for variables. */
+const variableListSchema = z
+  .array(
+    z.union([
+      z.string().transform((name) => ({ name, hint: null, placeholder: null, default: null, required: false, occurrences: 0 })),
+      promptVariableSchema,
+    ])
+  )
+  .catch([]);
+
+/** Accept `{sections:[...]}` or `[...]` for outline. */
+const outlineSchema = z
+  .union([
+    z.array(outlineSectionSchema),
+    z.object({ sections: z.array(outlineSectionSchema) }).transform((o) => o.sections),
+  ])
+  .catch([]);
+
+/** Accept `["step"]` or `[{title, body}]` for steps. */
+const stepListSchema = z
+  .array(z.union([z.string().transform((body) => ({ index: undefined as number | undefined, title: '', body })), promptStepSchema]))
+  .catch([]);
+
+export const promptViewsSchema = z
+  .object({
+    outline: outlineSchema.default([]),
+    variables: variableListSchema.default([]),
+    steps: stepListSchema.default([]),
+    compact: z.string().nullable().catch(null).default(null),
+  })
+  .passthrough();
+export type PromptViews = z.infer<typeof promptViewsSchema>;
+
+// ---------------------------------------------------------------------------
 // FeedItem
 // ---------------------------------------------------------------------------
 
@@ -163,6 +235,12 @@ export const feedItemSchema = z
     attribution: attributionSchema.default(null),
     collections: z.array(z.string()).catch([]).default([]),
     text_available: z.boolean().catch(true).default(true),
+    // Sprint 09 R1 / B7: full text and precomputed views travel with the item, so opening
+    // a prompt is a cache read. `text: null` with `text_available: true` means B7 is not
+    // deployed (or FEED_INLINE_TEXT_CAP=0) and the reader fetches the detail once on open.
+    text: z.string().nullable().catch(null).default(null),
+    text_truncated: z.boolean().catch(false).default(false),
+    views: promptViewsSchema.nullable().catch(null).default(null),
     created_at: z.string().catch('').default(''),
     updated_at: z.string().catch('').default(''),
   })
@@ -172,78 +250,6 @@ export type FeedItem = z.infer<typeof feedItemSchema>;
 export type FeedStats = FeedItem['stats'];
 export type FeedViewer = FeedItem['viewer'];
 export type FeedAttribution = FeedItem['attribution'];
-
-// ---------------------------------------------------------------------------
-// Prompt detail (views)
-// ---------------------------------------------------------------------------
-
-export const outlineSectionSchema = z
-  .object({
-    id: z.string().optional(),
-    title: z.string().catch('').default(''),
-    body: z.string().catch('').default(''),
-    level: z.number().int().min(1).max(6).catch(2).default(2),
-  })
-  .passthrough();
-export type OutlineSection = z.infer<typeof outlineSectionSchema>;
-
-export const promptVariableSchema = z
-  .object({
-    name: z.string().min(1),
-    hint: nullableString,
-    placeholder: nullableString,
-    default: nullableString,
-    required: z.boolean().catch(false).default(false),
-    occurrences: nonNegInt.default(0),
-  })
-  .passthrough();
-export type PromptVariable = z.infer<typeof promptVariableSchema>;
-
-/** Backend sends `{n, text}`; `{index, title, body}` is accepted too. */
-export const promptStepSchema = z
-  .object({
-    index: z.number().int().optional(),
-    n: z.number().int().optional(),
-    title: z.string().catch('').default(''),
-    body: z.string().catch('').default(''),
-    text: z.string().optional(),
-  })
-  .passthrough()
-  .transform(({ n, text, ...step }) => ({ ...step, index: step.index ?? n, body: step.body || text || '' }));
-export type PromptStep = z.infer<typeof promptStepSchema>;
-
-/** Accept `["a","b"]` or `[{name:"a"}]` for variables. */
-const variableListSchema = z
-  .array(
-    z.union([
-      z.string().transform((name) => ({ name, hint: null, placeholder: null, default: null, required: false, occurrences: 0 })),
-      promptVariableSchema,
-    ])
-  )
-  .catch([]);
-
-/** Accept `{sections:[...]}` or `[...]` for outline. */
-const outlineSchema = z
-  .union([
-    z.array(outlineSectionSchema),
-    z.object({ sections: z.array(outlineSectionSchema) }).transform((o) => o.sections),
-  ])
-  .catch([]);
-
-/** Accept `["step"]` or `[{title, body}]` for steps. */
-const stepListSchema = z
-  .array(z.union([z.string().transform((body) => ({ index: undefined as number | undefined, title: '', body })), promptStepSchema]))
-  .catch([]);
-
-export const promptViewsSchema = z
-  .object({
-    outline: outlineSchema.default([]),
-    variables: variableListSchema.default([]),
-    steps: stepListSchema.default([]),
-    compact: z.string().nullable().catch(null).default(null),
-  })
-  .passthrough();
-export type PromptViews = z.infer<typeof promptViewsSchema>;
 
 export const forkOfSchema = z
   .object({
@@ -256,8 +262,6 @@ export const forkOfSchema = z
   .catch(null);
 
 export const feedPromptDetailSchema = feedItemSchema.extend({
-  text: z.string().nullable().catch(null).default(null),
-  views: promptViewsSchema.nullable().catch(null).default(null),
   related: z.array(feedItemSchema).catch([]).default([]),
   fork_of: forkOfSchema.default(null),
 });
@@ -417,6 +421,21 @@ export function lengthLabel(bucket: string): string {
 export function readingTimeLabel(seconds: number): string {
   if (!seconds || seconds < 45) return '< 1 min';
   return `${Math.max(1, Math.round(seconds / 60))} min`;
+}
+
+/** Metadata-only items (marketplace, Sprint 06 G2) render a link card and never a reader. */
+export function isReadable(item: Pick<FeedItem, 'text_available'>): boolean {
+  return item.text_available !== false;
+}
+
+/** The reader can open from cache alone (B7 deployed and the text not cut). */
+export function hasInlineText(item: Pick<FeedItem, 'text' | 'text_truncated'>): boolean {
+  return typeof item.text === 'string' && !item.text_truncated;
+}
+
+/** `/feed?p=<slug>` — the shareable reader link (R2.5). */
+export function readerPath(item: Pick<FeedItem, 'slug'>): string {
+  return `/feed?p=${encodeURIComponent(item.slug)}`;
 }
 
 export function isSota(item: Pick<FeedItem, 'collections'>): boolean {

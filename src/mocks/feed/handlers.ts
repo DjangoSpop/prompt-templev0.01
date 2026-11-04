@@ -13,10 +13,12 @@ export interface FeedMockState {
   reactCalls: { slug: string; kind: string }[];
   copyCalls: string[];
   requests: URL[];
+  /** Slugs requested from `GET /prompts/<slug>/` — must stay empty when a cached reader opens (R1). */
+  promptRequests: string[];
 }
 
 export function createFeedMockState(items: RawItem[] = SIXTY_ITEMS): FeedMockState {
-  return { items: structuredClone(items), reactCalls: [], copyCalls: [], requests: [] };
+  return { items: structuredClone(items), reactCalls: [], copyCalls: [], requests: [], promptRequests: [] };
 }
 
 export function feedHandlers(state: FeedMockState) {
@@ -44,6 +46,7 @@ export function feedHandlers(state: FeedMockState) {
     }),
     http.get(`${FEED_BASE}/prompts/*`, ({ request }) => {
       const slug = decodeURIComponent(new URL(request.url).pathname.replace(/^.*\/prompts\//, '').replace(/\/$/, ''));
+      state.promptRequests.push(slug);
       const item = state.items.find((i) => i.slug === slug);
       if (!item) return HttpResponse.json({ detail: 'Not found.', code: 'not_found' }, { status: 404 });
       return HttpResponse.json(makeDetail(item));

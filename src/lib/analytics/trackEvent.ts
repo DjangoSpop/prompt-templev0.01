@@ -24,7 +24,13 @@ export type ViralEvent =
   | 'prompt_copied'
   | 'prompt_forked'
   | 'prompt_view_switched'
-  | 'feed_filter_applied';
+  | 'feed_filter_applied'
+  // Sprint 09 inline reader
+  | 'reader_opened'
+  | 'reader_closed'
+  | 'reader_next'
+  | 'reader_view_switched'
+  | 'reader_legend';
 
 interface EventPayload {
   event: ViralEvent;
