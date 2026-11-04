@@ -64,21 +64,26 @@ test('tap → text painted p95 < 100 ms for cached items (CPU ×4, Fast 3G)', as
   const toggles = page.locator('ol[aria-label="Prompts"] article h3 button[aria-expanded]');
   const count = Math.min(OPENS, await toggles.count());
   const samples: number[] = [];
+  let failedOpens = 0;
   for (let i = 0; i < count; i++) {
+    // Resolves when the text paints (ms), when the reader shows its error state (-1, e.g. the API
+    // throttled the detail fetch with 429 on the no-B7 path), or after 20 s (-2) so the run never hangs.
     const ms = await toggles.nth(i).evaluate(async (btn) => {
       const t0 = performance.now();
       (btn as HTMLButtonElement).click();
-      await new Promise<void>((resolve) => {
+      return new Promise<number>((resolve) => {
         const check = () => {
           const region = document.getElementById(btn.getAttribute('aria-controls') || '');
-          if (region && region.querySelector('[data-testid="prompt-text"], [data-testid="prompt-text-plain"]')) requestAnimationFrame(() => resolve());
+          if (region?.querySelector('[data-testid="prompt-text"], [data-testid="prompt-text-plain"]')) requestAnimationFrame(() => resolve(performance.now() - t0));
+          else if (region?.querySelector('[role="alert"]')) resolve(-1);
+          else if (performance.now() - t0 > 20_000) resolve(-2);
           else requestAnimationFrame(check);
         };
         check();
       });
-      return performance.now() - t0;
     });
-    samples.push(ms);
+    if (ms < 0) failedOpens += 1;
+    else samples.push(ms);
     await page.waitForTimeout(150);
   }
 
@@ -86,6 +91,7 @@ test('tap → text painted p95 < 100 ms for cached items (CPU ×4, Fast 3G)', as
   const result = {
     date: new Date().toISOString(),
     opens: samples.length,
+    failed_opens: failedOpens,
     p50_ms: Math.round(percentile(samples, 50)),
     p95_ms: Math.round(percentile(samples, 95)),
     max_ms: Math.round(Math.max(...samples)),
@@ -99,7 +105,7 @@ test('tap → text painted p95 < 100 ms for cached items (CPU ×4, Fast 3G)', as
   mkdirSync('playwright-report', { recursive: true });
   writeFileSync('playwright-report/sprint09_open_timing.json', JSON.stringify({ ...result, samples }, null, 2));
   // eslint-disable-next-line no-console
-  console.log(`| Tap → text painted (cached) | p50 ${result.p50_ms} ms · p95 ${result.p95_ms} ms · max ${result.max_ms} ms over ${result.opens} opens | long frames > 32 ms: ${result.long_frames_over_32ms} (worst ${result.worst_frame_ms} ms) · detail requests: ${result.detail_requests_during_opens} |`);
+  console.log(`| Tap → text painted (cached) | p50 ${result.p50_ms} ms · p95 ${result.p95_ms} ms · max ${result.max_ms} ms over ${result.opens} opens | long frames > 32 ms: ${result.long_frames_over_32ms} (worst ${result.worst_frame_ms} ms) · detail requests: ${result.detail_requests_during_opens} · failed opens: ${result.failed_opens} |`);
 
   if (inlineText) {
     expect(result.detail_requests_during_opens, 'cached opens must not fetch').toBe(0);

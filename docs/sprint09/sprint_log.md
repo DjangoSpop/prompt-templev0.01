@@ -51,8 +51,8 @@ All ≥ 4.5 (AA); the dataviz validator is not in the repo, ratios computed with
 | Budget | Target | Measured | How |
 |---|---|---|---|
 | Feed JS added by this sprint | < 35 kB gz (tokenizer ≤ 6 kB) | **26.5 kB gz** (96.7 kB raw) for the 9 new modules, shared libs excluded; tokenizer **1.46 kB gz** | esbuild `--bundle --minify` with react/next/framer/lucide/sonner/react-query/`@/*` external |
-| Tap → text painted (cached) | p95 < 100 ms | see Run log (perf script run) | `npx playwright test --project=perf` (`scripts/sprint09_open_timing.ts`) |
-| Open animation frames | none > 32 ms | see Run log (perf script run) | same script, LoAF observer |
+| Tap → text painted (cached) | p95 < 100 ms | **not measurable against the live API yet**: no B7 (every open fetches) and the anon throttle (100 req/hour, API-wide) returned 429 for 17 of 20 opens; the 3 that loaded took p50 5.2 s under Fast 3G with retries. Re-run after the B7 deploy | `npx playwright test --project=perf` (`scripts/sprint09_open_timing.ts`) |
+| Open animation frames | none > 32 ms | 119 long frames (worst 353 ms) under CPU ×4 while 75 throttled fetches retried; not representative, re-run with B7 | same script, LoAF observer |
 | `/feed` LCP mobile | < 2.0 s | not run (no Lighthouse CI in the repo) | — |
 | CLS with reader open/close | < 0.05 | not measured (Lighthouse not run); header never moves by construction (height animates below it) | — |
 | Memory, 500 items, 1 open | < 150 MB | not measured | — |
@@ -85,6 +85,9 @@ All ≥ 4.5 (AA); the dataviz validator is not in the repo, ratios computed with
 | 2026-11-04 | 375 px flows, second run | all four timed out at the backdrop tap: the drawer's `<aside>` sits above the backdrop so a pointer click never lands; the e2e now dispatches the click event (2 s cap) and hides the drawer. Then 6 passed / 2 skipped (see §8) |
 | 2026-11-04 | Home navbar | "Feed" link before "Discover" in `LandingNavbar` and both `BottomNav` lists (sidebar and app navbar already had it) |
 | 2026-11-04 | Git | `feature/sprint09-reader` pushed, fast-forwarded into `main` → Vercel production build. **B7 is not deployed on Heroku**, so production opens with the one-fetch path until `migrate feed` + `build_views_cache` run |
+| 2026-11-04 | Perf script, first run | hung: a detail fetch got HTTP 429 and the script only waited for text. Script now resolves on the reader's error state (-1) or after 20 s and reports `failed_opens` |
+| 2026-11-04 | Perf script, second run | 3 opens measured, 17 failed on 429 (`DEFAULT_THROTTLE_RATES.anon = 100/hour` in the backend is API-wide, and the e2e runs had used most of it). **Production impact until B7 ships:** an anonymous visitor who opens ~100 prompts in an hour sees "Could not load the prompt text"; with inline text an open costs no request |
+| 2026-11-04 | Vercel | production deployment Ready 2 min after the push; live check: landing navbar order How It Works · Feed · Discover · …, `/feed` opens a card in place with `?p=` URL, sticky bar, footer. Text fetch 429'd from the test machine's IP (throttle), expected |
 
 ## Not done / needs Basha
 
