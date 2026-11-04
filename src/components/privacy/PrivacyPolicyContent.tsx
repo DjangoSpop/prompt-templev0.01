@@ -164,7 +164,7 @@ export function PrivacyPolicyContent() {
               <li>Plan level (Free, Pro, or Power), credit balance, and per-feature usage counters.</li>
             </ul>
             <p className="text-sm text-gray-700 dark:text-gray-300">
-              All payment processing is handled by <strong>Stripe</strong>. The extension and our servers <strong>never</strong> collect, receive, or store credit card numbers, bank account details, or any payment instrument information.
+              All payment processing is handled by our reseller <strong>Paddle.com</strong> (the merchant of record for our subscriptions) or, for some products, <strong>Gumroad</strong>. The extension and our servers <strong>never</strong> collect, receive, or store credit card numbers, bank account details, or any payment instrument information.
             </p>
           </div>
 
@@ -217,7 +217,7 @@ export function PrivacyPolicyContent() {
               <li>General web browsing history or activity on websites not listed above.</li>
               <li>Keystrokes, form data, or autofill data from any website.</li>
               <li>Passwords or credentials from any third-party website.</li>
-              <li>Financial or payment instrument information (handled entirely by Stripe).</li>
+              <li>Financial or payment instrument information (handled entirely by Paddle.com or Gumroad).</li>
               <li>Health, biometric, or genetic data.</li>
               <li>Geolocation, contacts, calendar, camera, microphone, or device sensor data.</li>
               <li>Contents of any communication (email, SMS, chat) outside the explicit AI-provider broadcast interaction.</li>
@@ -359,9 +359,9 @@ export function PrivacyPolicyContent() {
                   <td className="px-4 py-3">Social sign-in only.</td>
                 </tr>
                 <tr>
-                  <td className="px-4 py-3 font-medium">Stripe (via our backend)</td>
+                  <td className="px-4 py-3 font-medium">Paddle.com / Gumroad (via our backend)</td>
                   <td className="px-4 py-3">Subscription and payment details routed through our server.</td>
-                  <td className="px-4 py-3">Payment processing. The extension never communicates directly with Stripe.</td>
+                  <td className="px-4 py-3">Payment processing. The extension never communicates directly with the payment provider.</td>
                 </tr>
               </tbody>
             </table>
@@ -399,7 +399,7 @@ export function PrivacyPolicyContent() {
                 <tr className="border-b border-gray-200/50 dark:border-gray-700/50">
                   <td className="px-4 py-3 font-medium">Server-side account and prompt data</td>
                   <td className="px-4 py-3">Retained while the account is active.</td>
-                  <td className="px-4 py-3">Email <a href="mailto:privacy@prompt-temple.com" className="text-blue-600 dark:text-blue-400 underline">privacy@prompt-temple.com</a> to request account deletion. All data is permanently removed within 30 days.</td>
+                  <td className="px-4 py-3">Email <a href="mailto:behodjango@gmail.com" className="text-blue-600 dark:text-blue-400 underline">behodjango@gmail.com</a> to request account deletion. All data is permanently removed within 30 days.</td>
                 </tr>
                 <tr className="border-b border-gray-200/50 dark:border-gray-700/50">
                   <td className="px-4 py-3 font-medium">Analytics data</td>
@@ -434,8 +434,8 @@ export function PrivacyPolicyContent() {
               { title: 'Clear all local data', desc: 'In the same Settings panel, click "Clear Local Data" to remove all analytics queues, cached data, and user properties from chrome.storage.local.' },
               { title: 'Revoke site access', desc: 'Because AI-provider domains use optional permissions, you can revoke access at any time from chrome://extensions > Prompt Temple Broadcaster > Details > Site access.' },
               { title: 'Access your data', desc: 'View saved prompts, history, and profile in the extension\'s Library and Profile sections.' },
-              { title: 'Request data export', desc: 'Email privacy@prompt-temple.com.' },
-              { title: 'Request data deletion', desc: 'Email privacy@prompt-temple.com. Completed within 30 days.' },
+              { title: 'Request data export', desc: 'Email behodjango@gmail.com.' },
+              { title: 'Request data deletion', desc: 'Email behodjango@gmail.com. Completed within 30 days.' },
               { title: 'Uninstall', desc: 'Removing the extension from chrome://extensions deletes all local data immediately.' },
             ].map((control, idx) => (
               <div
@@ -585,8 +585,8 @@ export function PrivacyPolicyContent() {
               <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="font-semibold text-gray-900 dark:text-white text-sm mb-1">Email</p>
-                <a href="mailto:privacy@prompt-temple.com" className="text-sm text-blue-600 dark:text-blue-400 underline">
-                  privacy@prompt-temple.com
+                <a href="mailto:behodjango@gmail.com" className="text-sm text-blue-600 dark:text-blue-400 underline">
+                  behodjango@gmail.com
                 </a>
               </div>
             </div>
@@ -630,7 +630,7 @@ export function PrivacyPolicyContent() {
           <strong>Product:</strong> Prompt Temple Broadcaster (Chrome Extension, ID: olojhcohjhnhjnemhpgjiammpkeincon)
         </p>
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          <strong>Developer:</strong> Prompt Temple &nbsp;|&nbsp; <strong>Last Updated:</strong> March 23, 2026
+          <strong>Developer:</strong> Pharaonic Tech (Prompt Temple) &nbsp;|&nbsp; <strong>Last Updated:</strong> October 26, 2026
         </p>
         <p className="text-sm text-gray-700 dark:text-gray-300 max-w-3xl">
           This privacy policy describes, in the sections required by the Chrome Web Store Developer Program Policies, exactly what

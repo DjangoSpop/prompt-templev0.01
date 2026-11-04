@@ -348,9 +348,25 @@ const settingsItems: NavItem[] = [
   {
     id: 'terms-of-service',
     label: 'Terms of Service',
-    href: '/privacy-policy/terms-of-service',
+    href: '/terms',
     icon: FileText,
     description: 'Legal terms',
+    category: 'settings',
+  },
+  {
+    id: 'refund-policy',
+    label: 'Refund Policy',
+    href: '/refund-policy',
+    icon: FileText,
+    description: '14-day money-back guarantee',
+    category: 'settings',
+  },
+  {
+    id: 'contact',
+    label: 'Contact',
+    href: '/contact',
+    icon: FileText,
+    description: 'Support, billing and privacy',
     category: 'settings',
   },
 ];

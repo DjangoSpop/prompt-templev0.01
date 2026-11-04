@@ -70,7 +70,7 @@ const PLAN_META: Record<string, PlanMeta> = {
     accentBorder: 'border-blue-200 dark:border-blue-800',
     badge: 'Most Popular',
     popular: true,
-    cta: 'Start Pro — 14 Day Trial',
+    cta: 'Start Pro',
     features: [
       { text: 'Unlimited optimizations', included: true },
       { text: '5,000+ premium templates', included: true },
@@ -109,8 +109,9 @@ const PLAN_META: Record<string, PlanMeta> = {
 
 const FALLBACK_PRICES: Record<string, { monthly: number; annual: number }> = {
   FREE: { monthly: 0, annual: 0 },
-  PRO: { monthly: 19, annual: 15 },
-  POWER: { monthly: 49, annual: 39 },
+  // Must match the Paddle catalog (Pro $13.99/month, Power $39/month); the API's plans override these.
+  PRO: { monthly: 13.99, annual: 13.99 },
+  POWER: { monthly: 39, annual: 39 },
 };
 
 // ── FAQ Accordion ──
@@ -159,7 +160,8 @@ interface PricingPageClientProps {
 }
 
 export function PricingPageClient({ faq }: PricingPageClientProps) {
-  const [annual, setAnnual] = useState(false);
+  // Only monthly prices are sold. Bring back the Monthly/Annual toggle once annual prices exist in Paddle.
+  const annual = false;
   const router = useRouter();
   const { data: plans } = useBillingPlans();
   const currentPlanCode = usePlanCode();
@@ -218,34 +220,6 @@ export function PricingPageClient({ faq }: PricingPageClientProps) {
             Get better AI results today — free. Upgrade when you need more power.
           </p>
 
-          {/* Billing toggle */}
-          <div className="mt-8 inline-flex items-center gap-1 rounded-full border border-stone-200 bg-stone-50 p-1 dark:border-stone-700 dark:bg-stone-800/50">
-            <button
-              onClick={() => setAnnual(false)}
-              className={cn(
-                'rounded-full px-5 py-2 text-sm font-medium transition-all duration-200',
-                !annual
-                  ? 'bg-white text-stone-900 shadow-sm dark:bg-stone-700 dark:text-white'
-                  : 'text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200'
-              )}
-            >
-              Monthly
-            </button>
-            <button
-              onClick={() => setAnnual(true)}
-              className={cn(
-                'rounded-full px-5 py-2 text-sm font-medium transition-all duration-200',
-                annual
-                  ? 'bg-white text-stone-900 shadow-sm dark:bg-stone-700 dark:text-white'
-                  : 'text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200'
-              )}
-            >
-              Annual
-              <span className="ml-1.5 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-                Save 20%
-              </span>
-            </button>
-          </div>
         </motion.div>
 
         {/* ── Plan Cards ── */}

@@ -8,7 +8,7 @@ export const COPY_V1 = {
     subheadline: 'Stop guessing what to say to AI. Find the right prompt in one search.',
     searchPlaceholder: 'What do you need help with?',
     autoTypeQuery: 'write a cold sales email...',
-    platformsLabel: 'Trusted by 2,000+ users on 6 AI platforms',
+    platformsLabel: 'Works on 6 AI platforms',
     scrollCta: 'See how it works',
     ctaPrimary: 'Try Free',
   },
@@ -76,11 +76,7 @@ export const COPY_V1 = {
       { value: '6', label: 'AI platforms' },
       { value: '30s', label: 'to start' },
     ],
-    testimonials: [
-      { name: 'Sarah M.', role: 'Marketing Manager', quote: 'I typed \u201Cmarketing plan\u201D and got a prompt that would\u2019ve taken me 30 minutes to write. Now I use it every day.', rating: 5, initials: 'SM' },
-      { name: 'David K.', role: 'Freelance Writer', quote: 'I have 200 tested prompts ready for any client in one click. This changed how I work.', rating: 5, initials: 'DK' },
-      { name: 'Amara L.', role: 'Student', quote: 'English isn\u2019t my first language. I typed 3 words and got a perfect study guide prompt. Amazing.', rating: 5, initials: 'AL' },
-    ],
+    testimonials: [] as { name: string; role: string; quote: string; rating: number; initials: string }[],
     trustStrip: 'Free to start \u00B7 No credit card \u00B7 Cancel anytime \u00B7 Your data stays yours',
   },
   cta: {
@@ -108,7 +104,7 @@ export const COPY = {
   },
 
   hero: {
-    pill: '5,000+ professionals already use Prompt Temple',
+    pill: 'Free to start, no credit card',
     headline: 'Stop Getting Mediocre AI Results.',
     headlineGradient: 'Your Prompts Are the Problem.',
     subtitle: 'Search 4,200+ expert-crafted prompts. Optimize any idea into a professional prompt. Use it in any AI tool with one click.',
@@ -190,34 +186,12 @@ export const COPY = {
 
   social: {
     stats: [
-      { value: 47832, label: 'prompts enhanced', suffix: '' },
-      { value: 4200, label: 'templates available', suffix: '+' },
-      { value: 5127, label: 'active users', suffix: '' },
-      { value: 4.8, label: 'average rating', suffix: '\u2605', isDecimal: true },
+      { value: 34000, label: 'prompt templates', suffix: '+' },
+      { value: 5, label: 'AI platforms supported', suffix: '' },
+      { value: 1, label: 'click to improve a prompt', suffix: '' },
+      { value: 14, label: 'day money-back guarantee', suffix: '' },
     ],
-    testimonials: [
-      {
-        name: 'Sarah K.',
-        role: 'Marketing Director',
-        quote: 'I used to spend 20 minutes crafting each prompt. Now I search, click, and get better results in 10 seconds.',
-        rating: 5,
-        initials: 'SK',
-      },
-      {
-        name: 'James L.',
-        role: 'Product Lead',
-        quote: 'The browser extension changed everything. I access my prompt library right inside ChatGPT without switching tabs.',
-        rating: 5,
-        initials: 'JL',
-      },
-      {
-        name: 'Maria D.',
-        role: 'Freelance Writer',
-        quote: 'English is my second language. Prompt Temple turns my rough ideas into professional prompts every single time.',
-        rating: 5,
-        initials: 'MD',
-      },
-    ],
+    testimonials: [] as { name: string; role: string; quote: string; rating: number; initials: string }[],
     trustStrip: 'Free to start \u00B7 No credit card \u00B7 Cancel anytime \u00B7 Your data stays yours',
     logosLabel: 'Works with',
     logos: ['ChatGPT', 'Claude', 'Gemini', 'Perplexity', 'Copilot'],

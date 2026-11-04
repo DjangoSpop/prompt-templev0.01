@@ -230,11 +230,11 @@ export function HeroSection() {
               transition={{ delay: 0.28 }}
               className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-500 dark:text-stone-400"
             >
-              <span><span className="font-semibold text-amber-600 dark:text-amber-400">47,800+</span> prompts enhanced</span>
+              <span><span className="font-semibold text-amber-600 dark:text-amber-400">34,000+</span> prompt templates</span>
               <span className="hidden sm:inline h-1 w-1 rounded-full bg-stone-400/40" />
-              <span><span className="font-semibold text-amber-600 dark:text-amber-400">4,200+</span> templates</span>
+              <span><span className="font-semibold text-amber-600 dark:text-amber-400">Free</span> to start, no card</span>
               <span className="hidden sm:inline h-1 w-1 rounded-full bg-stone-400/40" />
-              <span><span className="font-semibold text-amber-600 dark:text-amber-400">4.8★</span> avg rating</span>
+              <span><span className="font-semibold text-amber-600 dark:text-amber-400">14-day</span> money-back guarantee</span>
             </motion.div>
 
             {/* Platform strip */}

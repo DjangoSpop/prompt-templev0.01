@@ -8,6 +8,19 @@ const __dirname = path.dirname(__filename);
 
 const isDesktopBuild = process.env.BUILD_TARGET === "desktop";
 
+// Paddle's client-side token is public by design (it ships in the browser bundle), but an API key
+// (pdl_live_apikey_...) or webhook secret must never be. If NEXT_PUBLIC_PADDLE_CLIENT_TOKEN holds anything
+// other than a client-side token (live_... / test_...), drop it so it is never inlined into client JavaScript.
+const paddleClientToken = (process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN ?? "").trim();
+const safePaddleClientToken = /^(live|test)_[A-Za-z0-9]+$/.test(paddleClientToken) ? paddleClientToken : "";
+if (paddleClientToken && !safePaddleClientToken) {
+  console.warn(
+    "NEXT_PUBLIC_PADDLE_CLIENT_TOKEN is not a Paddle client-side token (live_/test_), so it was ignored. " +
+      "Use Paddle > Authentication > Client-side tokens; never put an API key in a NEXT_PUBLIC_ variable."
+  );
+}
+process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN = safePaddleClientToken;
+
 const nextConfig: NextConfig = {
   // Enable experimental features
   experimental: {
@@ -29,6 +42,7 @@ const nextConfig: NextConfig = {
   // Environment variables
   env: {
     CUSTOM_KEY: process.env.CUSTOM_KEY,
+    NEXT_PUBLIC_PADDLE_CLIENT_TOKEN: safePaddleClientToken,
   },
 
   // Image optimization
