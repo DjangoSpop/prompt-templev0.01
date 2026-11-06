@@ -72,7 +72,7 @@ export function ReaderFooter({ item, onShare, onOpenRelated }: ReaderFooterProps
             {related.data.slice(0, 6).map((r) => (
               <li key={r.id}>
                 {isReadable(r) ? (
-                  <button type="button" className="rounded-md border border-border/60 px-2 py-1 text-left hover:border-[#C9A227]/60 hover:text-foreground" onClick={() => onOpenRelated(r.slug)}>
+                  <button type="button" className="rounded-md border border-border/60 px-2 py-1 text-left hover:border-[#C9A227]/60 hover:text-foreground v2:rounded-sm v2:border-line v2:hover:border-line v2:hover:bg-surface-sunken v2:hover:text-faience" onClick={() => onOpenRelated(r.slug)}>
                     <span className="mr-1 rounded bg-foreground/5 px-1 text-[10px]">{formLabel(r.form)}</span>
                     {r.title}
                   </button>

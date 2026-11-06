@@ -79,21 +79,21 @@ export function StickyActionBar(props: StickyActionBarProps) {
   return (
     <div
       className={cn(
-        'pt-reader-bar sticky z-20 -mx-4 flex h-11 items-center gap-1 border-b border-border/60 bg-card/95 px-2 backdrop-blur supports-[backdrop-filter]:bg-card/85 sm:mx-0 sm:rounded-md sm:border sm:px-2',
+        'pt-reader-bar sticky z-20 -mx-4 flex h-11 items-center gap-1 border-b border-border/60 bg-card/95 px-2 backdrop-blur supports-[backdrop-filter]:bg-card/85 sm:mx-0 sm:rounded-md sm:border sm:px-2 v2:border-line v2:bg-surface v2:backdrop-blur-none v2:supports-[backdrop-filter]:bg-surface v2:sm:rounded-pill',
         inPanel ? 'top-0' : 'top-[var(--reader-sticky-top)]'
       )}
       role="toolbar"
       aria-label="Prompt actions"
       data-testid="reader-bar"
     >
-      <span className="hidden shrink-0 rounded-full border border-border px-2 py-0.5 text-[11px] font-medium md:inline">{formLabel(item.form)}</span>
+      <span className="hidden shrink-0 rounded-full border border-border px-2 py-0.5 text-[11px] font-medium md:inline v2:rounded-pill v2:border-line v2:text-xs v2:font-semibold v2:uppercase v2:tracking-[0.06em] v2:text-ink-muted">{formLabel(item.form)}</span>
       <span className="min-w-0 flex-1 truncate text-sm font-medium" title={item.title}>
         {item.title}
       </span>
 
-      <Button size="sm" className="h-9 shrink-0 gap-1.5 bg-[#C9A227] px-3 text-black hover:bg-[#b8921f] sm:h-8" onClick={() => onCopy()} disabled={copying} data-testid="reader-copy">
+      <Button size="sm" className="h-9 shrink-0 gap-1.5 bg-[#C9A227] px-3 text-black hover:bg-[#b8921f] sm:h-8 v2:rounded-pill v2:bg-faience-fill v2:text-faience-on v2:hover:bg-faience-fill v2:hover:opacity-90" onClick={() => onCopy()} disabled={copying} data-testid="reader-copy">
         {copying ? <Loader2 className={cn(icon, 'animate-spin')} aria-hidden /> : copied ? <Check className={icon} aria-hidden /> : <Copy className={icon} aria-hidden />}
-        <span>{copied ? 'Copied ✓' : copyLabel}</span>
+        <span>{copied ? 'Copied' : copyLabel}</span>
       </Button>
 
       <Button
@@ -109,7 +109,7 @@ export function StickyActionBar(props: StickyActionBarProps) {
       </Button>
       <Button
         variant="ghost"
-        className={cn(ghost, item.viewer.saved && 'text-[#C9A227]')}
+        className={cn(ghost, item.viewer.saved && 'text-[#C9A227] v2:text-faience')}
         aria-pressed={item.viewer.saved}
         aria-label={item.viewer.saved ? `Unsave, ${formatCount(item.stats.saves)} saves` : `Save, ${formatCount(item.stats.saves)} saves`}
         title="Save"
@@ -117,10 +117,10 @@ export function StickyActionBar(props: StickyActionBarProps) {
       >
         <Bookmark className={cn(icon, item.viewer.saved && 'fill-current')} aria-hidden />
       </Button>
-      <Button variant="ghost" className={cn(ghost, 'hidden sm:inline-flex', item.viewer.forked && 'text-[#C9A227]')} aria-label={`Fork, ${formatCount(item.stats.forks)} forks`} title="Fork" onClick={() => (authed ? onFork() : onRequireAuth({ kind: 'fork', slug: item.slug }))}>
+      <Button variant="ghost" className={cn(ghost, 'hidden sm:inline-flex', item.viewer.forked && 'text-[#C9A227] v2:text-faience')} aria-label={`Fork, ${formatCount(item.stats.forks)} forks`} title="Fork" onClick={() => (authed ? onFork() : onRequireAuth({ kind: 'fork', slug: item.slug }))}>
         <GitFork className={icon} aria-hidden />
       </Button>
-      <Button variant="ghost" className={cn(ghost, 'font-serif')} title={`Text style: ${LEGEND_LABEL[legend]}`} onClick={onLegend} data-testid="reader-legend">
+      <Button variant="ghost" className={cn(ghost, 'font-serif v2:font-sans')} title={`Text style: ${LEGEND_LABEL[legend]}`} onClick={onLegend} data-testid="reader-legend">
         <span className={cn('text-sm', legend === 'large' && 'text-base', legend === 'plain' && 'text-muted-foreground')}>Aa</span>
         <span className="sr-only">{`, text style: ${LEGEND_LABEL[legend]}${plainFallback ? ' (showing plain text)' : ''}`}</span>
         {plainFallback && <span className="rounded bg-foreground/5 px-1 text-[10px] text-muted-foreground">plain</span>}

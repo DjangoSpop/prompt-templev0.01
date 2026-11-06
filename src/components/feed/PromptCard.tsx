@@ -8,6 +8,7 @@
  * engines ("View as page" in the reader).
  */
 import Link from 'next/link';
+import { BRAND_V2 } from '@/lib/brand';
 import { useEffect, useId, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { BadgeCheck, BookOpen, ChevronDown, ExternalLink, Flame, ListOrdered, Variable } from 'lucide-react';
@@ -109,7 +110,7 @@ export function StructureStrip({ item, className }: { item: FeedItem; className?
       {sections.slice(0, MAX_SECTION_CHIPS).map((title, i) => (
         <span
           key={`${title}-${i}`}
-          className="max-w-[11rem] truncate rounded-md border border-border/60 bg-foreground/5 px-1.5 py-0.5 text-[11px] text-foreground/75"
+          className="max-w-[11rem] truncate rounded-md border border-border/60 bg-foreground/5 px-1.5 py-0.5 text-[11px] text-foreground/75 v2:rounded-sm v2:border-line v2:bg-transparent v2:text-ink-muted"
           title={title}
         >
           {title}
@@ -117,7 +118,7 @@ export function StructureStrip({ item, className }: { item: FeedItem; className?
       ))}
       {extra > 0 && <span className="text-[11px] text-foreground/75">+{extra}</span>}
       {variables > 0 && (
-        <span className="inline-flex items-center gap-1 rounded-md bg-[#C9A227]/10 px-1.5 py-0.5 text-[11px] font-medium text-[#8a6d12] dark:text-[#e2c25a]">
+        <span className="inline-flex items-center gap-1 rounded-md bg-[#C9A227]/10 px-1.5 py-0.5 text-[11px] font-medium text-[#8a6d12] dark:text-[#e2c25a] v2:rounded-sm v2:bg-lapis-soft v2:text-lapis v2-dark:text-lapis">
           <Variable className="h-3 w-3" aria-hidden />
           {variables} {variables === 1 ? 'variable' : 'variables'}
         </span>
@@ -179,37 +180,37 @@ export function PromptCard({ item, from, position, onRequireAuth, onFork, varian
   return (
     <Card
       ref={ref}
-      className={cn('min-w-0 overflow-clip rounded-xl border-border/50 p-4 transition-colors', open ? 'border-[#C9A227]/50' : 'hover:border-[#C9A227]/40')}
+      className={cn('min-w-0 overflow-clip rounded-xl border-border/50 p-4 transition-colors v2:rounded-cartouche v2:border-line v2:bg-surface v2:shadow-none v2:p-4 v2:md:p-6', open ? 'border-[#C9A227]/50 v2:border-line v2:shadow-lift' : 'hover:border-[#C9A227]/40 v2:hover:border-line')}
       style={open ? undefined : { contentVisibility: 'auto', containIntrinsicSize: 'auto 160px' }}
       data-open={open || undefined}
     >
       <article aria-labelledby={titleId} className="flex flex-col gap-2.5">
         {/* 1. Header row */}
         <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
-          <span className="rounded-full bg-foreground/5 px-2 py-0.5 text-foreground/75">{item.category}</span>
-          <span className="rounded-full border border-border px-2 py-0.5 font-medium">{formLabel(item.form)}</span>
+          <span className="rounded-full bg-foreground/5 px-2 py-0.5 text-foreground/75 v2:rounded-pill v2:border v2:border-line v2:bg-transparent v2:text-xs v2:font-semibold v2:uppercase v2:tracking-[0.06em] v2:text-ink-muted">{item.category}</span>
+          <span className="rounded-full border border-border px-2 py-0.5 font-medium v2:rounded-pill v2:border-line v2:text-xs v2:font-semibold v2:uppercase v2:tracking-[0.06em] v2:text-ink-muted">{formLabel(item.form)}</span>
           <span className="text-muted-foreground">{readingTimeLabel(item.reading_time_sec)}</span>
           {isTopTrending(item) && (
-            <span className="inline-flex items-center gap-0.5 rounded-full bg-[#C9A227]/10 px-2 py-0.5 font-semibold text-[#8a6d12] dark:text-[#e2c25a]">
+            <span className="inline-flex items-center gap-0.5 rounded-full bg-[#C9A227]/10 px-2 py-0.5 font-semibold text-[#8a6d12] dark:text-[#e2c25a] v2:rounded-pill v2:bg-faience-soft v2:text-faience v2-dark:text-faience">
               <Flame className="h-3 w-3" aria-hidden />#{item.stats.trending_rank}
               <span className="sr-only"> trending</span>
             </span>
           )}
           {isSota(item) && (
-            <span className="inline-flex items-center gap-0.5 rounded-full bg-[#C9A227] px-2 py-0.5 font-semibold text-black">
-              <BadgeCheck className="h-3 w-3" aria-hidden />
+            <span className="inline-flex items-center gap-0.5 rounded-full bg-[#C9A227] px-2 py-0.5 font-semibold text-black v2:rounded-pill v2:border v2:border-line v2:bg-surface v2:text-ink">
+              <BadgeCheck className="hidden v2:inline v2:text-gilt" aria-hidden /><BadgeCheck className="h-3 w-3" aria-hidden />
               SOTA
             </span>
           )}
         </div>
 
         {/* 2. Title — opens the reader in place; a link only where there is no reader */}
-        <h3 id={titleId} dir={rtl ? 'rtl' : undefined} className={cn('font-display font-bold leading-snug tracking-tight', variant === 'full' ? 'text-lg' : 'text-base', rtl && 'font-arabic')}>
+        <h3 id={titleId} dir={rtl ? 'rtl' : undefined} className={cn('font-display font-bold leading-snug tracking-tight v2:font-display v2:font-semibold v2:text-[20px] v2:leading-[26px] v2:tracking-[-0.01em] v2:text-ink', variant === 'full' ? 'text-lg' : 'text-base', rtl && 'font-arabic')}>
           {reader && !metadataOnly ? (
             <button
               ref={toggleRef}
               type="button"
-              className="text-start hover:text-primary focus-visible:underline"
+              className="text-start hover:text-primary focus-visible:underline v2:hover:text-faience"
               aria-expanded={open}
               aria-controls={regionId}
               onClick={onOpen}
@@ -250,13 +251,13 @@ export function PromptCard({ item, from, position, onRequireAuth, onFork, varian
             {reader && variant === 'full' && (
               <button
                 type="button"
-                className={cn('inline-flex h-9 items-center gap-1 rounded-md px-2 text-xs font-medium sm:h-8', open ? 'text-muted-foreground hover:text-foreground' : 'bg-foreground/5 text-foreground hover:bg-foreground/5')}
+                className={cn('inline-flex h-9 items-center gap-1 rounded-md px-2 text-xs font-medium sm:h-8 v2:rounded-pill v2:bg-transparent v2:text-faience v2:hover:bg-surface-sunken', open ? 'text-muted-foreground hover:text-foreground' : 'bg-foreground/5 text-foreground hover:bg-foreground/5')}
                 aria-expanded={open}
                 aria-controls={regionId}
                 onClick={onOpen}
               >
                 {open ? <ChevronDown className="h-3.5 w-3.5 rotate-180" aria-hidden /> : <BookOpen className="h-3.5 w-3.5" aria-hidden />}
-                {open ? 'Close' : 'Read'}
+                {open ? 'Close' : BRAND_V2 ? 'Read the prompt' : 'Read'}
               </button>
             )}
             {!open && (
@@ -315,7 +316,7 @@ export function PromptCard({ item, from, position, onRequireAuth, onFork, varian
 
 export function PromptCardSkeleton() {
   return (
-    <Card className="rounded-xl border-border/50 p-4" aria-hidden>
+    <Card className="rounded-xl border-border/50 p-4 v2:rounded-cartouche v2:border-line" aria-hidden>
       <div className="flex gap-1.5">
         <Skeleton className="h-4 w-24 rounded-full" />
         <Skeleton className="h-4 w-20 rounded-full" />

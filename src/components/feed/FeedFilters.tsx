@@ -75,7 +75,7 @@ function FacetList({ value, onToggle, onClear }: FacetListProps) {
                     onClick={() => onToggle(key, v.value)}
                     className={cn(
                       'inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-colors',
-                      active ? 'border-[#C9A227] bg-[#C9A227]/15 font-medium text-foreground' : 'border-border hover:border-[#C9A227]/50'
+                      active ? 'border-[#C9A227] bg-[#C9A227]/15 font-medium text-foreground v2:border-transparent v2:bg-faience-soft v2:text-faience' : 'border-border hover:border-[#C9A227]/50 v2:border-line v2:hover:border-line v2:hover:bg-surface-sunken'
                     )}
                   >
                     <span dir="auto">{facetLabel(key, v)}</span>
@@ -118,7 +118,7 @@ export function FiltersButton(props: FacetListProps) {
     <>
       <Button variant="outline" size="sm" className="gap-1.5 lg:hidden" onClick={() => setOpen(true)} aria-haspopup="dialog">
         <SlidersHorizontal className="h-4 w-4" aria-hidden />
-        Filters{active > 0 && <span className="rounded-full bg-[#C9A227] px-1.5 text-[11px] font-semibold text-black">{active}</span>}
+        Filters{active > 0 && <span className="rounded-full bg-[#C9A227] px-1.5 text-[11px] font-semibold text-black v2:bg-faience-fill v2:text-faience-on">{active}</span>}
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
@@ -152,7 +152,7 @@ export function ActiveFilterChips({ value, onToggle, onClear }: FacetListProps) 
           key={`${c.key}:${c.value}`}
           type="button"
           onClick={() => onToggle(c.key, c.value)}
-          className="inline-flex items-center gap-1 rounded-full bg-[#C9A227]/15 px-2.5 py-1 text-xs font-medium"
+          className="inline-flex items-center gap-1 rounded-full bg-[#C9A227]/15 px-2.5 py-1 text-xs font-medium v2:bg-faience-soft v2:text-faience"
           aria-label={`Remove filter ${FACET_TITLES[c.key]}: ${c.label}`}
         >
           <span dir="auto">{c.label}</span>
