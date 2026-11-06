@@ -7,6 +7,7 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { BRAND_V2, v2cls } from '@/lib/brand';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -128,33 +129,33 @@ export default function RegisterPage() {
   };
 
   const inputClass =
-    'w-full py-3 px-3 bg-white/5 border border-amber-500/15 rounded-temple text-stone-100 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/30 transition-all duration-300';
+    'w-full py-3 px-3 bg-white/5 border border-amber-500/15 rounded-temple text-stone-100 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/30 transition-all duration-300 v2:bg-surface-sunken v2:border-line v2:text-ink v2:placeholder:text-ink-muted v2:focus:ring-focus v2:rounded-md';
   const iconInputClass = inputClass + ' pl-10';
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center px-4 py-8 relative overflow-hidden"
-      style={{
+      className={`min-h-screen flex items-center justify-center px-4 py-8 relative overflow-hidden ${v2cls('v2:bg-ground v2:text-ink')}`}
+      style={BRAND_V2 ? undefined : {
         background: 'linear-gradient(180deg, #0E0F12 0%, #131620 40%, #1B2B6B 80%, #0E0F12 100%)',
       }}
     >
       {/* Gold hieroglyphic dot pattern */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.06]"
-        style={{
+        className={`pointer-events-none absolute inset-0 opacity-[0.06] ${v2cls('v2:hidden')}`}
+        style={BRAND_V2 ? undefined : {
           backgroundImage: 'radial-gradient(circle at 1px 1px, #d4af37 1px, transparent 0)',
           backgroundSize: '40px 40px',
         }}
       />
       {/* Gold top line — temple threshold */}
       <div
-        className="pointer-events-none absolute left-0 right-0 top-0 h-[2px]"
-        style={{
+        className={`pointer-events-none absolute left-0 right-0 top-0 h-[2px] ${v2cls('v2:hidden')}`}
+        style={BRAND_V2 ? undefined : {
           background: 'linear-gradient(90deg, transparent 5%, #d4af37 30%, #ffe066 50%, #d4af37 70%, transparent 95%)',
         }}
       />
       {/* Animated Background */}
-      <div className="absolute inset-0 pointer-events-none">
+      <div className={`absolute inset-0 pointer-events-none ${v2cls('v2:hidden')}`}>
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-amber-500/10 rounded-full filter blur-xl opacity-30 animate-pulse" />
         <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-blue-900/20 rounded-full filter blur-xl opacity-30 animate-pulse animation-delay-2000" />
         <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-amber-500/10 rounded-full filter blur-xl opacity-20 animate-pulse animation-delay-4000" />
@@ -166,11 +167,11 @@ export default function RegisterPage() {
           <div className="flex items-center justify-center space-x-3 mb-6">
             <div
               className="relative flex items-center justify-center"
-              style={{ filter: 'drop-shadow(0 0 18px rgba(212, 175, 55, 0.5))' }}
+              style={BRAND_V2 ? undefined : { filter: 'drop-shadow(0 0 18px rgba(212, 175, 55, 0.5))' }}
             >
               <div
                 className="absolute rounded-full pointer-events-none"
-                style={{
+                style={BRAND_V2 ? undefined : {
                   width: 80,
                   height: 80,
                   background: 'radial-gradient(circle, rgba(212,175,55,0.15) 0%, transparent 70%)',
@@ -188,11 +189,11 @@ export default function RegisterPage() {
             </div>
             <div>
               <h1
-                className="text-3xl font-bold"
-                style={{ fontFamily: "'Playfair Display', serif" }}
+                className={`text-3xl font-bold ${v2cls('display-md v2:text-ink')}`}
+                style={BRAND_V2 ? undefined : { fontFamily: "'Playfair Display', serif" }}
               >
                 <span
-                  style={{
+                  style={BRAND_V2 ? undefined : {
                     background: 'linear-gradient(135deg, #ffe066 0%, #d4af37 40%, #CBA135 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
@@ -203,33 +204,33 @@ export default function RegisterPage() {
                 </span>
                 <span className="text-foreground ml-2">Temple</span>
               </h1>
-              <p className="text-temple-stone text-sm">Sacred AI Sanctuary</p>
+              <p className={`text-temple-stone text-sm ${v2cls('v2:text-ink-muted')}`}>{BRAND_V2 ? 'Learn to ask.' : 'Sacred AI Sanctuary'}</p>
             </div>
           </div>
           <h2
-            className="text-4xl font-bold text-white mb-2"
-            style={{ fontFamily: "'Playfair Display', serif" }}
+            className={`text-4xl font-bold text-white mb-2 ${v2cls('display-lg v2:text-ink')}`}
+            style={BRAND_V2 ? undefined : { fontFamily: "'Playfair Display', serif" }}
           >
             Begin Your Journey
           </h2>
-          <p className="text-stone-400 text-lg">
-            Create your sacred account to unlock the temple&apos;s wisdom
+          <p className={`text-stone-400 text-lg ${v2cls('v2:text-ink-muted')}`}>
+            {BRAND_V2 ? 'A free account keeps your prompts, results and credits in one place.' : 'Create your sacred account to unlock the temple\u2019s wisdom'}
           </p>
         </div>
 
         {/* Register Card */}
         <Card
-          className="backdrop-blur-lg border border-amber-500/15 shadow-[0_0_40px_rgba(212,175,55,0.06)] rounded-temple"
-          style={{ background: 'linear-gradient(135deg, rgba(14,15,20,0.95) 0%, rgba(19,22,32,0.95) 100%)' }}
+          className={`backdrop-blur-lg border border-amber-500/15 shadow-[0_0_40px_rgba(212,175,55,0.06)] rounded-temple ${v2cls('v2:backdrop-blur-none v2:bg-surface v2:border-line v2:shadow-none v2:rounded-cartouche')}`}
+          style={BRAND_V2 ? undefined : { background: 'linear-gradient(135deg, rgba(14,15,20,0.95) 0%, rgba(19,22,32,0.95) 100%)' }}
         >
           <CardHeader>
             <CardTitle
-              className="text-white text-center text-2xl font-bold"
-              style={{ fontFamily: "'Playfair Display', serif" }}
+              className={`text-white text-center text-2xl font-bold ${v2cls('v2:text-ink v2:font-display')}`}
+              style={BRAND_V2 ? undefined : { fontFamily: "'Playfair Display', serif" }}
             >
-              Sacred Registration
+              {BRAND_V2 ? 'Create your account' : 'Sacred Registration'}
             </CardTitle>
-            <p className="text-center text-stone-400">
+            <p className={`text-center text-stone-400 ${v2cls('v2:text-ink-muted')}`}>
               Join the temple — or sign up instantly with your existing accounts
             </p>
           </CardHeader>
@@ -239,7 +240,7 @@ export default function RegisterPage() {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full border-amber-500/20 bg-white/5 text-stone-200 hover:bg-amber-500/10 hover:border-amber-500/40 transition-all duration-300 rounded-temple"
+                className={`w-full border-amber-500/20 bg-white/5 text-stone-200 hover:bg-amber-500/10 hover:border-amber-500/40 transition-all duration-300 rounded-temple ${v2cls('v2:bg-surface v2:border-line v2:text-ink v2:hover:bg-surface-sunken v2:rounded-pill')}`}
                 onClick={() => handleSocialRegister('google')}
                 disabled={isLoading || socialLoading !== null || isAuthenticating}
               >
@@ -254,7 +255,7 @@ export default function RegisterPage() {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full border-amber-500/20 bg-white/5 text-stone-200 hover:bg-amber-500/10 hover:border-amber-500/40 transition-all duration-300 rounded-temple"
+                className={`w-full border-amber-500/20 bg-white/5 text-stone-200 hover:bg-amber-500/10 hover:border-amber-500/40 transition-all duration-300 rounded-temple ${v2cls('v2:bg-surface v2:border-line v2:text-ink v2:hover:bg-surface-sunken v2:rounded-pill')}`}
                 onClick={() => handleSocialRegister('github')}
                 disabled={isLoading || socialLoading !== null || isAuthenticating}
               >
@@ -274,7 +275,7 @@ export default function RegisterPage() {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-[#0E0F14] px-2 text-stone-500 font-medium">
-                  Or register with sacred credentials
+                  {BRAND_V2 ? 'Or register with your email' : 'Or register with sacred credentials'}
                 </span>
               </div>
             </div>
@@ -295,14 +296,14 @@ export default function RegisterPage() {
               {/* Username */}
               <div className="space-y-1">
                 <label className="block text-sm font-semibold text-stone-200">
-                  Sacred Identifier
+                  {BRAND_V2 ? 'Username' : 'Sacred Identifier'}
                 </label>
                 <p className="text-xs text-stone-500">
                   Min. 4 characters, letters &amp; numbers only
                 </p>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User className="h-4 w-4 text-amber-500/60" />
+                    <User className="h-4 w-4 text-amber-500/60 v2:text-ink-muted" />
                   </div>
                   <input
                     name="username"
@@ -318,11 +319,11 @@ export default function RegisterPage() {
               {/* Email */}
               <div className="space-y-1">
                 <label className="block text-sm font-semibold text-stone-200">
-                  Sacred Scroll Address
+                  {BRAND_V2 ? 'Email' : 'Sacred Scroll Address'}
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Mail className="h-4 w-4 text-amber-500/60" />
+                    <Mail className="h-4 w-4 text-amber-500/60 v2:text-ink-muted" />
                   </div>
                   <input
                     name="email"
@@ -367,14 +368,14 @@ export default function RegisterPage() {
               {/* Password */}
               <div className="space-y-1">
                 <label className="block text-sm font-semibold text-stone-200">
-                  Sacred Passphrase
+                  {BRAND_V2 ? 'Password' : 'Sacred Passphrase'}
                 </label>
                 <p className="text-xs text-stone-500">
                   Min. 8 characters, 1 uppercase, 1 number
                 </p>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-4 w-4 text-amber-500/60" />
+                    <Lock className="h-4 w-4 text-amber-500/60 v2:text-ink-muted" />
                   </div>
                   <input
                     name="password"
@@ -391,9 +392,9 @@ export default function RegisterPage() {
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-amber-500/60 hover:text-pharaoh-gold transition-colors" />
+                      <EyeOff className="h-4 w-4 text-amber-500/60 hover:text-pharaoh-gold v2:text-ink-muted v2:hover:text-faience transition-colors" />
                     ) : (
-                      <Eye className="h-4 w-4 text-amber-500/60 hover:text-pharaoh-gold transition-colors" />
+                      <Eye className="h-4 w-4 text-amber-500/60 hover:text-pharaoh-gold v2:text-ink-muted v2:hover:text-faience transition-colors" />
                     )}
                   </button>
                 </div>
@@ -406,7 +407,7 @@ export default function RegisterPage() {
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-4 w-4 text-amber-500/60" />
+                    <Lock className="h-4 w-4 text-amber-500/60 v2:text-ink-muted" />
                   </div>
                   <input
                     name="password_confirm"
@@ -423,9 +424,9 @@ export default function RegisterPage() {
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
                     {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4 text-amber-500/60 hover:text-pharaoh-gold transition-colors" />
+                      <EyeOff className="h-4 w-4 text-amber-500/60 hover:text-pharaoh-gold v2:text-ink-muted v2:hover:text-faience transition-colors" />
                     ) : (
-                      <Eye className="h-4 w-4 text-amber-500/60 hover:text-pharaoh-gold transition-colors" />
+                      <Eye className="h-4 w-4 text-amber-500/60 hover:text-pharaoh-gold v2:text-ink-muted v2:hover:text-faience transition-colors" />
                     )}
                   </button>
                 </div>
@@ -434,14 +435,14 @@ export default function RegisterPage() {
               {/* Bio (optional) */}
               <div className="space-y-1">
                 <label className="block text-sm font-semibold text-stone-200">
-                  Sacred Tale{' '}
+                  {BRAND_V2 ? 'About you' : 'Sacred Tale'}{' '}
                   <span className="text-stone-500 font-normal">(optional)</span>
                 </label>
                 <textarea
                   name="bio"
                   value={formData.bio}
                   onChange={handleChange}
-                  className="w-full py-3 px-3 bg-white/5 border border-amber-500/15 rounded-temple text-stone-100 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/30 transition-all duration-300 resize-none"
+                  className="w-full py-3 px-3 bg-white/5 border border-amber-500/15 rounded-temple text-stone-100 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/30 transition-all duration-300 v2:bg-surface-sunken v2:border-line v2:text-ink v2:placeholder:text-ink-muted v2:focus:ring-focus v2:rounded-md resize-none"
                   placeholder="Tell the temple about yourself..."
                   rows={2}
                 />
@@ -482,8 +483,8 @@ export default function RegisterPage() {
               <Button
                 type="submit"
                 disabled={isLoading || socialLoading !== null || isAuthenticating}
-                className="w-full py-3 font-bold text-[#0E0F12] shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] transition-all duration-300 transform hover:scale-[1.02] rounded-temple"
-                style={{ background: 'linear-gradient(135deg, #ffe066, #d4af37, #CBA135)' }}
+                className={`w-full py-3 font-bold text-[#0E0F12] shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] transition-all duration-300 transform hover:scale-[1.02] rounded-temple ${v2cls('v2:bg-faience-fill v2:text-faience-on v2:shadow-none v2:hover:shadow-none v2:hover:scale-100 v2:rounded-pill')}`}
+                style={BRAND_V2 ? undefined : { background: 'linear-gradient(135deg, #ffe066, #d4af37, #CBA135)' }}
               >
                 {isLoading ? (
                   <>
@@ -494,6 +495,9 @@ export default function RegisterPage() {
                   'Enter the Temple'
                 )}
               </Button>
+              {BRAND_V2 && (
+                <p className="mt-2 text-center text-sm text-ink-muted">Free. Nothing to install.</p>
+              )}
             </form>
 
             {/* Footer */}
@@ -501,7 +505,7 @@ export default function RegisterPage() {
               Already a temple guardian?{' '}
               <Link
                 href="/auth/login"
-                className="text-amber-400 hover:text-amber-300 font-semibold transition-colors"
+                className="text-amber-400 hover:text-amber-300 v2:text-faience v2:hover:text-faience font-semibold transition-colors"
               >
                 Sign in here
               </Link>

@@ -57,7 +57,7 @@ export function EnhanceResultActions({
         {latencyMs != null && (
           <span className="flex items-center gap-1">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            Enhanced in {Math.round(latencyMs)}ms
+            Made clearer in {Math.round(latencyMs)}ms
           </span>
         )}
         <span>via Sacred Forge</span>
@@ -110,7 +110,7 @@ export function EnhanceResultActions({
           }`}
         >
           {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-          {copied ? 'Copied!' : 'Copy result'}
+          {copied ? 'Copied' : 'Copy result'}
         </button>
 
         {/* Soft CTA */}

@@ -55,7 +55,33 @@ const LandingNavbar = dynamic(() => import('@/components/landing/v3/LandingNavba
 // Onboarding slider (authenticated dashboard only)
 const OnboardingSlider = dynamic(() => import('@/components/onboarding/OnboardingSlider'), { ssr: false });
 
-export default function DashboardPage() {
+// Sprint 11 (I5): brand v2 homepage behind NEXT_PUBLIC_THEME_V2; legacy page kept below as LegacyHome.
+import { HeroV4, HowAskingWorks, TrendingToday, UseItWhereYouWork, HonestNumbers, FooterV4 } from '@/components/landing/v4';
+import LandingNavbarV3 from '@/components/landing/v3/LandingNavbar';
+
+const BRAND_V2 = process.env.NEXT_PUBLIC_THEME_V2 === 'true';
+
+function HomeV4() {
+  return (
+    <main className="min-h-screen v2:bg-ground v2:text-ink bg-background text-foreground">
+      <LandingNavbarV3 />
+      <HeroV4 />
+      <HowAskingWorks />
+      <TrendingToday />
+      <UseItWhereYouWork />
+      <HonestNumbers />
+      <FooterV4 />
+    </main>
+  );
+}
+
+export default function HomePage() {
+  const { isAuthenticated, isLoading } = useAuth();
+  if (BRAND_V2 && !isLoading && !isAuthenticated) return <HomeV4 />;
+  return <LegacyHome />;
+}
+
+function LegacyHome() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { data: dashboardData, isLoading: dashboardLoading } = useDashboard();
   const { trackPageView } = useEventTracker();

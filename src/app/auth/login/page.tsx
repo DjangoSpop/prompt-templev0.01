@@ -6,6 +6,7 @@ export const dynamic = 'force-dynamic';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { BRAND_V2, v2cls } from '@/lib/brand';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -158,28 +159,28 @@ export default function LoginPage() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center px-4 py-8 relative overflow-hidden"
-      style={{
+      className={`min-h-screen flex items-center justify-center px-4 py-8 relative overflow-hidden ${v2cls('v2:bg-ground v2:text-ink')}`}
+      style={BRAND_V2 ? undefined : {
         background: 'linear-gradient(180deg, #0E0F12 0%, #131620 40%, #1B2B6B 80%, #0E0F12 100%)',
       }}
     >
       {/* Gold hieroglyphic dot pattern */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.06]"
-        style={{
+        className={`pointer-events-none absolute inset-0 opacity-[0.06] ${v2cls('v2:hidden')}`}
+        style={BRAND_V2 ? undefined : {
           backgroundImage: 'radial-gradient(circle at 1px 1px, #d4af37 1px, transparent 0)',
           backgroundSize: '40px 40px',
         }}
       />
       {/* Gold top line — temple threshold */}
       <div
-        className="pointer-events-none absolute left-0 right-0 top-0 h-[2px]"
-        style={{
+        className={`pointer-events-none absolute left-0 right-0 top-0 h-[2px] ${v2cls('v2:hidden')}`}
+        style={BRAND_V2 ? undefined : {
           background: 'linear-gradient(90deg, transparent 5%, #d4af37 30%, #ffe066 50%, #d4af37 70%, transparent 95%)',
         }}
       />
       {/* Animated Background */}
-      <div className="absolute inset-0 pointer-events-none">
+      <div className={`absolute inset-0 pointer-events-none ${v2cls('v2:hidden')}`}>
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-amber-500/10 rounded-full filter blur-xl opacity-30 animate-pulse" />
         <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-blue-900/20 rounded-full filter blur-xl opacity-30 animate-pulse animation-delay-2000" />
         <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-amber-500/10 rounded-full filter blur-xl opacity-20 animate-pulse animation-delay-4000" />
@@ -191,11 +192,11 @@ export default function LoginPage() {
           <div className="flex items-center justify-center space-x-3 mb-6">
             <div
               className="relative flex items-center justify-center"
-              style={{ filter: 'drop-shadow(0 0 18px rgba(212, 175, 55, 0.5))' }}
+              style={BRAND_V2 ? undefined : { filter: 'drop-shadow(0 0 18px rgba(212, 175, 55, 0.5))' }}
             >
               <div
                 className="absolute rounded-full pointer-events-none"
-                style={{
+                style={BRAND_V2 ? undefined : {
                   width: 80,
                   height: 80,
                   background: 'radial-gradient(circle, rgba(212,175,55,0.15) 0%, transparent 70%)',
@@ -213,11 +214,11 @@ export default function LoginPage() {
             </div>
             <div>
               <h1
-                className="text-3xl font-bold"
-                style={{ fontFamily: "'Playfair Display', serif" }}
+                className={`text-3xl font-bold ${v2cls('display-md v2:text-ink')}`}
+                style={BRAND_V2 ? undefined : { fontFamily: "'Playfair Display', serif" }}
               >
                 <span
-                  style={{
+                  style={BRAND_V2 ? undefined : {
                     background: 'linear-gradient(135deg, #ffe066 0%, #d4af37 40%, #CBA135 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
@@ -226,35 +227,35 @@ export default function LoginPage() {
                 >
                   Prompt
                 </span>
-                <span className="text-white ml-2">Temple</span>
+                <span className={`text-white ml-2 ${v2cls('v2:text-ink')}`}>Temple</span>
               </h1>
-              <p className="text-stone-400 text-sm">Sacred AI Sanctuary</p>
+              <p className={`text-stone-400 text-sm ${v2cls('v2:text-ink-muted')}`}>{BRAND_V2 ? 'Learn to ask.' : 'Sacred AI Sanctuary'}</p>
             </div>
           </div>
           <h2
-            className="text-4xl font-bold text-white mb-2"
-            style={{ fontFamily: "'Playfair Display', serif" }}
+            className={`text-4xl font-bold text-white mb-2 ${v2cls('display-lg v2:text-ink')}`}
+            style={BRAND_V2 ? undefined : { fontFamily: "'Playfair Display', serif" }}
           >
-            Return to the Temple
+            {BRAND_V2 ? 'Welcome back' : 'Return to the Temple'}
           </h2>
-          <p className="text-stone-400 text-lg">
-            Enter your sacred credentials to continue your journey
+          <p className={`text-stone-400 text-lg ${v2cls('v2:text-ink-muted')}`}>
+            {BRAND_V2 ? 'Sign in to your library, your credits and your saved prompts.' : 'Enter your sacred credentials to continue your journey'}
           </p>
         </div>
 
         {/* Login Form */}
         <Card
-          className="backdrop-blur-lg border border-amber-500/15 shadow-[0_0_40px_rgba(212,175,55,0.06)] rounded-temple"
-          style={{ background: 'linear-gradient(135deg, rgba(14,15,20,0.95) 0%, rgba(19,22,32,0.95) 100%)' }}
+          className={`backdrop-blur-lg border border-amber-500/15 shadow-[0_0_40px_rgba(212,175,55,0.06)] rounded-temple ${v2cls('v2:backdrop-blur-none v2:bg-surface v2:border-line v2:shadow-none v2:rounded-cartouche')}`}
+          style={BRAND_V2 ? undefined : { background: 'linear-gradient(135deg, rgba(14,15,20,0.95) 0%, rgba(19,22,32,0.95) 100%)' }}
         >
           <CardHeader>
             <CardTitle
-              className="text-white text-center text-2xl font-bold"
-              style={{ fontFamily: "'Playfair Display', serif" }}
+              className={`text-white text-center text-2xl font-bold ${v2cls('v2:text-ink v2:font-display')}`}
+              style={BRAND_V2 ? undefined : { fontFamily: "'Playfair Display', serif" }}
             >
-              Sacred Access Portal
+              {BRAND_V2 ? 'Sign in' : 'Sacred Access Portal'}
             </CardTitle>
-            <p className="text-center text-stone-400">Enter your credentials to access the temple</p>
+            <p className={`text-center text-stone-400 ${v2cls('v2:text-ink-muted')}`}>{BRAND_V2 ? 'Use your email or a Google or GitHub account.' : 'Enter your credentials to access the temple'}</p>
           </CardHeader>
           <CardContent>
             {/* Social Login Buttons */}
@@ -262,7 +263,7 @@ export default function LoginPage() {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full border-amber-500/20 bg-white/5 text-stone-200 hover:bg-amber-500/10 hover:border-amber-500/40 transition-all duration-300 rounded-temple"
+                className={`w-full border-amber-500/20 bg-white/5 text-stone-200 hover:bg-amber-500/10 hover:border-amber-500/40 transition-all duration-300 rounded-temple ${v2cls('v2:bg-surface v2:border-line v2:text-ink v2:hover:bg-surface-sunken v2:rounded-pill')}`}
                 onClick={() => handleSocialLogin('google')}
                 disabled={isLoading || socialLoading !== null || isAuthenticating}
               >
@@ -277,7 +278,7 @@ export default function LoginPage() {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full border-amber-500/20 bg-white/5 text-stone-200 hover:bg-amber-500/10 hover:border-amber-500/40 transition-all duration-300 rounded-temple"
+                className={`w-full border-amber-500/20 bg-white/5 text-stone-200 hover:bg-amber-500/10 hover:border-amber-500/40 transition-all duration-300 rounded-temple ${v2cls('v2:bg-surface v2:border-line v2:text-ink v2:hover:bg-surface-sunken v2:rounded-pill')}`}
                 onClick={() => handleSocialLogin('github')}
                 disabled={isLoading || socialLoading !== null || isAuthenticating}
               >
@@ -296,7 +297,7 @@ export default function LoginPage() {
                 <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-[#0E0F14] px-2 text-stone-500 font-medium">Or use sacred credentials</span>
+                <span className={`bg-[#0E0F14] px-2 text-stone-500 font-medium ${v2cls('v2:bg-surface v2:text-ink-muted')}`}>{BRAND_V2 ? 'Or use your email' : 'Or use sacred credentials'}</span>
               </div>
             </div>
 
@@ -312,14 +313,14 @@ export default function LoginPage() {
               {/* Username/Email Field */}
               <div className="space-y-2">
                 <label htmlFor="username" className="block text-sm font-semibold text-stone-200">
-                  Sacred Identifier
+                  {BRAND_V2 ? 'Email' : 'Sacred Identifier'}
                 </label>
                 <p id="username-help" className="text-xs text-stone-500">
                   Min. 4 characters, letters & numbers only
                 </p>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Mail className="h-4 w-4 text-amber-500/60" />
+                    <Mail className="h-4 w-4 text-amber-500/60 v2:text-ink-muted" />
                   </div>
                   <input
                     id="username"
@@ -329,7 +330,7 @@ export default function LoginPage() {
                     required
                     value={formData.username}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-3 py-3 bg-white/5 border border-amber-500/15 rounded-temple text-stone-100 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/30 transition-all duration-300"
+                    className="w-full pl-10 pr-3 py-3 bg-white/5 border border-amber-500/15 rounded-temple text-stone-100 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/30 transition-all duration-300 v2:bg-surface-sunken v2:border-line v2:text-ink v2:placeholder:text-ink-muted v2:focus:ring-focus v2:rounded-md"
                     placeholder="Enter your username or email"
                     aria-invalid={error ? 'true' : 'false'}
                     aria-describedby={error ? 'username-error' : 'username-help'}
@@ -340,14 +341,14 @@ export default function LoginPage() {
               {/* Password Field */}
               <div className="space-y-2">
                 <label htmlFor="password" className="block text-sm font-semibold text-stone-200">
-                  Sacred Passphrase
+                  {BRAND_V2 ? 'Password' : 'Sacred Passphrase'}
                 </label>
                 <p id="password-help" className="text-xs text-stone-500">
                   Min. 8 characters, 1 uppercase, 1 number
                 </p>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-4 w-4 text-amber-500/60" />
+                    <Lock className="h-4 w-4 text-amber-500/60 v2:text-ink-muted" />
                   </div>
                   <input
                     id="password"
@@ -357,7 +358,7 @@ export default function LoginPage() {
                     required
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-10 py-3 bg-white/5 border border-amber-500/15 rounded-temple text-stone-100 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/30 transition-all duration-300"
+                    className="w-full pl-10 pr-10 py-3 bg-white/5 border border-amber-500/15 rounded-temple text-stone-100 placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/30 transition-all duration-300 v2:bg-surface-sunken v2:border-line v2:text-ink v2:placeholder:text-ink-muted v2:focus:ring-focus v2:rounded-md"
                     placeholder="Enter your password"
                     aria-invalid={error ? 'true' : 'false'}
                     aria-describedby={error ? 'password-error' : 'password-help'}
@@ -368,9 +369,9 @@ export default function LoginPage() {
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-amber-500/60 hover:text-pharaoh-gold transition-colors" />
+                      <EyeOff className="h-4 w-4 text-amber-500/60 hover:text-pharaoh-gold v2:text-ink-muted v2:hover:text-faience transition-colors" />
                     ) : (
-                      <Eye className="h-4 w-4 text-amber-500/60 hover:text-pharaoh-gold transition-colors" />
+                      <Eye className="h-4 w-4 text-amber-500/60 hover:text-pharaoh-gold v2:text-ink-muted v2:hover:text-faience transition-colors" />
                     )}
                   </button>
                 </div>
@@ -380,8 +381,8 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 disabled={isLoading || socialLoading !== null || isAuthenticating}
-                className="w-full py-3 font-bold text-[#0E0F12] shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] transition-all duration-300 transform hover:scale-[1.02] rounded-temple"
-                style={{ background: 'linear-gradient(135deg, #ffe066, #d4af37, #CBA135)' }}
+                className={`w-full py-3 font-bold text-[#0E0F12] shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] transition-all duration-300 transform hover:scale-[1.02] rounded-temple ${v2cls('v2:bg-faience-fill v2:text-faience-on v2:shadow-none v2:hover:shadow-none v2:hover:scale-100 v2:rounded-pill')}`}
+                style={BRAND_V2 ? undefined : { background: 'linear-gradient(135deg, #ffe066, #d4af37, #CBA135)' }}
               >
                 {isLoading ? (
                   <>
@@ -389,20 +390,23 @@ export default function LoginPage() {
                     Signing in...
                   </>
                 ) : (
-                  <>Enter the Temple</>
+                  <>{BRAND_V2 ? 'Sign in' : 'Enter the Temple'}</>
                 )}
               </Button>
+              {BRAND_V2 && (
+                <p className="mt-2 text-center text-sm text-ink-muted">Free. Nothing to install.</p>
+              )}
             </form>
 
             {/* Footer Links */}
             <div className="mt-6 text-center space-y-3">
-              <button className="text-sm text-amber-400 hover:text-amber-300 font-medium transition-colors">
-                Forgotten your sacred passphrase?
+              <button className="text-sm text-amber-400 hover:text-amber-300 v2:text-faience v2:hover:text-faience font-medium transition-colors">
+                {BRAND_V2 ? 'Forgot your password?' : 'Forgotten your sacred passphrase?'}
               </button>
-              <div className="text-sm text-stone-400">
-                Seeking entry to the temple?{' '}
-                <Link href="/auth/register" className="text-amber-400 hover:text-amber-300 font-semibold transition-colors">
-                  Begin your journey
+              <div className={`text-sm text-stone-400 ${v2cls('v2:text-ink-muted')}`}>
+                {BRAND_V2 ? 'New here?' : 'Seeking entry to the temple?'}{' '}
+                <Link href="/auth/register" className="text-amber-400 hover:text-amber-300 v2:text-faience v2:hover:text-faience font-semibold transition-colors">
+                  {BRAND_V2 ? 'Create a free account' : 'Begin your journey'}
                 </Link>
               </div>
             </div>

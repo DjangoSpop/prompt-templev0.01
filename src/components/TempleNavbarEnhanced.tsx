@@ -62,6 +62,8 @@ interface NavGroup {
 
 // --- Navigation Configuration ---
 
+const BRAND_V2 = process.env.NEXT_PUBLIC_THEME_V2 === 'true';
+
 const navigationGroups: NavGroup[] = [
   {
     label: 'Core',
@@ -117,11 +119,18 @@ const navigationGroups: NavGroup[] = [
     links: [
       {
         href: '/academy',
-        label: 'The Academy',
+        label: 'Academy',
         icon: ScrollText,
-        description: 'Master the art of prompting',
+        description: 'Learn to write prompts that work',
         priority: 'primary',
         isHighlighted: true // Special flag for styling
+      },
+      {
+        href: '/pricing',
+        label: 'Pricing',
+        icon: Sparkles,
+        description: 'Free to start. Credits when you need more',
+        priority: 'primary'
       },
       {
         href: '/optimization',
@@ -717,7 +726,7 @@ export function TempleNavbarEnhanced() {
                     active={activePyramid} 
                   />
                   <div className="hidden sm:block">
-                    <h1 className="text-xl font-bold bg-gradient-to-r from-amber-600 via-yellow-600 to-amber-600 bg-clip-text text-transparent font-serif tracking-tight">
+                    <h1 className="text-xl font-bold bg-gradient-to-r from-amber-600 via-yellow-600 to-amber-600 bg-clip-text text-transparent font-serif tracking-tight v2:bg-none v2:bg-clip-border v2:text-ink v2:font-display v2:font-semibold v2:tracking-tight">
                       Prompt Temple
                     </h1>
                     <motion.p 
@@ -726,7 +735,7 @@ export function TempleNavbarEnhanced() {
                        animate={{ opacity: 1 }}
                        transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
                     >
-                        Sacred Sanctuary
+                        {BRAND_V2 ? 'Learn to ask' : 'Sacred Sanctuary'}
                     </motion.p>
                   </div>
                 </Link>
