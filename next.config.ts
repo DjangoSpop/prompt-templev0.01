@@ -21,6 +21,12 @@ if (paddleClientToken && !safePaddleClientToken) {
 }
 process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN = safePaddleClientToken;
 
+// Sprint 11: the brand v2 identity is on for every Vercel preview and off in production unless
+// NEXT_PUBLIC_THEME_V2 is set explicitly. Inlined at build time for server and client alike.
+if (process.env.NEXT_PUBLIC_THEME_V2 === undefined && process.env.VERCEL_ENV === "preview") {
+  process.env.NEXT_PUBLIC_THEME_V2 = "true";
+}
+
 const nextConfig: NextConfig = {
   // Enable experimental features
   experimental: {
