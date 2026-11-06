@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Placeholder icon (Sprint 11) — cartouche mark on limestone. Replace when a logo file is added to the Brand System. -->
+  <rect width="512" height="512" fill="#f2efe8"/>
+  <rect x="112" y="80" width="288" height="352" rx="120" fill="none" stroke="#1b1915" stroke-width="22"/>
+  <line x1="256" y1="168" x2="256" y2="344" stroke="#1b1915" stroke-width="22" stroke-linecap="round"/>
+</svg>

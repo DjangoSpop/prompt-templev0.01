@@ -1,12 +1,12 @@
 {
   "name": "Prompt Temple",
-  "short_name": "PromptTemple",
-  "description": "The Ultimate AI Prompt Sanctuary — craft, save, and optimize AI prompts.",
+  "short_name": "Prompt Temple",
+  "description": "Learn to ask. Prompts shown with what they produce, ready to use in one tap.",
   "start_url": "/dashboard",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#0a0a0f",
-  "theme_color": "#CBA135",
+  "background_color": "#f2efe8",
+  "theme_color": "#f2efe8",
   "lang": "en",
   "icons": [
     {
@@ -26,6 +26,18 @@
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
+    },
+    {
+      "src": "/brand/icon-512.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/brand/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
   ],
   "shortcuts": [
@@ -34,16 +46,30 @@
       "short_name": "New",
       "url": "/optimization?new=1",
       "description": "Open the optimizer with a blank prompt",
-      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     },
     {
       "name": "Prompt Library",
       "short_name": "Library",
       "url": "/prompt-library",
       "description": "Browse your saved prompts",
-      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ],
-  "categories": ["productivity", "utilities", "developer tools"],
+  "categories": [
+    "productivity",
+    "utilities",
+    "developer tools"
+  ],
   "screenshots": []
 }
