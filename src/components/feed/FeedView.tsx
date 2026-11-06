@@ -11,6 +11,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Clock, Flame, Lock, Sparkles, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BRAND_V2 } from '@/lib/brand';
 import { useAuthStore } from '@/store/user';
 import { trackFeed } from '@/lib/feed/analytics';
 import { isFeedDisabled } from '@/lib/feed/api';
@@ -34,13 +35,20 @@ const TABS: { id: FeedTab; label: string; icon: typeof Flame }[] = [
   { id: 'for_you', label: 'For you', icon: Sparkles },
 ];
 
-const EMPTY_COPY: Record<FeedTab, string> = {
-  trending: 'Nothing is trending yet. Be the first to like a prompt.',
-  new: 'No new prompts yet. Check back soon.',
-  top: 'No top prompts yet. Be the first to like a prompt.',
-  for_you: 'Save or like three prompts and this tab fills up.',
-};
-const FILTERED_EMPTY = 'No prompts match. Clear a filter.';
+const EMPTY_COPY: Record<FeedTab, string> = BRAND_V2
+  ? {
+      trending: 'Nothing is trending yet. Be the first to like a prompt.',
+      new: 'No new prompts yet. Check back soon.',
+      top: 'No top prompts yet. Be the first to like a prompt.',
+      for_you: 'Save or like three prompts and this tab fills up.',
+    }
+  : {
+      trending: 'Nothing is trending yet — be the first to like a prompt.',
+      new: 'No new prompts yet. Check back soon.',
+      top: 'No top prompts yet — be the first to like a prompt.',
+      for_you: 'Save or like three prompts and this tab will fill up.',
+    };
+const FILTERED_EMPTY = BRAND_V2 ? 'No prompts match. Clear a filter.' : 'No prompts match; clear a filter.';
 
 export function FeedDisabledNotice() {
   return (
