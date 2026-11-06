@@ -46,6 +46,7 @@ function renderSpan(span: Span, i: number, onVariable?: (name: string) => void):
         <mark
           key={i}
           data-kind="variable"
+          className="v2:rounded-sm v2:bg-lapis-soft v2:px-1 v2:text-pt-variable"
           dir="ltr"
           title="Fill variables"
           role={onVariable ? 'button' : undefined}
@@ -99,7 +100,7 @@ function Blocks({ lines, idPrefix, onVariable, keyOffset }: { lines: Line[]; idP
         const key = keyOffset + b;
         if (block.type === 'code') {
           return (
-            <pre key={key} data-kind="code">
+            <pre key={key} data-kind="code" className="v2:rounded-sm v2:bg-surface-sunken v2:p-3 v2:font-mono v2:text-pt-code">
               {block.lines.map((l) => lineText(l)).join('\n')}
             </pre>
           );
@@ -108,7 +109,7 @@ function Blocks({ lines, idPrefix, onVariable, keyOffset }: { lines: Line[]; idP
           return (
             <ul key={key}>
               {block.lines.map((l, i) => (
-                <li key={i} data-kind={l.kind} style={l.level ? { marginInlineStart: `${l.level * 0.9}rem` } : undefined}>
+                <li key={i} data-kind={l.kind} className={l.kind === 'rule' ? 'v2:border-l-2 v2:border-pt-rule v2:pl-3' : undefined} style={l.level ? { marginInlineStart: `${l.level * 0.9}rem` } : undefined}>
                   {l.spans.map((s, j) => renderSpan(s, j, onVariable))}
                 </li>
               ))}
@@ -119,14 +120,14 @@ function Blocks({ lines, idPrefix, onVariable, keyOffset }: { lines: Line[]; idP
         const text = lineText(line);
         if (line.kind === 'heading') {
           return (
-            <h4 key={key} id={`${idPrefix}-${line.id ?? `h-${key}`}`} data-kind="heading" data-level={line.level ?? 2} title={headingTitle(line)}>
+            <h4 key={key} id={`${idPrefix}-${line.id ?? `h-${key}`}`} className="v2:inline-block v2:border-b v2:border-gilt-line v2:pb-0.5 v2:font-semibold v2:text-pt-heading" data-kind="heading" data-level={line.level ?? 2} title={headingTitle(line)}>
               {line.spans.map((s, j) => renderSpan(s, j, onVariable))}
             </h4>
           );
         }
         if (!text.trim()) return <p key={key} data-kind="text" data-empty="" aria-hidden />;
         return (
-          <p key={key} data-kind={line.kind}>
+          <p key={key} data-kind={line.kind} className={cn(line.kind === 'role' && 'v2:font-semibold v2:text-pt-role', line.kind === 'format' && 'v2:text-pt-format', line.kind === 'example' && 'v2:italic v2:text-pt-example')}>
             {line.spans.map((s, j) => renderSpan(s, j, onVariable))}
           </p>
         );
@@ -152,7 +153,7 @@ function PromptTextInner({ text, structure, rtl, mode = 'coloured', idPrefix, on
 
   return (
     <div
-      className={cn('pt-text text-[0.9375rem] leading-relaxed', text.length > LONG_TEXT_CHARS && 'pt-long', rtl && 'font-arabic', className)}
+      className={cn('pt-text text-[0.9375rem] leading-relaxed v2:font-mono v2:text-[15px] v2:leading-6', text.length > LONG_TEXT_CHARS && 'pt-long', rtl && 'font-arabic', className)}
       data-mode={mode}
       dir={rtl ? 'rtl' : undefined}
       data-testid="prompt-text"

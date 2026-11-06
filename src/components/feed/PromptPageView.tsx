@@ -95,7 +95,7 @@ function OutlineView({ sections, rtl, onCopySection }: { sections: OutlineSectio
       </nav>
       <div className="space-y-2">
         {sections.map((s, i) => (
-          <details key={i} id={`section-${i}`} open className="group scroll-mt-20 rounded-lg border border-border/60">
+          <details key={i} id={`section-${i}`} open className="group scroll-mt-20 rounded-lg border border-border/60 v2:rounded-md v2:border-line">
             <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2 font-medium [&::-webkit-details-marker]:hidden">
               <ChevronDown className="h-4 w-4 shrink-0 -rotate-90 text-muted-foreground group-open:rotate-0 motion-safe:transition-transform" aria-hidden />
               <span dir={rtl ? 'rtl' : 'auto'} className="flex-1">{s.title || `Section ${i + 1}`}</span>
@@ -234,7 +234,7 @@ function StepsView({ prompt, rtl }: { prompt: FeedPromptDetail; rtl: boolean }) 
     <ol className="space-y-2" dir={rtl ? 'rtl' : undefined}>
       {steps.map((s, i) => (
         <li key={i} className="flex gap-3 rounded-lg border border-border/60 p-3">
-          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#C9A227]/15 text-xs font-semibold tabular-nums">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#C9A227]/15 text-xs font-semibold tabular-nums v2:bg-faience-soft v2:text-faience">
             {s.index ?? i + 1}
           </span>
           <span className="text-sm leading-relaxed">{s.title ? <strong>{s.title}: </strong> : null}{s.body}</span>
@@ -310,12 +310,12 @@ export function PromptPageView({ slug, initial }: PromptPageViewProps) {
               {readingTimeLabel(prompt.reading_time_sec)} · {prompt.word_count.toLocaleString()} words
             </span>
             {isTopTrending(prompt) && (
-              <span className="inline-flex items-center gap-0.5 rounded-full bg-[#C9A227]/10 px-2 py-0.5 font-semibold text-[#8a6d12] dark:text-[#e2c25a]">
+              <span className="inline-flex items-center gap-0.5 rounded-full bg-[#C9A227]/10 px-2 py-0.5 font-semibold text-[#8a6d12] dark:text-[#e2c25a] v2:rounded-pill v2:bg-faience-soft v2:text-faience v2-dark:text-faience">
                 <Flame className="h-3 w-3" aria-hidden />#{prompt.stats.trending_rank} trending
               </span>
             )}
             {isSota(prompt) && (
-              <Link href="/feed/c/sota" className="inline-flex items-center gap-0.5 rounded-full bg-[#C9A227] px-2 py-0.5 font-semibold text-black">
+              <Link href="/feed/c/sota" className="inline-flex items-center gap-0.5 rounded-full bg-[#C9A227] px-2 py-0.5 font-semibold text-black v2:rounded-pill v2:border v2:border-line v2:bg-surface v2:text-ink">
                 <BadgeCheck className="h-3 w-3" aria-hidden /> State of the art
               </Link>
             )}
@@ -377,7 +377,7 @@ export function PromptPageView({ slug, initial }: PromptPageViewProps) {
             </Button>
           )}
           {prompt.text && (
-            <div className="rounded-xl border border-border/60 p-3">
+            <div className="rounded-xl border border-border/60 p-3 v2:rounded-cartouche v2:border-line">
               <PromptActions
                 item={prompt}
                 getText={() => prompt.text!}
@@ -393,7 +393,7 @@ export function PromptPageView({ slug, initial }: PromptPageViewProps) {
           )}
 
           {(source || prompt.attribution.license) && (
-            <div className="rounded-xl border border-border/60 p-3 text-sm">
+            <div className="rounded-xl border border-border/60 p-3 text-sm v2:rounded-cartouche v2:border-line">
               <p className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 <Scale className="h-3.5 w-3.5" aria-hidden /> Source
               </p>

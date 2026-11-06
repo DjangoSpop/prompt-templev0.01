@@ -106,7 +106,7 @@ export function PromptActions({ item, getText, onRequireAuth, onFork, copyView =
       </Button>
       <Button
         variant="ghost"
-        className={cn(btn, 'gap-1.5', item.viewer.saved && 'text-[#C9A227]')}
+        className={cn(btn, 'gap-1.5', item.viewer.saved && 'text-[#C9A227] v2:text-faience')}
         aria-pressed={item.viewer.saved}
         aria-label={item.viewer.saved ? `Unsave, ${formatCount(item.stats.saves)} saves` : `Save, ${formatCount(item.stats.saves)} saves`}
         onClick={() => onReact('save')}
@@ -118,7 +118,7 @@ export function PromptActions({ item, getText, onRequireAuth, onFork, copyView =
       </Button>
       <Button
         variant="ghost"
-        className={cn(btn, 'gap-1.5', item.viewer.forked && 'text-[#C9A227]')}
+        className={cn(btn, 'gap-1.5', item.viewer.forked && 'text-[#C9A227] v2:text-faience')}
         aria-label={`Fork, ${formatCount(item.stats.forks)} forks`}
         onClick={() => (authed ? onFork() : onRequireAuth({ kind: 'fork', slug: item.slug }))}
       >

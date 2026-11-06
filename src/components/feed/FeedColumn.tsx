@@ -136,7 +136,7 @@ export function FeedColumn(props: FeedColumnProps) {
   }
   if (isError && !all.length) {
     return (
-      <div className="rounded-xl border border-border/60 p-8 text-center" role="alert">
+      <div className="rounded-xl border border-border/60 p-8 text-center v2:rounded-cartouche v2:border-line" role="alert">
         <p className="font-medium">We could not load prompts.</p>
         <p className="mt-1 text-sm text-muted-foreground">Check your connection and try again.</p>
         <div className="mt-4 flex justify-center gap-2">
@@ -151,7 +151,7 @@ export function FeedColumn(props: FeedColumnProps) {
     );
   }
   if (!all.length) {
-    return <p className="rounded-xl border border-dashed border-border/60 p-8 text-center text-sm text-muted-foreground">{props.emptyText}</p>;
+    return <p className="rounded-xl border border-dashed border-border/60 p-8 text-center text-sm text-muted-foreground v2:rounded-cartouche v2:border-line v2:text-ink-muted">{props.emptyText}</p>;
   }
 
   return (
