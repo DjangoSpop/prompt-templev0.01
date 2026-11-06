@@ -23,14 +23,28 @@ const config: Config = {
       screens: {
         xs: '360px',
       },
+      transitionDuration: { open: "220ms", close: "160ms", tap: "90ms" },
+      transitionTimingFunction: { out: "cubic-bezier(0.2, 0.8, 0.2, 1)", in: "cubic-bezier(0.4, 0, 1, 1)" },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
-        arabic: ["Cairo", "Arial", "sans-serif"],
+        sans: ["var(--font-sans)", "Inter", "system-ui", "sans-serif"],
+        arabic: ["var(--font-arabic)", "Cairo", "Arial", "sans-serif"],
         display: ["var(--font-display)", "Playfair Display", "serif"],
         body: ["var(--font-body)", "Inter", "system-ui", "sans-serif"],
         mono: ["var(--font-mono)", "JetBrains Mono", "monospace"],
       },
       colors: {
+        // Brand System v2 (the scribe) — hex tokens from src/styles/brand-v2.css; active under html[data-brand="v2"]
+        ground: "var(--ground)",
+        surface: { DEFAULT: "var(--surface)", sunken: "var(--surface-sunken)" },
+        ink: { DEFAULT: "var(--ink)", muted: "var(--ink-muted)" },
+        line: "var(--line)",
+        faience: { DEFAULT: "var(--faience)", fill: "var(--faience-fill)", on: "var(--on-faience)", soft: "var(--faience-soft)" },
+        lapis: { DEFAULT: "var(--lapis)", soft: "var(--lapis-soft)" },
+        gilt: { DEFAULT: "var(--gilt)", line: "var(--gilt-line)" },
+        ochre: { DEFAULT: "var(--ochre)", soft: "var(--ochre-soft)" },
+        redochre: { DEFAULT: "var(--red-ochre)", soft: "var(--red-ochre-soft)" },
+        focus: "var(--focus)",
+        pt: { role: "var(--pt-role)", heading: "var(--pt-heading)", rule: "var(--pt-rule)", variable: "var(--pt-variable)", example: "var(--pt-example)", format: "var(--pt-format)", code: "var(--pt-code)" },
         // Core design system tokens
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -165,6 +179,8 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)",
         'temple': '16px',
         'pyramid': '24px',
+        cartouche: "var(--radius-cartouche, 20px)",
+        pill: "var(--radius-pill, 999px)",
       },
       spacing: {
         '18': '4.5rem',
@@ -218,6 +234,7 @@ const config: Config = {
         'pharaonic': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       },
       boxShadow: {
+        lift: "var(--shadow-lift)",
         'pyramid': '0 4px 20px rgba(203, 161, 53, 0.15)',
         'pyramid-lg': '0 8px 40px rgba(203, 161, 53, 0.2)',
         'nile': '0 4px 20px rgba(14, 116, 144, 0.15)',

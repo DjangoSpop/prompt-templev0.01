@@ -9,6 +9,7 @@ import { HealthBanner } from "@/components/HealthBanner";
 import { ClientOnly } from "@/components/ClientOnly";
 import { HydrationGuard } from "@/components/HydrationGuard";
 import "./globals.css";
+import "../styles/brand-v2.css";
 import '../styles/chat.css';
 import UserOnboarding from "@/components/onboarding/UserOnboarding";
 import { AppLayoutWithSidebar } from "@/components/sidebar/AppLayoutWithSidebar";
@@ -94,23 +95,35 @@ export const metadata: Metadata = {
   },
 };
 
+const BRAND_V2 = process.env.NEXT_PUBLIC_THEME_V2 === "true";
+
 export default function RootLayout({
   children,
 }: Readonly<{ 
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning {...(BRAND_V2 ? { "data-brand": "v2" } : {})}>
       <head>
         {/* Font preconnects and Playfair + Inter preload for CLS stability */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        {/* Core UI fonts */}
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet" />
-        {/* Egyptian theme fonts */}
-        <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
-        {/* PWA theme color (matches royal-gold brand) */}
-        <meta name="theme-color" content="#CBA135" />
+        {BRAND_V2 ? (
+          <>
+            {/* Brand v2 fonts: Bricolage (display), IBM Plex Sans (text), IBM Plex Mono (prompts). Arabic family is loaded by the Arabic layout only. */}
+            <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet" />
+            <meta name="theme-color" content="#f2efe8" />
+          </>
+        ) : (
+          <>
+            {/* Core UI fonts */}
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet" />
+            {/* Egyptian theme fonts */}
+            <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+            {/* PWA theme color (matches royal-gold brand) */}
+            <meta name="theme-color" content="#CBA135" />
+          </>
+        )}
         {/* Full-screen viewport with safe-area support */}
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       </head>
