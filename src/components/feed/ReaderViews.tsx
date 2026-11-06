@@ -43,7 +43,7 @@ export function OutlineView({ sections, rtl, onCopySection, onJump }: OutlineVie
   return (
     <div className="space-y-2" data-testid="reader-outline">
       {sections.map((s, i) => (
-        <details key={i} open className="group rounded-lg border border-border/60">
+        <details key={i} open className="group rounded-lg border border-border/60 v2:rounded-md v2:border-line">
           <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2 font-medium [&::-webkit-details-marker]:hidden">
             <ChevronDown className="h-4 w-4 shrink-0 -rotate-90 text-muted-foreground group-open:rotate-0 motion-safe:transition-transform" aria-hidden />
             <button
@@ -160,7 +160,7 @@ export function StepsView({ item, rtl }: { item: FeedItem; rtl: boolean }) {
     <ol className="space-y-2" dir={rtl ? 'rtl' : undefined} data-testid="reader-steps">
       {steps.map((s, i) => (
         <li key={i} className="flex gap-3 rounded-lg border border-border/60 p-3">
-          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#C9A227]/15 text-xs font-semibold tabular-nums">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#C9A227]/15 text-xs font-semibold tabular-nums v2:bg-faience-soft v2:text-faience">
             {s.index ?? i + 1}
           </span>
           <span className="text-sm leading-relaxed">
@@ -176,7 +176,7 @@ export function StepsView({ item, rtl }: { item: FeedItem; rtl: boolean }) {
 export function ViewSwitch({ views, value, onChange }: { views: ReaderView[]; value: ReaderView; onChange: (v: ReaderView) => void }) {
   if (views.length < 2) return null;
   return (
-    <div role="tablist" aria-label="View" className="inline-flex rounded-lg bg-foreground/5 p-1">
+    <div role="tablist" aria-label="View" className="inline-flex rounded-lg bg-foreground/5 p-1 v2:rounded-pill v2:border v2:border-line v2:bg-transparent">
       {views.map((v) => (
         <button
           key={v}

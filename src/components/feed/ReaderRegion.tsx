@@ -20,6 +20,7 @@ import { ReaderFooter } from './ReaderFooter';
 import { availableReaderViews, OutlineView, StepsView, VariablesView, ViewSwitch, type ReaderView } from './ReaderViews';
 import type { CtaIntent } from './SignUpCta';
 import { StickyActionBar, type OpenInTarget } from './StickyActionBar';
+import { ExplainLine } from '@/components/brand/ExplainLine';
 import { READER_LEGEND_KEY, type ReaderSettings } from './useReader';
 
 export const OPEN_MS = 220;
@@ -69,6 +70,29 @@ export interface ReaderRegionProps {
   onSetting: <K extends keyof ReaderSettings>(key: K, value: ReaderSettings[K]) => void;
   focusMode: boolean;
   copyTick: number;
+}
+
+const EXPLAIN_COPY_KEY = 'pt:explain-copy';
+
+/** Brand v2: once per session, say what Copy does under the bar (hidden when the flag is off). */
+function CopyExplainOnce() {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    try {
+      if (!sessionStorage.getItem(EXPLAIN_COPY_KEY)) {
+        sessionStorage.setItem(EXPLAIN_COPY_KEY, '1');
+        setShow(true);
+      }
+    } catch {
+      /* storage unavailable: stay quiet */
+    }
+  }, []);
+  if (!show) return null;
+  return (
+    <ExplainLine className="mt-2 hidden v2:block" data-testid="reader-copy-explain">
+      Copies the plain prompt text. Colour never changes what you paste.
+    </ExplainLine>
+  );
 }
 
 function ReaderBody(props: ReaderRegionProps) {
@@ -233,7 +257,7 @@ function ReaderBody(props: ReaderRegionProps) {
       role="region"
       aria-labelledby={titleId}
       tabIndex={-1}
-      className={cn('pt-reader outline-none', focusMode && 'lg:fixed lg:right-4 lg:top-[var(--reader-sticky-top)] lg:z-40 lg:max-h-[calc(100vh-var(--reader-sticky-top)-1rem)] lg:w-[min(34rem,42vw)] lg:overflow-auto lg:rounded-xl lg:border lg:border-border/60 lg:bg-card lg:p-4 lg:shadow-2xl')}
+      className={cn('pt-reader outline-none', focusMode && 'lg:fixed lg:right-4 lg:top-[var(--reader-sticky-top)] lg:z-40 lg:max-h-[calc(100vh-var(--reader-sticky-top)-1rem)] lg:w-[min(34rem,42vw)] lg:overflow-auto lg:rounded-xl lg:border lg:border-border/60 lg:bg-card lg:p-4 lg:shadow-2xl v2:lg:rounded-cartouche v2:lg:border-line v2:lg:bg-surface v2:lg:shadow-lift')}
       data-testid="reader-region"
       data-active={active || undefined}
       onKeyDown={onKeyDown}
@@ -261,6 +285,7 @@ function ReaderBody(props: ReaderRegionProps) {
         onFork={onFork}
         inPanel={focusMode}
       />
+      <CopyExplainOnce />
 
       <div className="mt-3 space-y-3">
         {views.length > 1 && <ViewSwitch views={views} value={view} onChange={setView} />}

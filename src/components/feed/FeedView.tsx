@@ -35,18 +35,18 @@ const TABS: { id: FeedTab; label: string; icon: typeof Flame }[] = [
 ];
 
 const EMPTY_COPY: Record<FeedTab, string> = {
-  trending: 'Nothing is trending yet — be the first to like a prompt.',
+  trending: 'Nothing is trending yet. Be the first to like a prompt.',
   new: 'No new prompts yet. Check back soon.',
-  top: 'No top prompts yet — be the first to like a prompt.',
-  for_you: 'Save or like three prompts and this tab will fill up.',
+  top: 'No top prompts yet. Be the first to like a prompt.',
+  for_you: 'Save or like three prompts and this tab fills up.',
 };
-const FILTERED_EMPTY = 'No prompts match; clear a filter.';
+const FILTERED_EMPTY = 'No prompts match. Clear a filter.';
 
 export function FeedDisabledNotice() {
   return (
     <div className="flex flex-col">
-      <div className="mx-4 mt-4 rounded-lg border border-[#C9A227]/40 bg-[#C9A227]/10 px-4 py-3 text-sm" role="status">
-        <strong className="font-semibold">Feed coming soon.</strong> Browse the library instead — every prompt is below.
+      <div className="mx-4 mt-4 rounded-lg border border-[#C9A227]/40 bg-[#C9A227]/10 px-4 py-3 text-sm v2:rounded-md v2:border-l-2 v2:border-lapis v2:border-y-0 v2:border-r-0 v2:bg-lapis-soft v2:text-ink" role="status">
+        <strong className="font-semibold v2:text-lapis">Feed coming soon.</strong> Browse the library instead. Every prompt is below.
       </div>
       <DiscoverFallback />
     </div>
@@ -127,7 +127,7 @@ export function FeedView({ initialPage }: FeedViewProps) {
         <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">Prompt feed</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           The best openly licensed prompts, ranked by what people copy, like and save.{' '}
-          <Link href="/feed/c/sota" className="font-medium text-[#8a6d12] hover:underline dark:text-[#e2c25a]">
+          <Link href="/feed/c/sota" className="font-medium text-[#8a6d12] hover:underline dark:text-[#e2c25a] v2:text-faience v2-dark:text-faience">
             State of the art →
           </Link>
         </p>

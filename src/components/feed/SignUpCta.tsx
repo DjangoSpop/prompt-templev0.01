@@ -49,14 +49,14 @@ export function SignUpCta({ intent, onClose }: SignUpCtaProps) {
     <Dialog open={!!intent} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <span className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-[#C9A227]/10 text-[#C9A227]" aria-hidden>
+          <span className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-[#C9A227]/10 text-[#C9A227] v2:bg-faience-soft v2:text-faience" aria-hidden>
             <Icon className="h-5 w-5" />
           </span>
           <DialogTitle className="text-center font-display">{copy.title}</DialogTitle>
           <DialogDescription className="text-center">{copy.body}</DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex-col gap-2 sm:flex-col sm:space-x-0">
-          <Button asChild className="w-full">
+          <Button asChild className="w-full v2:rounded-pill v2:bg-faience-fill v2:text-faience-on">
             <Link href={`/auth/register?redirect=${redirect}`}>Create a free account</Link>
           </Button>
           <Button asChild variant="ghost" className="w-full">
