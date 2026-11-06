@@ -282,6 +282,11 @@ const config: Config = {
     },
   },
   plugins: [
+    // Sprint 11: `v2:` applies only under html[data-brand="v2"] (NEXT_PUBLIC_THEME_V2). Flag off = untouched.
+    function ({ addVariant }: { addVariant: (name: string, def: string) => void }) {
+      addVariant("v2", 'html[data-brand="v2"] &');
+      addVariant("v2-dark", 'html[data-brand="v2"].dark &');
+    },
     tailwindcssAnimate,
     // Safe-area inset utilities (iOS notch / home indicator)
     function({ addUtilities }: any) {
