@@ -23,6 +23,8 @@ import {
 } from '@/hooks/api/useBilling';
 import { useAuthStore } from '@/store/user';
 import { cn } from '@/lib/utils';
+import { BRAND_V2 } from '@/lib/brand';
+import { ExplainLine } from '@/components/brand/ExplainLine';
 
 // ── Plan metadata — clean, professional copy ──
 
@@ -197,7 +199,7 @@ export function PricingPageClient({ faq }: PricingPageClientProps) {
   const planOrder: PlanCode[] = ['FREE', 'PRO', 'POWER'];
 
   return (
-    <main className="min-h-screen bg-white dark:bg-stone-950">
+    <main className="min-h-screen bg-white dark:bg-stone-950 v2:bg-ground v2-dark:bg-ground">
       <div className="mx-auto max-w-5xl px-4 pb-20 pt-12 md:pt-16">
         {/* ── Header ── */}
         <motion.div
@@ -206,18 +208,20 @@ export function PricingPageClient({ faq }: PricingPageClientProps) {
           transition={{ duration: 0.5 }}
           className="mb-14 text-center"
         >
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-amber-300/30 bg-amber-50 px-4 py-1.5 text-sm font-medium text-amber-700 dark:border-amber-500/20 dark:bg-amber-900/15 dark:text-amber-400">
-            <Sparkles className="h-3.5 w-3.5" />
-            Simple, transparent pricing
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-amber-300/30 bg-amber-50 px-4 py-1.5 text-sm font-medium text-amber-700 dark:border-amber-500/20 dark:bg-amber-900/15 dark:text-amber-400 v2:border-line v2:bg-surface v2:text-ink-muted v2-dark:bg-surface v2-dark:text-ink-muted v2-dark:border-line">
+            <Sparkles className="h-3.5 w-3.5 v2:hidden" />
+            {BRAND_V2 ? 'Plain pricing' : 'Simple, transparent pricing'}
           </div>
           <h1
-            className="mb-4 text-3xl font-bold text-stone-900 dark:text-white md:text-5xl"
-            style={{ fontFamily: "'Playfair Display', serif" }}
+            className={BRAND_V2 ? 'display-lg mb-4 text-ink' : 'mb-4 text-3xl font-bold text-stone-900 dark:text-white md:text-5xl'}
+            style={BRAND_V2 ? undefined : { fontFamily: "'Playfair Display', serif" }}
           >
-            Start Free. Scale as You Grow.
+            {BRAND_V2 ? 'Free to start. Pay when it earns its keep.' : 'Start Free. Scale as You Grow.'}
           </h1>
-          <p className="mx-auto max-w-xl text-base text-stone-500 dark:text-stone-400 md:text-lg">
-            Get better AI results today — free. Upgrade when you need more power.
+          <p className="mx-auto max-w-xl text-base text-stone-500 dark:text-stone-400 md:text-lg v2:text-ink-muted v2-dark:text-ink-muted">
+            {BRAND_V2
+              ? 'The free plan makes your prompts clearer every day. Paid plans add credits, remove ads, and keep the library free for everyone.'
+              : 'Get better AI results today — free. Upgrade when you need more power.'}
           </p>
 
         </motion.div>
@@ -238,10 +242,10 @@ export function PricingPageClient({ faq }: PricingPageClientProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
                 className={cn(
-                  'relative flex flex-col rounded-2xl border bg-white p-7 transition-shadow duration-200 dark:bg-stone-900',
+                  'relative flex flex-col rounded-2xl border bg-white p-7 transition-shadow duration-200 dark:bg-stone-900 v2:rounded-cartouche v2:border-line v2:shadow-none v2:bg-surface v2-dark:bg-surface v2-dark:border-line',
                   isPopular
-                    ? 'border-blue-300 shadow-lg shadow-blue-500/10 dark:border-blue-600/50 dark:shadow-blue-500/5 md:scale-105'
-                    : 'border-stone-200 shadow-sm hover:shadow-md dark:border-stone-800 dark:hover:border-stone-700'
+                    ? 'border-blue-300 shadow-lg shadow-blue-500/10 dark:border-blue-600/50 dark:shadow-blue-500/5 md:scale-105 v2:border-faience v2:md:scale-100 v2-dark:border-faience'
+                    : 'border-stone-200 shadow-sm hover:shadow-md dark:border-stone-800 dark:hover:border-stone-700 v2:hover:shadow-none'
                 )}
               >
                 {/* Badge */}
@@ -250,8 +254,8 @@ export function PricingPageClient({ faq }: PricingPageClientProps) {
                     className={cn(
                       'absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-4 py-1 text-[10px] font-bold uppercase tracking-wider',
                       isCurrent
-                        ? 'bg-emerald-500 text-white'
-                        : 'bg-blue-600 text-white dark:bg-blue-500'
+                        ? 'bg-emerald-500 text-white v2:bg-faience-soft v2:text-faience v2-dark:bg-faience-soft v2-dark:text-faience'
+                        : 'bg-blue-600 text-white dark:bg-blue-500 v2:bg-faience-fill v2:text-faience-on v2-dark:bg-faience-fill v2-dark:text-faience-on'
                     )}
                   >
                     {isCurrent ? 'Current Plan' : meta.badge}
@@ -334,9 +338,9 @@ export function PricingPageClient({ faq }: PricingPageClientProps) {
                 ) : isFree ? (
                   <Link
                     href="/auth/register"
-                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-stone-300 px-6 py-3 text-sm font-semibold text-stone-700 transition-colors hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-stone-300 px-6 py-3 text-sm font-semibold text-stone-700 transition-colors hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800 v2:rounded-pill v2:border-line v2:bg-transparent v2:text-ink v2:hover:bg-surface-sunken v2-dark:border-line v2-dark:text-ink v2-dark:hover:bg-surface-sunken"
                   >
-                    {meta.cta}
+                    {BRAND_V2 && isFree ? 'Start free' : meta.cta}
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 ) : (
@@ -346,8 +350,8 @@ export function PricingPageClient({ faq }: PricingPageClientProps) {
                     className={cn(
                       'flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60',
                       isPopular
-                        ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/25 hover:from-blue-500 hover:to-blue-400 dark:from-blue-500 dark:to-blue-400 dark:shadow-blue-500/15'
-                        : 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-lg shadow-amber-500/20 hover:from-amber-500 hover:to-amber-400 dark:shadow-amber-500/10'
+                        ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/25 hover:from-blue-500 hover:to-blue-400 dark:from-blue-500 dark:to-blue-400 dark:shadow-blue-500/15 v2:bg-none v2:bg-faience-fill v2:text-faience-on v2:rounded-pill v2:shadow-none v2:hover:bg-faience-fill v2:hover:shadow-none v2-dark:bg-faience-fill v2-dark:text-faience-on'
+                        : 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-lg shadow-amber-500/20 hover:from-amber-500 hover:to-amber-400 dark:shadow-amber-500/10 v2:bg-none v2:bg-transparent v2:border v2:border-line v2:text-ink v2:rounded-pill v2:shadow-none v2:hover:bg-surface-sunken v2:hover:shadow-none v2-dark:border-line v2-dark:text-ink v2-dark:hover:bg-surface-sunken'
                     )}
                   >
                     {isStartingCheckout ? (
@@ -363,23 +367,28 @@ export function PricingPageClient({ faq }: PricingPageClientProps) {
                     )}
                   </button>
                 )}
+                {BRAND_V2 && isPopular && (
+                  <ExplainLine className="mt-3 text-center">No ads, more credits, and the library stays free.</ExplainLine>
+                )}
               </motion.div>
             );
           })}
         </div>
 
         {/* ── Trust note ── */}
-        <p className="mb-16 text-center text-sm text-stone-500 dark:text-stone-500">
-          All paid plans include a 14-day money-back guarantee · No questions asked · Cancel anytime
+        <p className="mb-16 text-center text-sm text-stone-500 dark:text-stone-500 v2:text-ink-muted v2-dark:text-ink-muted">
+          {BRAND_V2
+            ? 'Paid plans: 14-day money-back guarantee. Cancel any time from billing settings.'
+            : 'All paid plans include a 14-day money-back guarantee · No questions asked · Cancel anytime'}
         </p>
 
         {/* ── FAQ ── */}
         <section className="mx-auto max-w-3xl">
           <h2
-            className="mb-8 text-center text-2xl font-bold text-stone-900 dark:text-white md:text-3xl"
-            style={{ fontFamily: "'Playfair Display', serif" }}
+            className={BRAND_V2 ? 'display-md mb-8 text-center text-ink' : 'mb-8 text-center text-2xl font-bold text-stone-900 dark:text-white md:text-3xl'}
+            style={BRAND_V2 ? undefined : { fontFamily: "'Playfair Display', serif" }}
           >
-            Frequently Asked Questions
+            {BRAND_V2 ? 'Questions people ask' : 'Frequently Asked Questions'}
           </h2>
           <div className="space-y-3">
             {faq.map((item) => (
@@ -390,17 +399,17 @@ export function PricingPageClient({ faq }: PricingPageClientProps) {
 
         {/* ── Bottom CTA ── */}
         <div className="mt-16 text-center">
-          <p className="mb-4 text-stone-500 dark:text-stone-400">Still have questions?</p>
+          <p className="mb-4 text-stone-500 dark:text-stone-400 v2:text-ink-muted v2-dark:text-ink-muted">Still have questions?</p>
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
             <Link
               href="/help"
-              className="text-sm font-medium text-[#0E3A8C] hover:underline dark:text-blue-400"
+              className="text-sm font-medium text-[#0E3A8C] hover:underline dark:text-blue-400 v2:text-faience v2-dark:text-faience"
             >
               Visit Help Center →
             </Link>
             <Link
               href="/academy"
-              className="text-sm font-medium text-[#0E3A8C] hover:underline dark:text-blue-400"
+              className="text-sm font-medium text-[#0E3A8C] hover:underline dark:text-blue-400 v2:text-faience v2-dark:text-faience"
             >
               Explore the Academy →
             </Link>

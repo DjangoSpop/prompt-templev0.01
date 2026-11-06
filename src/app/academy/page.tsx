@@ -12,6 +12,8 @@ import { modules } from '@/lib/academy/content/modules';
 import { courses, Course } from '@/lib/academy/content/courses';
 import { BookOpen, Award, Zap, ArrowRight, Crown, Scroll, Lock, Sparkles, Clock, GraduationCap } from 'lucide-react';
 import { useState } from 'react';
+import { BRAND_V2 } from '@/lib/brand';
+import { ExplainLine } from '@/components/brand/ExplainLine';
 
 type LevelFilter = 'all' | 'beginner' | 'intermediate' | 'advanced';
 
@@ -100,12 +102,12 @@ function CourseSection({ course }: { course: Course }) {
   return (
     <div className="mb-20">
       {/* Course Header */}
-      <div className={`relative rounded-2xl border ${colors.border} bg-gradient-to-br ${colors.bg} p-8 mb-8 transition-all duration-300`}>
+      <div className={`relative rounded-2xl border ${colors.border} bg-gradient-to-br ${colors.bg} p-8 mb-8 transition-all duration-300 v2:rounded-cartouche v2:border-line v2:shadow-none v2:bg-surface v2:bg-none`}>
         <div className="flex flex-col md:flex-row md:items-center gap-6">
           <span className="text-6xl">{course.emoji}</span>
           <div className="flex-1">
             <div className="flex flex-wrap items-center gap-3 mb-2">
-              <h3 className={`text-2xl lg:text-3xl font-bold ${colors.text}`}>{course.title}</h3>
+              <h3 className={`text-2xl lg:text-3xl font-bold ${colors.text} v2:text-ink v2:font-display`}>{course.title}</h3>
               {course.isFree ? (
                 <span className="px-2 py-0.5 text-xs font-semibold bg-emerald-500/20 text-emerald-300 rounded-full border border-emerald-500/30">
                   FREE
@@ -119,7 +121,7 @@ function CourseSection({ course }: { course: Course }) {
                 {course.level}
               </span>
             </div>
-            <p className="text-desert-sand-200 text-sm lg:text-base max-w-2xl mb-4">
+            <p className="text-desert-sand-200 text-sm lg:text-base max-w-2xl mb-4 v2:text-ink-muted">
               {course.description}
             </p>
             <div className="flex flex-wrap items-center gap-3">
@@ -174,8 +176,8 @@ export default function AcademyPage() {
   return (
     <>
       <div
-        className="min-h-screen pt-16"
-        style={{
+        className="min-h-screen pt-16 v2:bg-ground"
+        style={BRAND_V2 ? undefined : {
           background: 'linear-gradient(180deg, #0E0F12 0%, #111827 30%, #0E0F12 60%, #131620 80%, #0E0F12 100%)',
         }}
       >
@@ -187,30 +189,33 @@ export default function AcademyPage() {
           {/* Section Header */}
           <div className="text-center mb-12">
             <div className="inline-flex items-center justify-center space-x-2 mb-4">
-              <Crown className="w-5 h-5 text-amber-400" />
-              <span className="text-sm font-semibold text-amber-400 tracking-widest uppercase">
+              <Crown className="w-5 h-5 text-amber-400 v2:hidden" />
+              <span className="text-sm font-semibold text-amber-400 tracking-widest uppercase v2:text-ink-muted v2:text-xs v2:tracking-[0.06em]">
                 Course Catalog
               </span>
-              <Crown className="w-5 h-5 text-amber-400" />
+              <Crown className="w-5 h-5 text-amber-400 v2:hidden" />
             </div>
             <h2
-              className="text-4xl lg:text-5xl font-bold text-white mb-4"
-              style={{ fontFamily: "'Playfair Display', serif" }}
+              className={BRAND_V2 ? 'display-lg text-ink mb-4' : 'text-4xl lg:text-5xl font-bold text-white mb-4'}
+              style={BRAND_V2 ? undefined : { fontFamily: "'Playfair Display', serif" }}
             >
               {courses.filter((c) => !c.isComingSoon).length} Courses,{' '}
               <span
-                style={{
+                style={BRAND_V2 ? undefined : {
                   background: 'linear-gradient(135deg, #ffe066 0%, #d4af37 40%, #CBA135 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
                 }}
+                className="v2:text-faience"
               >
                 {modules.length} Modules
               </span>
             </h2>
-            <p className="text-lg text-stone-400 max-w-2xl mx-auto mb-8">
-              From prompt engineering foundations to production AI agents. Choose your learning path and start building.
+            <p className="text-lg text-stone-400 max-w-2xl mx-auto mb-8 v2:text-ink-muted">
+              {BRAND_V2
+                ? 'From the first role line to production agents. Pick a path and start with a lesson you can use today.'
+                : 'From prompt engineering foundations to production AI agents. Choose your learning path and start building.'}
             </p>
 
             {/* Level Filter Tabs */}
@@ -264,55 +269,55 @@ export default function AcademyPage() {
           <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {[
               { icon: <BookOpen className="w-7 h-7" />, title: 'Practical & Applied', desc: 'Every concept backed by real-world examples. Build AI chatbots, automation workflows, and production systems.', color: 'amber' },
-              { icon: <Award className="w-7 h-7" />, title: 'Earn XP & Badges', desc: 'Track progress with XP points. Earn badges: Bronze Scarab, Silver Ankh, Gold Eye of Horus, Lapis Crown.', color: 'emerald' },
+              { icon: <Award className="w-7 h-7" />, title: BRAND_V2 ? 'Earn XP and badges' : 'Earn XP & Badges', desc: BRAND_V2 ? 'Track progress with XP. Levels: Scribe, Senior scribe, Master scribe.' : 'Track progress with XP points. Earn badges: Bronze Scarab, Silver Ankh, Gold Eye of Horus, Lapis Crown.', color: 'emerald' },
               { icon: <Zap className="w-7 h-7" />, title: '100% Free Courses', desc: `${courses.filter((c) => c.isFree && !c.isComingSoon).length} full courses completely free. No credit card needed. Premium courses coming soon.`, color: 'blue' },
             ].map((card) => (
-              <div key={card.title} className="group relative rounded-2xl border border-amber-500/15 p-7 text-center transition-all duration-300 hover:border-amber-400/30 hover:shadow-[0_0_30px_rgba(212,175,55,0.08)]" style={{ background: 'rgba(255,255,255,0.02)' }}>
-                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl border border-amber-500/20 text-amber-400 transition-colors group-hover:border-amber-400/40 group-hover:text-amber-300" style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(212,175,55,0.02) 100%)' }}>
+              <div key={card.title} className="group relative rounded-2xl border border-amber-500/15 p-7 text-center transition-all duration-300 hover:border-amber-400/30 hover:shadow-[0_0_30px_rgba(212,175,55,0.08)] v2:rounded-cartouche v2:border-line v2:shadow-none v2:bg-surface v2:hover:shadow-none v2:hover:border-line" style={BRAND_V2 ? undefined : { background: 'rgba(255,255,255,0.02)' }}>
+                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl border border-amber-500/20 text-amber-400 transition-colors group-hover:border-amber-400/40 group-hover:text-amber-300 v2:border-line v2:text-faience v2:bg-faience-soft" style={BRAND_V2 ? undefined : { background: 'linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(212,175,55,0.02) 100%)' }}>
                   {card.icon}
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>{card.title}</h3>
-                <p className="text-stone-400 text-sm">{card.desc}</p>
+                <h3 className="text-lg font-bold text-white mb-2 v2:text-ink v2:font-display" style={BRAND_V2 ? undefined : { fontFamily: "'Playfair Display', serif" }}>{card.title}</h3>
+                <p className="text-stone-400 text-sm v2:text-ink-muted">{card.desc}</p>
               </div>
             ))}
           </div>
 
           {/* Stats Section */}
-          <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto py-12 border-y border-amber-500/15">
+          <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto py-12 border-y border-amber-500/15 v2:border-line">
             <div className="text-center">
-              <div className="text-4xl font-bold text-amber-300 mb-2">{courses.filter((c) => !c.isComingSoon).length}</div>
-              <p className="text-stone-400 text-sm">Active Courses</p>
+              <div className="text-4xl font-bold text-amber-300 mb-2 v2:text-ink v2:font-display">{courses.filter((c) => !c.isComingSoon).length}</div>
+              <p className="text-stone-400 text-sm v2:text-ink-muted">Active Courses</p>
             </div>
             <div className="text-center">
-              <div className="text-4xl font-bold text-emerald-300 mb-2">{modules.length}+</div>
-              <p className="text-stone-400 text-sm">Total Modules</p>
+              <div className="text-4xl font-bold text-emerald-300 mb-2 v2:text-ink v2:font-display">{modules.length}+</div>
+              <p className="text-stone-400 text-sm v2:text-ink-muted">Total Modules</p>
             </div>
             <div className="text-center">
-              <div className="text-4xl font-bold text-blue-300 mb-2">98%</div>
-              <p className="text-stone-400 text-sm">Completion Rate</p>
+              <div className="text-4xl font-bold text-blue-300 mb-2 v2:text-ink v2:font-display">98%</div>
+              <p className="text-stone-400 text-sm v2:text-ink-muted">Completion Rate</p>
             </div>
             <div className="text-center">
-              <div className="text-4xl font-bold text-purple-300 mb-2">4.9★</div>
-              <p className="text-stone-400 text-sm">Average Rating</p>
+              <div className="text-4xl font-bold text-purple-300 mb-2 v2:text-ink v2:font-display">4.9★</div>
+              <p className="text-stone-400 text-sm v2:text-ink-muted">Average Rating</p>
             </div>
           </div>
         </section>
 
         {/* Footer CTA */}
-        <section className="container mx-auto px-4 py-20 text-center border-t border-amber-500/15">
+        <section className="container mx-auto px-4 py-20 text-center border-t border-amber-500/15 v2:border-line">
           <div className="max-w-2xl mx-auto">
             <div className="inline-flex items-center justify-center space-x-2 mb-6">
-              <Scroll className="w-5 h-5 text-amber-400" />
-              <span className="text-sm font-semibold text-amber-400 tracking-widest uppercase">
-                Begin Your Journey
+              <Scroll className="w-5 h-5 text-amber-400 v2:hidden" />
+              <span className="text-sm font-semibold text-amber-400 tracking-widest uppercase v2:text-ink-muted v2:text-xs v2:tracking-[0.06em]">
+                {BRAND_V2 ? 'Start here' : 'Begin Your Journey'}
               </span>
-              <Scroll className="w-5 h-5 text-amber-400" />
+              <Scroll className="w-5 h-5 text-amber-400 v2:hidden" />
             </div>
             <h3
-              className="text-3xl md:text-4xl font-bold text-white mb-4"
-              style={{ fontFamily: "'Playfair Display', serif" }}
+              className={BRAND_V2 ? 'display-md text-ink mb-4' : 'text-3xl md:text-4xl font-bold text-white mb-4'}
+              style={BRAND_V2 ? undefined : { fontFamily: "'Playfair Display', serif" }}
             >
-              Ready to{' '}
+              {BRAND_V2 ? 'Learn to ask.' : <>Ready to{' '}
               <span
                 style={{
                   background: 'linear-gradient(135deg, #ffe066 0%, #d4af37 40%, #CBA135 100%)',
@@ -322,26 +327,29 @@ export default function AcademyPage() {
                 }}
               >
                 Master AI?
-              </span>
+              </span></>}
             </h3>
-            <p className="text-stone-400 mb-8 text-lg">
-              Start with any course for free. From prompt engineering to production AI agents — your path to mastery begins here.
+            <p className="text-stone-400 mb-8 text-lg v2:text-ink-muted">
+              {BRAND_V2
+                ? 'Every course is free to start. Begin with prompt basics or go straight to agents.'
+                : 'Start with any course for free. From prompt engineering to production AI agents — your path to mastery begins here.'}
             </p>
             <a
               href="#modules"
-              className="inline-flex items-center space-x-2 px-8 py-4 font-bold text-[#0E0F12] rounded-xl shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] hover:scale-[1.02] transition-all duration-300"
-              style={{ background: 'linear-gradient(135deg, #ffe066, #d4af37, #CBA135)' }}
+              className="inline-flex items-center space-x-2 px-8 py-4 font-bold text-[#0E0F12] rounded-xl shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] hover:scale-[1.02] transition-all duration-300 v2:bg-faience-fill v2:text-faience-on v2:rounded-pill v2:shadow-none v2:hover:shadow-none v2:hover:scale-100 v2:font-semibold"
+              style={BRAND_V2 ? undefined : { background: 'linear-gradient(135deg, #ffe066, #d4af37, #CBA135)' }}
             >
-              <span>Start Learning Now</span>
+              <span>{BRAND_V2 ? 'Start a lesson' : 'Start Learning Now'}</span>
               <ArrowRight className="w-5 h-5" />
             </a>
+            {BRAND_V2 && <ExplainLine className="mt-3">Short lessons. Each ends with a line to try.</ExplainLine>}
           </div>
         </section>
 
         {/* Bottom gold line */}
         <div
-          className="h-[2px] mt-16"
-          style={{
+          className="h-[2px] mt-16 v2:h-px v2:bg-gilt-line v2:opacity-100"
+          style={BRAND_V2 ? undefined : {
             background: 'linear-gradient(90deg, transparent 5%, #d4af37 30%, #ffe066 50%, #d4af37 70%, transparent 95%)',
             opacity: 0.4,
           }}

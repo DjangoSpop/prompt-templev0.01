@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { PricingPageClient } from './PricingPageClient';
+import { BRAND_V2 } from '@/lib/brand';
 
 export const metadata: Metadata = {
   title: 'Pricing — Free, Pro & Power Plans | Prompt Temple',
@@ -12,12 +13,16 @@ const pricingFaq = [
   {
     question: 'Is there a free plan?',
     answer:
-      'Yes! The Free plan includes daily AI prompt optimizations, access to basic templates, and prompt quality scoring. No credit card required.',
+      BRAND_V2
+        ? 'Yes. The free plan includes daily prompt improvements, the basic template library, and a quality score for every prompt. No card needed.'
+        : 'Yes! The Free plan includes daily AI prompt optimizations, access to basic templates, and prompt quality scoring. No credit card required.',
   },
   {
     question: 'Can I cancel anytime?',
     answer:
-      'Absolutely. Cancel your subscription anytime from your billing settings. No questions asked, no cancellation fees.',
+      BRAND_V2
+        ? 'Yes. Cancel from your billing settings at any time. There are no cancellation fees.'
+        : 'Absolutely. Cancel your subscription anytime from your billing settings. No questions asked, no cancellation fees.',
   },
   {
     question: 'What AI tools does it work with?',
