@@ -1,0 +1,211 @@
+/* ============================================================
+   Prompt Temple — Brand System v2 ("the scribe")
+   Source of truth: Prompt Temple Brand System artifact, tokens.json v1 (2026-11-06).
+   Active only when <html data-brand="v2"> (NEXT_PUBLIC_THEME_V2=true).
+   With the flag off, nothing in this file applies and the app renders the
+   Sprint 10 theme unchanged. Do not hand-edit values: regenerate from tokens.json.
+   ============================================================ */
+
+/* ---------- 1. Brand tokens (hex), light = default ---------- */
+html[data-brand="v2"] {
+  --ground: #f2efe8;
+  --surface: #ffffff;
+  --surface-sunken: #e9e5dc;
+  --ink: #1b1915;
+  --ink-muted: #5f5950;
+  --line: #d9d3c7;
+  --faience: #14706d;
+  --faience-fill: #176f6c;
+  --on-faience: #ffffff;
+  --faience-soft: #d9ecea;
+  --lapis: #2e4a8a;
+  --lapis-soft: #e2e8f5;
+  --gilt: #9a7623;
+  --gilt-line: #cba135;
+  --ochre: #9a5a0e;
+  --ochre-soft: #f3e4cf;
+  --red-ochre: #a8392a;
+  --red-ochre-soft: #f6ddd8;
+  --focus: var(--lapis);
+  --shadow-lift: 0 1px 0 #d9d3c7, 0 8px 24px rgba(27, 25, 21, 0.06);
+
+  /* spacing / radius / timing */
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 24px; --space-6: 40px; --space-7: 64px; --space-8: 120px;
+  --radius-sm: 6px; --radius-md: 12px; --radius-cartouche: 20px; --radius-pill: 999px;
+  --duration-open: 220ms; --duration-close: 160ms; --duration-tap: 90ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1); --ease-in: cubic-bezier(0.4, 0, 1, 1);
+
+  /* fonts (loaded in layout.tsx) */
+  --font-display: "Bricolage Grotesque", "IBM Plex Sans", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: var(--font-body);
+  --font-arabic: "IBM Plex Sans Arabic", "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-mono-code: var(--font-mono);
+
+  /* ---------- 2. Bridge: the app's shadcn HSL variables ---------- */
+  --bg: 42 28% 93%;            /* ground */
+  --bg-elev: 0 0% 100%;        /* surface */
+  --fg: 40 12% 9%;             /* ink */
+  --muted: 36 9% 34%;          /* ink-muted */
+  --muted-fg: 36 9% 34%;
+  --primary: 178 66% 26%;      /* faience-fill */
+  --primary-fg: 0 0% 100%;     /* on-faience */
+  --accent: 174 33% 89%;       /* faience-soft (was gold) */
+  --accent-fg: 178 70% 26%;    /* faience text on the soft tint */
+  --secondary: 221 49% 92%;    /* lapis-soft */
+  --secondary-fg: 222 50% 36%; /* lapis */
+  --border: 40 19% 82%;        /* line */
+  --input: 42 23% 89%;         /* surface-sunken */
+  --ring: 222 50% 36%;         /* focus = lapis */
+  --card: 0 0% 100%;
+  --card-fg: 40 12% 9%;
+  --popover: 0 0% 100%;
+  --popover-fg: 40 12% 9%;
+  --destructive: 7 60% 41%;    /* red-ochre */
+  --destructive-fg: 0 0% 100%;
+  --radius: 0.75rem;           /* 12px, radius-md */
+
+  /* legacy pharaonic names, demoted to the new palette so old classes do not shout */
+  --pharaoh-gold: 42 63% 37%;        /* gilt */
+  --royal-gold: 43 59% 50%;          /* gilt-line */
+  --lapis-blue: 222 50% 36%;
+  --nile-teal: 178 70% 26%;
+  --oasis-blue: 222 50% 36%;
+  --hieroglyph-stone: 40 12% 9%;
+  --pyramid-limestone: 42 23% 89%;
+  --desert-sand: 42 23% 89%;
+  --temple-shadow: 40 12% 9% / 0.06;
+  --gold-primary: #cba135; --gold-light: #e2c66a; --gold-dark: #9a7623;
+  --lapis-deep: #2e4a8a; --lapis-mid: #2e4a8a;
+  --sand-warm: #f2efe8; --sand-mid: #e9e5dc;
+  --obsidian-pure: #1b1915; --obsidian-mid: #1b1915;
+  --gradient-pharaoh: linear-gradient(0deg, #176f6c, #176f6c);   /* flat: no gradients in v2 */
+  --gradient-temple: linear-gradient(0deg, #141716, #141716);
+  --gradient-papyrus: linear-gradient(0deg, #f2efe8, #f2efe8);
+  --glass-bg: #ffffff; --glass-border: #d9d3c7; --glass-blur: none;
+  --transition-temple: all 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animation-glow: none;
+  --elevation-1: none; --elevation-2: none; --elevation-3: var(--shadow-lift); --elevation-4: var(--shadow-lift);
+  --radius-temple: 20px; --radius-pyramid: 20px;
+
+  /* ---------- 3. Reader semantic colours (Sprint 09) ---------- */
+  --pt-role: var(--faience);
+  --pt-heading: var(--ink);
+  --pt-rule: var(--red-ochre);
+  --pt-variable: var(--lapis);
+  --pt-variable-bg: var(--lapis-soft);
+  --pt-example: var(--ink-muted);
+  --pt-format: var(--ochre);
+  --pt-code: #3e3a33;
+  --pt-code-bg: var(--surface-sunken);
+  --pt-dialogue: var(--faience);
+
+  color-scheme: light;
+}
+
+/* ---------- 4. Dark (basalt): .dark class from ThemeProvider ---------- */
+html[data-brand="v2"].dark {
+  --ground: #141716;
+  --surface: #1d2120;
+  --surface-sunken: #0f1211;
+  --ink: #eeeae2;
+  --ink-muted: #a8a196;
+  --line: #2e3432;
+  --faience: #5ac8c2;
+  --faience-fill: #5ac8c2;
+  --on-faience: #141716;
+  --faience-soft: #1a3634;
+  --lapis: #93aeea;
+  --lapis-soft: #1f2a44;
+  --gilt: #cba135;
+  --gilt-line: #8c6f2a;
+  --ochre: #e3a54f;
+  --ochre-soft: #3a2a12;
+  --red-ochre: #e88270;
+  --red-ochre-soft: #3d1f1a;
+  --shadow-lift: 0 1px 0 #2e3432, 0 8px 24px rgba(0, 0, 0, 0.35);
+
+  --bg: 160 7% 8%;
+  --bg-elev: 165 6% 12%;
+  --fg: 40 26% 91%;
+  --muted: 37 9% 62%;
+  --muted-fg: 37 9% 62%;
+  --primary: 177 50% 57%;
+  --primary-fg: 160 7% 8%;
+  --accent: 176 35% 16%;
+  --accent-fg: 177 50% 57%;
+  --secondary: 222 37% 19%;
+  --secondary-fg: 221 67% 75%;
+  --border: 160 6% 19%;
+  --input: 160 9% 6%;
+  --ring: 221 67% 75%;
+  --card: 165 6% 12%;
+  --card-fg: 40 26% 91%;
+  --popover: 165 6% 12%;
+  --popover-fg: 40 26% 91%;
+  --destructive: 9 72% 67%;
+  --destructive-fg: 160 7% 8%;
+
+  --pharaoh-gold: 43 59% 50%;
+  --royal-gold: 42 54% 36%;
+  --lapis-blue: 221 67% 75%;
+  --nile-teal: 177 50% 57%;
+  --oasis-blue: 221 67% 75%;
+  --hieroglyph-stone: 40 26% 91%;
+  --pyramid-limestone: 160 9% 6%;
+  --desert-sand: 160 9% 6%;
+  --temple-shadow: 0 0% 0% / 0.35;
+  --gold-primary: #cba135; --gold-light: #e2c66a; --gold-dark: #8c6f2a;
+  --lapis-deep: #93aeea; --lapis-mid: #93aeea;
+  --sand-warm: #141716; --sand-mid: #1d2120;
+  --obsidian-pure: #0f1211; --obsidian-mid: #141716;
+  --gradient-pharaoh: linear-gradient(0deg, #5ac8c2, #5ac8c2);
+  --gradient-temple: linear-gradient(0deg, #141716, #141716);
+  --gradient-papyrus: linear-gradient(0deg, #141716, #141716);
+  --glass-bg: #1d2120; --glass-border: #2e3432;
+
+  --pt-code: #d6d0c4;
+
+  color-scheme: dark;
+}
+
+/* ---------- 5. Base + type scale ---------- */
+html[data-brand="v2"] body {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 26px;
+}
+html[data-brand="v2"] h1, html[data-brand="v2"] h2, html[data-brand="v2"] h3 { text-wrap: balance; }
+html[data-brand="v2"] :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+html[data-brand="v2"] .tabular, html[data-brand="v2"] table { font-variant-numeric: tabular-nums; }
+
+html[data-brand="v2"] .display-xl { font-family: var(--font-display); font-size: 64px; line-height: .95; font-weight: 600; letter-spacing: -.02em; }
+html[data-brand="v2"] .display-lg { font-family: var(--font-display); font-size: 40px; line-height: 1.02; font-weight: 600; letter-spacing: -.015em; }
+html[data-brand="v2"] .display-md { font-family: var(--font-display); font-size: 28px; line-height: 1.1; font-weight: 600; letter-spacing: -.01em; }
+html[data-brand="v2"] .t-title { font-family: var(--font-body); font-size: 20px; line-height: 26px; font-weight: 600; }
+html[data-brand="v2"] .t-body { font-family: var(--font-body); font-size: 16px; line-height: 26px; font-weight: 400; }
+html[data-brand="v2"] .t-body-sm { font-family: var(--font-body); font-size: 14px; line-height: 21px; font-weight: 400; }
+html[data-brand="v2"] .t-label { font-family: var(--font-body); font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+html[data-brand="v2"] .t-button { font-family: var(--font-body); font-size: 15px; line-height: 20px; font-weight: 600; }
+html[data-brand="v2"] .t-prompt { font-family: var(--font-mono); font-size: 15px; line-height: 24px; }
+html[data-brand="v2"] .t-prompt-sm { font-family: var(--font-mono); font-size: 13px; line-height: 20px; }
+html[data-brand="v2"] [lang="ar"], html[data-brand="v2"] [lang="ar"] body { font-family: var(--font-arabic); font-size: 17px; line-height: 30px; }
+html[data-brand="v2"] [lang="ar"] .display-xl, html[data-brand="v2"] [lang="ar"] .display-lg, html[data-brand="v2"] [lang="ar"] .display-md { font-family: var(--font-arabic); letter-spacing: 0; }
+
+@media (max-width: 640px) {
+  html[data-brand="v2"] .display-xl { font-size: 44px; }
+  html[data-brand="v2"] .display-lg { font-size: 32px; }
+}
+
+/* ---------- 6. Quiet the old decoration under v2 ---------- */
+html[data-brand="v2"] .dark .bg-pharaonic,
+html[data-brand="v2"].dark .bg-pharaonic { background: var(--surface) !important; }
+html[data-brand="v2"] [class*="animate-glow"], html[data-brand="v2"] [class*="temple-glow"] { animation: none !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-brand="v2"] { --duration-open: 0ms; --duration-close: 0ms; --duration-tap: 0ms; }
+}
