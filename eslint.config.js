@@ -40,4 +40,21 @@ module.exports = [
       '@typescript-eslint/no-unused-vars': 'off',
     },
   },
+  // Sprint 11 identity: warn on literal hex colours in components — use brand tokens (src/styles/brand-v2.css) instead.
+  {
+    files: ['src/components/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-syntax': [
+        'warn',
+        {
+          selector: "JSXAttribute[name.name=/^(className|style)$/] Literal[value=/#[0-9a-fA-F]{3,8}\\b/]",
+          message: 'Literal hex colour in JSX: use a brand token (Tailwind brand colour or CSS variable) instead.',
+        },
+        {
+          selector: "JSXAttribute[name.name=/^(className|style)$/] TemplateElement[value.raw=/#[0-9a-fA-F]{3,8}\\b/]",
+          message: 'Literal hex colour in JSX: use a brand token (Tailwind brand colour or CSS variable) instead.',
+        },
+      ],
+    },
+  },
 ];

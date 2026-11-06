@@ -159,7 +159,7 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
       );
     } catch (error) {
       setIsThinking(false);
-      addMessage('assistant', 'Sorry, something went wrong. Please try again.');
+      addMessage('assistant', 'That did not go through. Your prompt is still here. Try again, or create a free account to run it without waiting.');
       setStreamBuffer('');
     }
   };
@@ -198,10 +198,10 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
               <Sparkles className="h-7 w-7 text-amber-400" />
             </div>
             <h3 className="text-lg font-bold text-amber-100/90 mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
-              The Sacred Forge Awaits
+              Paste a rough prompt
             </h3>
             <p className="text-sm text-stone-400 max-w-md mb-6 leading-relaxed">
-              Paste any rough prompt below and watch it transform into a professional, high-performance prompt powered by AI.
+              We add the context, format and constraints the model needs, and show you what changed.
             </p>
             <div className="flex flex-wrap justify-center gap-2">
               {['Write a cold email to a client', 'Help me analyze my data', 'Create a marketing strategy'].map((example) => (
@@ -414,7 +414,7 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
           onSubmit={handleSubmit}
           isLoading={isThinking}
           latency={latency}
-          placeholder="Enter your prompt to optimize..."
+          placeholder="Paste your prompt. We will make it clearer."
         />
       </div>
     </div>

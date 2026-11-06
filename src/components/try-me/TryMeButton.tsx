@@ -75,7 +75,7 @@ export function TryMeButton({ className, onHeroComplete = false }: TryMeButtonPr
         aria-haspopup="dialog"
         aria-expanded={isModalOpen}
       >
-        <span className="relative z-10">Try Me</span>
+        <span className="relative z-10">Try it on your own prompt</span>
         <div className="absolute inset-0 bg-gradient-to-r from-[#667eea] to-[#764ba2] rounded-lg opacity-0 hover:opacity-20 transition-opacity duration-300" />
       </Button>
 
